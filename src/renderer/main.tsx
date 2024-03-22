@@ -28,4 +28,10 @@
 
 import './index.css';
 
+// window.helium.app.minimizeWindow();
+
+(async () => {
+    console.log(await window.helium.app.getWindowState());
+})()
+
 console.log('👋 This message is being logged by "renderer.js", included via webpack');

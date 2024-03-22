@@ -2,6 +2,7 @@ import type { Configuration } from "webpack";
 
 import { rules } from "./webpack.rules";
 import { plugins } from "./webpack.plugins";
+import TsconfigPathsPlugin from "tsconfig-paths-webpack-plugin";
 
 export const rendererConfig: Configuration = {
   // devtool: "source-map",
@@ -28,5 +29,6 @@ export const rendererConfig: Configuration = {
   plugins,
   resolve: {
     extensions: [".js", ".ts", ".jsx", ".tsx"],
+    plugins: [new TsconfigPathsPlugin()]
   },
 };

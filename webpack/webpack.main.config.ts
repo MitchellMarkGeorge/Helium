@@ -3,6 +3,7 @@ import type { Configuration } from 'webpack';
 import { rules } from './webpack.rules';
 import { plugins } from './webpack.plugins';
 import CopyPlugin from 'copy-webpack-plugin';
+import TsconfigPathsPlugin from "tsconfig-paths-webpack-plugin";
 
 export const mainConfig: Configuration = {
   /**
@@ -19,12 +20,13 @@ export const mainConfig: Configuration = {
     ...plugins,
     new CopyPlugin({
       patterns: [{
-        from: '../assets/icons',
-        to: '../assets/icons',
+        from: 'assets/icons/',
+        to: '../assets/icons/',
       }]
     }),
   ],
   resolve: {
     extensions: ['.js', '.ts', '.jsx', '.tsx', '.css', '.json'],
+    plugins: [new TsconfigPathsPlugin()]
   },
 };

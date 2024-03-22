@@ -7,13 +7,16 @@ import { AutoUnpackNativesPlugin } from '@electron-forge/plugin-auto-unpack-nati
 import { WebpackPlugin } from '@electron-forge/plugin-webpack';
 import { FusesPlugin } from '@electron-forge/plugin-fuses';
 import { FuseV1Options, FuseVersion } from '@electron/fuses';
+import path from "path";
 
 import { mainConfig } from './webpack/webpack.main.config';
 import { rendererConfig } from './webpack/webpack.renderer.config';
 
 const config: ForgeConfig = {
   packagerConfig: {
+    name: "Helium IDE",
     asar: true,
+    icon: path.resolve(__dirname, '../assets', 'icons', 'helium'), 
   },
   rebuildConfig: {},
   makers: [new MakerSquirrel({}), new MakerZIP({}, ['darwin']), new MakerRpm({}), new MakerDeb({})],
