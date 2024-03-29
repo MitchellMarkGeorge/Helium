@@ -1,3 +1,5 @@
+import { app } from "electron";
+import isDev from "electron-is-dev";
 import os from "os";
 
 const isMac = () => {
@@ -10,8 +12,14 @@ const isLinux = () => {
     return os.platform() === "linux";
 };
 
+const getHome = () => {
+    return app.getPath('home');
+}
+
 export default {
     isMac,
     isWindows,
     isLinux,
+    getHome,
+    isDev
 }

@@ -22,6 +22,7 @@
     "@electron-forge/plugin-webpack": "^7.3.0",
     "@electron/fuses": "^1.7.0",
     "@svgr/webpack": "^8.1.0",
+    "@types/fs-extra": "^11.0.4",
     "@types/react": "^18.2.65",
     "@types/react-dom": "^18.2.22",
     "@typescript-eslint/eslint-plugin": "^5.62.0",
@@ -50,6 +51,7 @@
   "dependencies": {
     "electron-is-dev": "^3.0.1",
     "electron-squirrel-startup": "^1.0.0",
+    "fs-extra": "^11.2.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   }
