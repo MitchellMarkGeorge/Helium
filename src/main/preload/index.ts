@@ -2,21 +2,17 @@
 // https://www.electronjs.org/docs/latest/tutorial/process-model#preload-scripts
 
 import { contextBridge, ipcRenderer } from "electron";
-import { getAppApi, getCurrentWindowId, getInitalState } from "./app";
+import { getAppApi } from "./app";
 import { getFsApi } from "./fs";
 import { getShopifyApi } from "./shopify";
 import utils from "main/utils";
 
-async function runPreload() {
+function runPreload() {
   // does this being async work???
   // are we sure this is done executing by the time the window is loaded???
   console.log("preload running here");
   ipcRenderer.setMaxListeners(0);
-  const currentWindowId = await getCurrentWindowId();
-  console.log(currentWindowId);
   // 
-  const initalState = await getInitalState(currentWindowId);
-  console.log(initalState);
   // reloading the window via webContent.reload() seems to clear the preloaded api (everything is undefined) (at least being async)
   // reloading the window via webContent.reloadIgnoringCache() seems to do the expected thing and "redefined" the preloaded api (they all show up)
   // dont know if this has anything to do with this method being async/relying on async code
@@ -33,10 +29,10 @@ async function runPreload() {
 
   contextBridge.exposeInMainWorld("helium", {
     // consider moving these apis to the service folder
-    app: getAppApi(currentWindowId),
-    fs: getFsApi(currentWindowId),
-    shopify: getShopifyApi(currentWindowId),
-    initalState,
+    app: getAppApi(),
+    fs: getFsApi(),
+    shopify: getShopifyApi(),
+    // initalState,
     utils,
   });
 }

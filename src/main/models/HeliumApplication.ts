@@ -1,7 +1,10 @@
-import { BrowserWindow, app, ipcMain } from "electron";
+import { BrowserWindow, WebContents, app, ipcMain } from "electron";
 import { HeliumWindowManager } from "./HeliumWindowManager";
 import utils from "../utils";
 import { HeliumWindowOptions } from "../types";
+import { initAppService } from "main/services/app";
+import { initShopifyService } from "main/services/shopify";
+import { initFsService } from "main/services/fs";
 
 export default class HeliumApplication {
   private static instance: HeliumApplication;
@@ -10,8 +13,11 @@ export default class HeliumApplication {
   private constructor() {
     // sets no limit on listeners (since they are dynamicaly scoped to each winodw);
     ipcMain.setMaxListeners(0);
-    this.handleGetWindowIdEvent();
-    this.handleGetInitalState();
+
+    initAppService();
+    initShopifyService();
+    initFsService();
+
     this.windowManager = new HeliumWindowManager();
     // build menu bar
     // build
@@ -57,8 +63,9 @@ export default class HeliumApplication {
     return this.windowManager.getLastFocusedWindow();
   }
 
-  public getWindowFromBrowserWindow(browserWindow: BrowserWindow) {
-    this.windowManager.getWindowFromBrowserWindow(browserWindow);
+  public getWindowFromWebContents(webContent: WebContents) {
+    const browserWindow = BrowserWindow.fromWebContents(webContent);
+    return this.windowManager.getWindowFromBrowserWindow(browserWindow);
   }
 
   public quit() {

@@ -8,35 +8,34 @@ import ipc from "./ipc";
 // }
 
 
-export function initShopifyService (heliumWindow: HeliumWindow) {
+export function initShopifyService () {
     // console.log(heliumWindow);
-  const windowId = heliumWindow.getId();
 
-  ipc.scopedHandle(windowId, 'open-theme', () => {
+  ipc.handle('open-theme', () => {
     return true; // think about this
   })
 
-  ipc.scopedHandle(windowId, 'start-theme-preview', () => {
+  ipc.handle('start-theme-preview', (heliumWindow) => {
     return heliumWindow.shopifyCli.startThemePreview();
   })
 
-  ipc.scopedHandle(windowId, 'stop-theme-preview', () => {
+  ipc.handle('stop-theme-preview', (heliumWindow) => {
     return heliumWindow.shopifyCli.stopThemePreview();
   })
 
-  ipc.scopedHandle<string>(windowId, 'pull-theme', (_, themeId) => {
+  ipc.handle<string>('pull-theme', (heliumWindow, themeId) => {
     return heliumWindow.shopifyCli.pullTheme(themeId);
   })
 
-  ipc.scopedHandle<string>(windowId, 'push-theme', () => {
+  ipc.handle<string>('push-theme', (heliumWindow) => {
     return heliumWindow.shopifyCli.pushTheme();
   });
 
-  ipc.scopedHandle<ConnectStoreOptions>(windowId, 'connect-store', (_, options) => {
+  ipc.handle<ConnectStoreOptions>('connect-store', (heliumWindow, options) => {
     return heliumWindow.connectStore(options);
   })
 
-  ipc.scopedHandle<string>(windowId, 'get-connected-store', () => {
+  ipc.handle<string>('get-connected-store', (heliumWindow) => {
     return heliumWindow.getConnectedStore();
   })
 }

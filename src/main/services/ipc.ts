@@ -1,17 +1,25 @@
-import { IpcMainInvokeEvent, ipcMain, ipcRenderer } from "electron";
+import { ipcMain, ipcRenderer } from "electron";
+import HeliumApplication from "main/models/HeliumApplication";
+import { HeliumWindow } from "main/models/HeliumWindow";
+
+const heliumApp = HeliumApplication.getInstance();
 
 // A for argument type, R for return type
 
-const scopedHandle = <A = void, R = void>(
-  windowId: number,
+const handle = <A = void, R = void>(
   eventName: string,
-  func: (event: IpcMainInvokeEvent, args: A) => R
-) => ipcMain.handle(`${eventName}-${windowId}`, func);
+  callback: (window: HeliumWindow, args: A) => R // callback takes the window handle is involed from and any arguments
+) => {
+  ipcMain.handle(eventName, (event, args: A) => {
+    const heliumWindow = heliumApp.getWindowFromWebContents(event.sender);
+    return callback(heliumWindow, args);
+  });
+};
 
-const scopedInvoke =
-  <A = void, R = void>(windowId: number, eventName: string) =>
+const invoke =
+  <A = void, R = void>(eventName: string) =>
   (arg: A): Promise<R> =>
-    ipcRenderer.invoke(`${eventName}-${windowId}`, arg);
+    ipcRenderer.invoke(eventName, arg);
 
 const eventListener =
   <A = void>(eventName: string) =>
@@ -20,7 +28,7 @@ const eventListener =
   };
 
 export default {
-  scopedHandle,
-  scopedInvoke,
+  invoke,
+  handle,
   eventListener,
 };

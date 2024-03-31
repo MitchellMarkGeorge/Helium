@@ -10,12 +10,9 @@ const pathExists = (path: string) =>
     .then(() => true)
     .catch(() => false);
 
-export function initFsService(heliumWindow: HeliumWindow) {
-  // console.log(heliumWindow);
-  const windowId = heliumWindow.getId();
+export function initFsService() {
 
-  ipc.scopedHandle<{ filePath: string; encoding: BufferEncoding }>(
-    windowId,
+  ipc.handle<{ filePath: string; encoding: BufferEncoding }>(
     "read-file",
     async (_, { filePath, encoding }) => {
       const buffer = await fs.readFile(filePath, { encoding });
@@ -23,11 +20,11 @@ export function initFsService(heliumWindow: HeliumWindow) {
     }
   );
 
-  ipc.scopedHandle<{
+  ipc.handle<{
     filePath: string;
     content: string;
     encoding: BufferEncoding;
-  }>(windowId, "write-file", async (_, { filePath, content, encoding }) => {
+  }>("write-file", async (_, { filePath, content, encoding }) => {
     const parentDirectory = path.dirname(filePath);
     if (!(await pathExists(parentDirectory))) {
       await fs.mkdir(parentDirectory, { recursive: true });
@@ -35,21 +32,20 @@ export function initFsService(heliumWindow: HeliumWindow) {
     return fs.writeFile(filePath, content, { encoding });
   });
 
-  ipc.scopedHandle<string>(windowId, "delete-file", (_, path) => {
+  ipc.handle<string>("delete-file", (_, path) => {
     return fs.rm(path);
   });
 
-  ipc.scopedHandle<string>(windowId, "delete-directory", (_, path) => {
+  ipc.handle<string>("delete-directory", (_, path) => {
     return fs.rm(path, { force: true, recursive: true });
   });
 
-  ipc.scopedHandle<string>(windowId, "create-directory", (_, path) => {
+  ipc.handle<string>("create-directory", (_, path) => {
     return fs.mkdir(path, { recursive: true });
   });
 
   // for now
-  ipc.scopedHandle<string, Promise<ThemeFileSystemEntry[]>>(
-    windowId,
+  ipc.handle<string, Promise<ThemeFileSystemEntry[]>>(
     "read-directory",
     (_, path) => {
       //handle this
@@ -58,13 +54,12 @@ export function initFsService(heliumWindow: HeliumWindow) {
     }
   );
 
-  ipc.scopedHandle<string>(windowId, "path-exists", (_, path) => {
+  ipc.handle<string>("path-exists", (_, path) => {
     //handle this
     return pathExists(path);
   });
 
-  ipc.scopedHandle<{ oldPath: string; newPath: string }>(
-    windowId,
+  ipc.handle<{ oldPath: string; newPath: string }>(
     "rename",
     (_, { oldPath, newPath }) => {
       //handle this

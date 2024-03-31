@@ -22,7 +22,6 @@ export class HeliumWindow {
   public shopifyCli: ShopifyCli;
   constructor(options?: HeliumWindowOptions) {
     console.log(options);
-    // should not be able to open duplicate windows (windows with the same theme)
 
     // should this be a circular dependency???
     this.shopifyCli = new ShopifyCli(this);
@@ -46,9 +45,6 @@ export class HeliumWindow {
 
     // these functions need to be called after the BrowserWindow has been created
     // since the browserWindow.id is used when these functions are called
-    initAppService(this);
-    initShopifyService(this);
-    initFsService(this);
 
     if (isDev) {
       this.browserWindow.webContents.openDevTools();

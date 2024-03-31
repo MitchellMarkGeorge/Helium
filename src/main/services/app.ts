@@ -3,27 +3,25 @@ import { HeliumWindow } from "../models/HeliumWindow";
 import ipc from "./ipc";
 
 // handleAppEvents???K
-export function initAppService(heliumWindow: HeliumWindow) {
-  // console.log(heliumWindow);
-  const windowId = heliumWindow.getId();
+export function initAppService() {
 
-  ipc.scopedHandle(windowId, "close-window", () => {
+  ipc.handle("close-window", (heliumWindow) => {
     heliumWindow.browserWindow.close();
   });
 
-  ipc.scopedHandle(windowId, "minimize-window", () => {
+  ipc.handle("minimize-window", (heliumWindow) => {
     heliumWindow.browserWindow.minimize();
   });
 
-  ipc.scopedHandle(windowId, "maximize-window", () => {
+  ipc.handle("maximize-window", (heliumWindow) => {
     heliumWindow.browserWindow.maximize();
   });
 
-  ipc.scopedHandle(windowId, "get-window-state", () => {
+  ipc.handle("get-window-state", (heliumWindow) => {
     return heliumWindow.getWindowState();
   });
 
-  ipc.scopedHandle(windowId, "open-folder-dialog", async () => {
+  ipc.handle("open-folder-dialog", async (heliumWindow) => {
     const { filePaths } = await dialog.showOpenDialog(
       heliumWindow.browserWindow,
       {

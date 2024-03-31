@@ -1,13 +1,13 @@
 import { ThemeFileSystemEntry } from "common/types";
 import ipc from "../services/ipc";
 
-export const getFsApi = (currentWindowId: number) => ({
+export const getFsApi = () => ({
     // these ones don't need to return promises...
-    readFile: ipc.scopedInvoke<{ filePath: string, encoding: BufferEncoding}, string>(currentWindowId, 'read-file'),
-    writeFile: ipc.scopedInvoke<{ filePath: string, content: string, encoding: BufferEncoding}, void>(currentWindowId, 'write-file'),
-    deleteFile: ipc.scopedInvoke<string>(currentWindowId, 'delete-file'),
-    createDirectory: ipc.scopedInvoke<string>(currentWindowId, 'create-directory'),
-    readDirectory: ipc.scopedInvoke<string, Promise<ThemeFileSystemEntry[]>>(currentWindowId, 'read-directory'),
-    pathExists: ipc.scopedInvoke<string, boolean>(currentWindowId, 'path-exists'),
-    rename: ipc.scopedInvoke<{oldPath: string, newPath: string}>(currentWindowId, 'rename'),
+    readFile: ipc.invoke<{ filePath: string, encoding: BufferEncoding}, string>('read-file'),
+    writeFile: ipc.invoke<{ filePath: string, content: string, encoding: BufferEncoding}, void>('write-file'),
+    deleteFile: ipc.invoke<string>('delete-file'),
+    createDirectory: ipc.invoke<string>('create-directory'),
+    readDirectory: ipc.invoke<string, Promise<ThemeFileSystemEntry[]>>('read-directory'),
+    pathExists: ipc.invoke<string, boolean>('path-exists'),
+    rename: ipc.invoke<{oldPath: string, newPath: string}>('rename'),
 });
