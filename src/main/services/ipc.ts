@@ -10,18 +10,17 @@ const scopedHandle = <A = void, R = void>(
 
 const scopedInvoke =
   <A = void, R = void>(windowId: number, eventName: string) =>
-  (arg: A) =>
-    ipcRenderer.invoke(`${eventName}-${windowId}`, arg) as Promise<R>;
+  (arg: A): Promise<R> =>
+    ipcRenderer.invoke(`${eventName}-${windowId}`, arg);
 
-const scopedListener =
-  <A = void>(windowId: number, eventName: string) =>
+const eventListener =
+  <A = void>(eventName: string) =>
   (callback: (arg: A) => void) => {
-    ipcRenderer.on(`${eventName}-${windowId}`, (_, args: A) => callback(args)) 
-    // callback.call(this, )
-  }
+    ipcRenderer.on(eventName, (_, arg: A) => callback(arg));
+  };
 
 export default {
   scopedHandle,
   scopedInvoke,
-  scopedListener,
+  eventListener,
 };

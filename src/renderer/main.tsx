@@ -30,9 +30,10 @@ import './index.css';
 
 // window.helium.app.minimizeWindow();
 
-(async () => {
-    window.helium.app.getWindowState();
-    console.log(await window.helium.app.openFolderDialog());
-})()
+    // console.log(await window.helium.app.openFolderDialog());
+
+console.log(window.helium);
+
+    
 
 console.log('👋 This message is being logged by "renderer.js", included via webpack');

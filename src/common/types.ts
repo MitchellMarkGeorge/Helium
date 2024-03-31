@@ -1,5 +1,6 @@
 import type { getAppApi } from "main/preload/app";
 import type { getFsApi } from "main/preload/fs";
+import type { getShopifyApi } from "main/preload/shopify";
 import type utils from "main/utils";
 
 export type HeliumId = `helium-${string}`;
@@ -12,7 +13,7 @@ export const enum PreviewState {
 }
 export interface ThemeInfo {
   shopifyId?: number;
-  heliumId: HeliumId;
+//   heliumId: HeliumId; // not needed right now
   path: string;
   name: string;
   verson: string;
@@ -20,16 +21,30 @@ export interface ThemeInfo {
 }
 
 export interface StoreInfo {
-  heliumId: HeliumId;
-  themeAccessPassword: string;
+  heliumId: HeliumId; // not needed right now
+  // UI does not need passworkd
+  themeAccessPassword: string; // hashed
   url: string;
 }
 
+export interface ConnectStoreOptions {
+    storeUrl: string;
+    password: string;
+}
+
 // HeliumAPI, HeliumGlobal???
-export interface Helium {
+export interface HeliumGlobal {
   app: ReturnType<typeof getAppApi>;
   fs: ReturnType<typeof getFsApi>;
+  shopify: ReturnType<typeof getShopifyApi>;
   utils: typeof utils;
+  initalState: InitalState;
+}
+
+export interface InitalState {
+  connectedStore: StoreInfo;
+  currentTheme: ThemeInfo; // tuple with ThemeFileEntry array
+  previewState: PreviewState;
 }
 
 export const enum FileType {

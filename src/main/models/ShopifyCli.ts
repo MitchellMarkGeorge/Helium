@@ -5,6 +5,7 @@ import { HeliumWindow } from "./HeliumWindow";
 export default class ShopifyCli {
     // operates on the context of the current theme in heliumWinow.getCurrentTheme();
     private previewState: PreviewState;
+    private previewLink: string;
     constructor(private heliumWindow: HeliumWindow) {
         this.previewState = PreviewState.OFF;
     }
@@ -35,6 +36,10 @@ export default class ShopifyCli {
 
     public async publishTheme() {
         return;
+    }
+
+    public async logOut() {
+        // think about this
     }
 
 

@@ -11,6 +11,7 @@ export default class HeliumApplication {
     // sets no limit on listeners (since they are dynamicaly scoped to each winodw);
     ipcMain.setMaxListeners(0);
     this.handleGetWindowIdEvent();
+    this.handleGetInitalState();
     this.windowManager = new HeliumWindowManager();
     // build menu bar
     // build
@@ -46,7 +47,7 @@ export default class HeliumApplication {
     });
 
     app.on("window-all-closed", () => {
-      if (utils.isMac()) {
+      if (utils.isMac) {
         this.quit();
       }
     });
@@ -74,6 +75,13 @@ export default class HeliumApplication {
     ipcMain.handle('get-window-id', (event) => {
         const browserWindow = BrowserWindow.fromWebContents(event.sender);
         return browserWindow.id;
-    })
+    });
+  }
+
+  private handleGetInitalState() {
+    ipcMain.handle('get-inital-state', (event, windowId) => {
+        const heliumWindow = this.windowManager.getWindowById(windowId);
+        return heliumWindow.getInitalState();
+    });
   }
 }

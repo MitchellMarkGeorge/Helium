@@ -1,5 +1,6 @@
 // const openTheme = (pathOrUrl: string) => {
 
+import { ConnectStoreOptions } from "common/types";
 import { HeliumWindow } from "../models/HeliumWindow"
 import ipc from "./ipc";
 
@@ -11,19 +12,19 @@ export function initShopifyService (heliumWindow: HeliumWindow) {
     // console.log(heliumWindow);
   const windowId = heliumWindow.getId();
 
-  ipc.scopedHandle(windowId, 'open-theme', (event, args) => {
+  ipc.scopedHandle(windowId, 'open-theme', () => {
     return true; // think about this
   })
 
-  ipc.scopedHandle(windowId, 'start-theme-preview', (event, args) => {
+  ipc.scopedHandle(windowId, 'start-theme-preview', () => {
     return heliumWindow.shopifyCli.startThemePreview();
   })
 
-  ipc.scopedHandle(windowId, 'stop-theme-preview', (event, args) => {
+  ipc.scopedHandle(windowId, 'stop-theme-preview', () => {
     return heliumWindow.shopifyCli.stopThemePreview();
   })
 
-  ipc.scopedHandle<string>(windowId, 'pull-theme', (event, themeId) => {
+  ipc.scopedHandle<string>(windowId, 'pull-theme', (_, themeId) => {
     return heliumWindow.shopifyCli.pullTheme(themeId);
   })
 
@@ -31,11 +32,11 @@ export function initShopifyService (heliumWindow: HeliumWindow) {
     return heliumWindow.shopifyCli.pushTheme();
   });
 
-  ipc.scopedHandle<string>(windowId, 'get-connected-store', () => {
-    return heliumWindow.getConnectedStore();
+  ipc.scopedHandle<ConnectStoreOptions>(windowId, 'connect-store', (_, options) => {
+    return heliumWindow.connectStore(options);
   })
 
-  ipc.scopedHandle<string>(windowId, 'is-preview-running', () => {
-    return heliumWindow.shopifyCli.getPreviewState();
+  ipc.scopedHandle<string>(windowId, 'get-connected-store', () => {
+    return heliumWindow.getConnectedStore();
   })
 }

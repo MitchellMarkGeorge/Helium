@@ -1,10 +1,16 @@
 import { ipcRenderer } from "electron";
 import ipc  from "../services/ipc";
 import { HeliumWindowState } from "../types";
+import { InitalState } from "common/types";
 
 export function getCurrentWindowId(): Promise<number>  {
     return ipcRenderer.invoke('get-window-id');
 }
+
+export function getInitalState(windowId: number): Promise<InitalState>  {
+    return ipcRenderer.invoke('get-inital-state', windowId);
+}
+
 
 // get inital window state
 

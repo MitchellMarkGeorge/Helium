@@ -1,7 +1,6 @@
-import { dialog } from "electron";
+import { dialog, app } from "electron";
 import { HeliumWindow } from "../models/HeliumWindow";
 import ipc from "./ipc";
-import utils from "../utils";
 
 // handleAppEvents???K
 export function initAppService(heliumWindow: HeliumWindow) {
@@ -28,7 +27,10 @@ export function initAppService(heliumWindow: HeliumWindow) {
     const { filePaths } = await dialog.showOpenDialog(
       heliumWindow.browserWindow,
       {
-        defaultPath: utils.getHome(),
+        // defaultPath: utils.getHome(),
+        // think about abstracting this away
+        // should the user be able to change the home directory
+        defaultPath: app.getPath('home'),
         buttonLabel: "Open Theme",
         properties: ["openDirectory"],
       }

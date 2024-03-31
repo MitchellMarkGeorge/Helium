@@ -39,6 +39,12 @@ export class HeliumWindowManager {
     );
   }
 
+  public getWindowById(windowId: number) {
+    return this.windows.find(
+      (heliumWindow) => heliumWindow.browserWindow === BrowserWindow.fromId(windowId)
+    );
+  }
+
   public getLastFocusedWindow() {
 
     return this.lastFocusedWindow;
