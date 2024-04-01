@@ -1,6 +1,10 @@
 export interface HeliumWindowOptions {
-    theme: string; // for now
-    connectedStore: string; // for now
+    themePathOrUrl: string; // path or Github URL
+    connectedStore: {
+      url: string;
+      password: string
+    }; 
+    previewOn: boolean; // if the window should be started with the preview on
 }
 
 

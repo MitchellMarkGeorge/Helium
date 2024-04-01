@@ -33,4 +33,8 @@ export function initAppService() {
     );
     return filePaths;
   });
+
+  main.handle('load-inital-state', (heliumWindow) => {
+    return heliumWindow.loadInitalState();
+  })
 }

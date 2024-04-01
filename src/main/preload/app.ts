@@ -11,6 +11,5 @@ export const getAppApi = () => ({
     maximizeWindow: renderer.invoke('maximize-window'),
     getWindowState: renderer.invoke<void, HeliumWindowState>('get-window-state'),
     openFolderDialog: renderer.invoke<void, string[]>('open-folder-dialog'),
-    onceInitalStateReady: renderer.listenOnce<InitalState>('on-inital-state-ready'), // might rename to onInitalStateReady
-    notifyUiReady: renderer.emit('ui-ready'),
+    loadInitalState: renderer.invoke<void, InitalState>('load-inital-state'), 
 });

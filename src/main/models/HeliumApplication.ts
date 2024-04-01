@@ -1,21 +1,18 @@
-import { BrowserWindow, WebContents, app, ipcMain } from "electron";
+import { BrowserWindow, Menu, WebContents, app } from "electron";
 import { HeliumWindowManager } from "./HeliumWindowManager";
 import utils from "../utils";
 import { HeliumWindowOptions } from "../types";
 import { initAppService } from "main/services/app";
 import { initShopifyService } from "main/services/shopify";
 import { initFsService } from "main/services/fs";
-import main from "main/services/ipc/main";
 
 export class HeliumApplication {
   private static instance: HeliumApplication;
   private windowManager: HeliumWindowManager;
 
   private constructor() {
-    // sets no limit on listeners (since they are dynamicaly scoped to each winodw);
-    ipcMain.setMaxListeners(0);
-
-
+    // makes sure that no default menu is put in place
+    Menu.setApplicationMenu(null)
     this.windowManager = new HeliumWindowManager();
     // build menu bar
     // build
@@ -24,11 +21,6 @@ export class HeliumApplication {
     initFsService();
 
     // if there are a lot of events to listen to, handle them in another file
-    main.listen('ui-ready', async (heliumWindow) => {
-      heliumWindow.updateUiIsReady(); 
-      const initalState = await heliumWindow.loadInitalState();
-      heliumWindow.emitOnInitalStateReady(initalState);
-    })
   }
 
   // simply init???

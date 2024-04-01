@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import "./index.css";
 
 import { createRoot } from "react-dom/client";
@@ -8,16 +8,24 @@ const root = createRoot(container);
 
 const Test = () => {
   const [showLoading, setShowLoading] = useState(true);
+//   const [readyToShowWorkspace, setShowLoading] = useState(true);
+  const [showError, setShowError] = useState(false);
+
+  const loadInitalState = useCallback(async () => {
+    try {
+        const initalState = await window.helium.app.loadInitalState();
+        // const initalState = await window.helium.app.whenReadyToShowWorkspace();
+        console.log(initalState);
+        // workspace.init(initalState)
+        setShowLoading(false);
+    } catch (error) {
+       setShowError(true); 
+    }
+  }, [])
 
   useEffect(() => {
-
-    window.helium.app.onceInitalStateReady((initalState) => {
-      console.log(initalState);
-      setShowLoading(false);
-    });
-
-    window.helium.app.notifyUiReady();
-  }, []);
+    loadInitalState()
+  }, [loadInitalState]);
 
   if (showLoading) {
     return <div>Loading...</div>;

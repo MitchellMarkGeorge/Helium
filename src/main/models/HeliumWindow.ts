@@ -24,13 +24,8 @@ export class HeliumWindow {
   private currentTheme: ThemeInfo | null = null; // for now (might need theme)
   private connectedStore: StoreInfo | null = null; // for now
   public shopifyCli: ShopifyCli;
-  private isUiReady: boolean;
   constructor(private options?: HeliumWindowOptions) {
     console.log(options);
-    // the idea here is that we should wait for the loading screen to initally render (in other words, react should be ready) before we try an do anyting
-    // at first, we are waiting for the inital state to be loaded
-    this.isUiReady = false;
-
     // should this be a circular dependency???
     this.shopifyCli = new ShopifyCli(this);
     // console.log(path.resolve(__dirname, "../assets/icons/Desktop Logo.icns"));
@@ -60,11 +55,10 @@ export class HeliumWindow {
     //   this.triggerOnAppReadyEvent(initalState, event.sender);
     // })
 
-    // this.browserWindow.webContents.on("did-finish-load", async () => {
-    //   // need to make sure this even is triggered 
-    //   const initalState = await this.loadInitalState();
-    //   this.triggerOnAppReadyEvent(initalState);
-    // });
+    this.browserWindow.webContents.on("did-finish-load", () => {
+      // need to make sure this even is triggered 
+      console.log('did-finish-load')
+    });
 
     // this.browserWindow.webContents.on("dom-ready", () => {
     //   console.log("dom-ready");
@@ -138,16 +132,11 @@ export class HeliumWindow {
       connectedStore: this.connectedStore,
       currentTheme: this.currentTheme, // also send ThemeFileEntry array (might be a tuple)
       themeFiles: [],
-      previewState: PreviewState.OFF, // define this in the UI?? (there could be a case where the user wants the window/app launched with the preview open)
+      previewState: PreviewState.OFF, // (there could be a case where the user wants the window/app launched with the preview open)
     };
   }
 
   public emitOnInitalStateReady(initalState: InitalState) {
     main.emitEventFromWindow(this, 'on-inital-state-ready', initalState);
-  }
-
-  public updateUiIsReady() { // figure out naming later
-    if (this.isUiReady) return; // might throw error instead
-    this.isUiReady = true;
   }
 }
