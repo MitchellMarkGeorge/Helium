@@ -38,12 +38,13 @@ export interface HeliumGlobal {
   fs: ReturnType<typeof getFsApi>;
   shopify: ReturnType<typeof getShopifyApi>;
   utils: typeof utils;
-  initalState: InitalState;
+  // initalState: InitalState;
 }
 
 export interface InitalState {
   connectedStore: StoreInfo;
   currentTheme: ThemeInfo; // tuple with ThemeFileEntry array
+  themeFiles: ThemeFileSystemEntry[];
   previewState: PreviewState;
 }
 

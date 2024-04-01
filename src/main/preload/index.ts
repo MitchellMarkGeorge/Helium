@@ -32,7 +32,6 @@ function runPreload() {
     app: getAppApi(),
     fs: getFsApi(),
     shopify: getShopifyApi(),
-    // initalState,
     utils,
   });
 }

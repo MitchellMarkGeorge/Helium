@@ -1,4 +1,4 @@
-import { PreviewState, ThemeInfo } from "common/types";
+import { PreviewState } from "common/types";
 import { HeliumWindow } from "./HeliumWindow";
 
 
@@ -27,6 +27,7 @@ export default class ShopifyCli {
     }
 
     public async pullTheme(id: string) {
+        console.log(id);
         return;
     }
 

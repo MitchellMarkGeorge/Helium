@@ -1,34 +1,32 @@
 import { dialog, app } from "electron";
-import { HeliumWindow } from "../models/HeliumWindow";
-import ipc from "./ipc";
+import main from "./ipc/main";
 
 // handleAppEvents???K
 export function initAppService() {
-
-  ipc.handle("close-window", (heliumWindow) => {
+  main.handle("close-window", (heliumWindow) => {
     heliumWindow.browserWindow.close();
   });
 
-  ipc.handle("minimize-window", (heliumWindow) => {
+  main.handle("minimize-window", (heliumWindow) => {
     heliumWindow.browserWindow.minimize();
   });
 
-  ipc.handle("maximize-window", (heliumWindow) => {
+  main.handle("maximize-window", (heliumWindow) => {
     heliumWindow.browserWindow.maximize();
   });
 
-  ipc.handle("get-window-state", (heliumWindow) => {
+  main.handle("get-window-state", (heliumWindow) => {
     return heliumWindow.getWindowState();
   });
 
-  ipc.handle("open-folder-dialog", async (heliumWindow) => {
+  main.handle("open-folder-dialog", async (heliumWindow) => {
     const { filePaths } = await dialog.showOpenDialog(
       heliumWindow.browserWindow,
       {
         // defaultPath: utils.getHome(),
         // think about abstracting this away
         // should the user be able to change the home directory
-        defaultPath: app.getPath('home'),
+        defaultPath: app.getPath("home"),
         buttonLabel: "Open Theme",
         properties: ["openDirectory"],
       }

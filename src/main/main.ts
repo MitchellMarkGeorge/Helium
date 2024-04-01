@@ -1,4 +1,4 @@
-import  HeliumApplication from "./models/HeliumApplication";
+import  { HeliumApplication } from "./models/HeliumApplication";
 
 const heliumApp = HeliumApplication.initInstance();
 heliumApp.launch();

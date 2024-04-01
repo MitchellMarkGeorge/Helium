@@ -5,8 +5,9 @@ import { HeliumWindowOptions } from "../types";
 import { initAppService } from "main/services/app";
 import { initShopifyService } from "main/services/shopify";
 import { initFsService } from "main/services/fs";
+import main from "main/services/ipc/main";
 
-export default class HeliumApplication {
+export class HeliumApplication {
   private static instance: HeliumApplication;
   private windowManager: HeliumWindowManager;
 
@@ -14,13 +15,20 @@ export default class HeliumApplication {
     // sets no limit on listeners (since they are dynamicaly scoped to each winodw);
     ipcMain.setMaxListeners(0);
 
-    initAppService();
-    initShopifyService();
-    initFsService();
 
     this.windowManager = new HeliumWindowManager();
     // build menu bar
     // build
+    initAppService();
+    initShopifyService();
+    initFsService();
+
+    // if there are a lot of events to listen to, handle them in another file
+    main.listen('ui-ready', async (heliumWindow) => {
+      heliumWindow.updateUiIsReady(); 
+      const initalState = await heliumWindow.loadInitalState();
+      heliumWindow.emitOnInitalStateReady(initalState);
+    })
   }
 
   // simply init???
@@ -76,19 +84,5 @@ export default class HeliumApplication {
   public createNewWindow(options?: HeliumWindowOptions) {
     // abstracting this away in case I want to do something else when a new window is opened.
     this.windowManager.openNewWindow(options);
-  }
-
-  private handleGetWindowIdEvent() {
-    ipcMain.handle('get-window-id', (event) => {
-        const browserWindow = BrowserWindow.fromWebContents(event.sender);
-        return browserWindow.id;
-    });
-  }
-
-  private handleGetInitalState() {
-    ipcMain.handle('get-inital-state', (event, windowId) => {
-        const heliumWindow = this.windowManager.getWindowById(windowId);
-        return heliumWindow.getInitalState();
-    });
   }
 }

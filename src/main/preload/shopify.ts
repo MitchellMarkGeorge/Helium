@@ -4,17 +4,17 @@ import {
   StoreInfo,
   ThemeInfo,
 } from "common/types";
-import ipc from "../services/ipc";
+import renderer from "main/services/ipc/renderer";
 
 export const getShopifyApi = () => ({
-  openTheme: ipc.invoke("open-theme"),
-  startThemePreview: ipc.invoke("start-theme-preview"),
-  stopThemePreview: ipc.invoke("stop-theme-preview"),
-  pullTheme: ipc.invoke<string>("pull-theme"),
-  pushTheme: ipc.invoke<string>("push-theme"),
-  connectStore: ipc.invoke<ConnectStoreOptions>("connect-store"),
-  getConnectedStore: ipc.invoke<void, StoreInfo>("get-connected-store"),
-  onThemeInfoChange: ipc.eventListener<ThemeInfo>("theme-info-change"),
-  onPreviewStateChange: ipc.eventListener<PreviewState>("preview-state-change"),
-  onStoreChange: ipc.eventListener<StoreInfo>("store-change"),
+  openTheme: renderer.invoke("open-theme"),
+  startThemePreview: renderer.invoke("start-theme-preview"),
+  stopThemePreview: renderer.invoke("stop-theme-preview"),
+  pullTheme: renderer.invoke<string>("pull-theme"),
+  pushTheme: renderer.invoke<string>("push-theme"),
+  connectStore: renderer.invoke<ConnectStoreOptions>("connect-store"),
+  getConnectedStore: renderer.invoke<void, StoreInfo>("get-connected-store"),
+  onThemeInfoChange: renderer.listen<ThemeInfo>("on-theme-info-change"),
+  onPreviewStateChange: renderer.listen<PreviewState>("on-preview-state-change"),
+  onStoreChange: renderer.listen<StoreInfo>("on-store-change"),
 });

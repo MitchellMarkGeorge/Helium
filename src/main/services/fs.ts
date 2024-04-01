@@ -1,8 +1,7 @@
 import { ThemeFileSystemEntry } from "common/types";
-import { HeliumWindow } from "../models/HeliumWindow";
-import ipc from "./ipc";
 import fs from "fs/promises";
 import path from "path";
+import main from "./ipc/main";
 
 const pathExists = (path: string) =>
   fs
@@ -11,8 +10,7 @@ const pathExists = (path: string) =>
     .catch(() => false);
 
 export function initFsService() {
-
-  ipc.handle<{ filePath: string; encoding: BufferEncoding }>(
+  main.handle<{ filePath: string; encoding: BufferEncoding }>(
     "read-file",
     async (_, { filePath, encoding }) => {
       const buffer = await fs.readFile(filePath, { encoding });
@@ -20,7 +18,7 @@ export function initFsService() {
     }
   );
 
-  ipc.handle<{
+  main.handle<{
     filePath: string;
     content: string;
     encoding: BufferEncoding;
@@ -32,34 +30,35 @@ export function initFsService() {
     return fs.writeFile(filePath, content, { encoding });
   });
 
-  ipc.handle<string>("delete-file", (_, path) => {
+  main.handle<string>("delete-file", (_, path) => {
     return fs.rm(path);
   });
 
-  ipc.handle<string>("delete-directory", (_, path) => {
+  main.handle<string>("delete-directory", (_, path) => {
     return fs.rm(path, { force: true, recursive: true });
   });
 
-  ipc.handle<string>("create-directory", (_, path) => {
+  main.handle<string>("create-directory", (_, path) => {
     return fs.mkdir(path, { recursive: true });
   });
 
   // for now
-  ipc.handle<string, Promise<ThemeFileSystemEntry[]>>(
+  main.handle<string, Promise<ThemeFileSystemEntry[]>>(
     "read-directory",
     (_, path) => {
+      console.log(path);
       //handle this
       return Promise.resolve([]);
       //   return fse.mkdir(path, { recursive: true});
     }
   );
 
-  ipc.handle<string>("path-exists", (_, path) => {
+  main.handle<string>("path-exists", (_, path) => {
     //handle this
     return pathExists(path);
   });
 
-  ipc.handle<{ oldPath: string; newPath: string }>(
+  main.handle<{ oldPath: string; newPath: string }>(
     "rename",
     (_, { oldPath, newPath }) => {
       //handle this
