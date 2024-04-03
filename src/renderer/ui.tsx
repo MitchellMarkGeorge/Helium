@@ -11,8 +11,10 @@ class HeliumUI {
 
         // this.setupListeners()
         // there actually is no reason to set up the listerners inside the react components
-        // render root component here
         // dynamically import components before using them
+        // render root component here
+        // loadInitalData
+        // update workspace when done
     }
 
     private setUpOnThemeInfoChange() {
