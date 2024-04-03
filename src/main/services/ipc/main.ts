@@ -21,12 +21,12 @@ const handle = <A = void, R = void>(
 
 const listen = <A = void, R = void>(
   eventName: string,
-  callback: (window: HeliumWindow, args: A) => R // callback takes the window handle is involed from and any arguments
+  callback: (window: HeliumWindow, args: A) => R // callback takes the window handle is invoked from and any arguments
 ) => {
   ipcMain.on(eventName, (event, args: A) => {
     const heliumApp = HeliumApplication.getInstance();
     const heliumWindow = heliumApp.getWindowFromWebContents(event.sender);
-    return callback(heliumWindow, args);
+    return callback(heliumWindow, args); // TODO: does it need to return anything??
   });
 };
 

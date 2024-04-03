@@ -6,8 +6,8 @@ import main from "./ipc/main";
 export function initShopifyService () {
     // console.log(heliumWindow);
 
-  main.handle('open-theme', () => {
-    return true; // think about this
+  main.handle<string>('open-theme', (heliumWindow, themePath) => {
+    return heliumWindow.openTheme(themePath); // think about this
   })
 
   main.handle('start-theme-preview', (heliumWindow) => {

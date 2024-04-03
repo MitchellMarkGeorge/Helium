@@ -12,4 +12,5 @@ export const getAppApi = () => ({
     getWindowState: renderer.invoke<void, HeliumWindowState>('get-window-state'),
     openFolderDialog: renderer.invoke<void, string[]>('open-folder-dialog'),
     loadInitalState: renderer.invoke<void, InitalState>('load-inital-state'), 
+    openUrl: renderer.invoke<string>('open-url'), 
 });

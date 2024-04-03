@@ -5,8 +5,10 @@ import ShopifyCli from "./ShopifyCli";
 import {
   ConnectStoreOptions,
   InitalState,
+  OpenThemeResult,
   PreviewState,
   StoreInfo,
+  ThemeFileSystemEntry,
   ThemeInfo,
 } from "common/types";
 import isDev from "electron-is-dev";
@@ -49,28 +51,6 @@ export class HeliumWindow {
 
     this.browserWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);
 
-    // ipcMain.on('ui-ready', async (event) => {
-      
-    //   const initalState = await this.loadInitalState();
-    //   this.triggerOnAppReadyEvent(initalState, event.sender);
-    // })
-
-    this.browserWindow.webContents.on("did-finish-load", () => {
-      // need to make sure this even is triggered 
-      console.log('did-finish-load')
-    });
-
-    // this.browserWindow.webContents.on("dom-ready", () => {
-    //   console.log("dom-ready");
-    // });
-
-    // this.browserWindow.once("ready-to-show", () => {
-    //   console.log("ready-to-show");
-    // });
-
-    // these functions need to be called after the BrowserWindow has been created
-    // since the browserWindow.id is used when these functions are called
-
     if (isDev) {
       this.browserWindow.webContents.openDevTools();
     }
@@ -97,6 +77,29 @@ export class HeliumWindow {
     return this.connectedStore;
   }
 
+  public async openTheme(themePath: string): Promise<OpenThemeResult> {
+    // needs to be an absolute path
+    // check if path exists. if not, throw error
+    // read the directory to get all the root level files and folders in array
+    // validate theme file structure. if not valid, throw error
+    // read theme info from settings_data.json
+    // set this.currentTheme = openedTheme;
+    // attach watcher to this path so the ui is notified of any changes at the root level
+    return { themeInfo: this.currentTheme, files: [] }; // for now
+  }
+
+  private async isThemeFileStructureValid(files: ThemeFileSystemEntry[]) {
+    // much easier to use array as it in an array form, it will only have the files and folders it has, so it is 
+    // easier to validate if there are any subdirectories that aren't meant to be there
+
+    // https://shopify.dev/docs/themes/architecture#directory-structure-and-component-types
+    // should at least have a layout/theme.liquid. if this is not present, throw return false
+    // if there is only one item in the array and it is the above case, continue
+    // if not, return false
+    // loop over the `files` array and that the remaining subdirectories are of the allowed directory types
+    //
+  }
+
   public connectStore(options: ConnectStoreOptions) {
     //in UI make sure preview is not running
     // this is used for new stores
@@ -108,7 +111,6 @@ export class HeliumWindow {
         .toString(),
       url: options.storeUrl,
     };
-
 
     this.connectedStore = store;
 
@@ -126,6 +128,8 @@ export class HeliumWindow {
   public async loadInitalState(): Promise<InitalState> {
     // if there are any inital options (stores or themes) to be loaded, they will be done here
 
+    // if (this.options?.themePathOrUrl)
+
     // the loading screen should show for a minimum of 1 or 2 seconcds (500ms???) so it doesnt seem too jarring
     // if loading takes longer that is fine
     return {
@@ -137,6 +141,6 @@ export class HeliumWindow {
   }
 
   public emitOnInitalStateReady(initalState: InitalState) {
-    main.emitEventFromWindow(this, 'on-inital-state-ready', initalState);
+    main.emitEventFromWindow(this, "on-inital-state-ready", initalState);
   }
 }

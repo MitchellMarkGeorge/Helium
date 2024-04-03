@@ -1,4 +1,4 @@
-import { dialog, app } from "electron";
+import { dialog, app, shell } from "electron";
 import main from "./ipc/main";
 
 // handleAppEvents???K
@@ -36,5 +36,9 @@ export function initAppService() {
 
   main.handle('load-inital-state', (heliumWindow) => {
     return heliumWindow.loadInitalState();
+  });
+
+  main.handle<string>('open-url', (_, url) => {
+    return shell.openExternal(url);
   })
 }

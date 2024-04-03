@@ -15,9 +15,10 @@ export interface ThemeInfo {
   shopifyId?: number;
 //   heliumId: HeliumId; // not needed right now
   path: string;
-  name: string;
-  verson: string;
-  author: string;
+  // these values are optional as config files might not be provided
+  name?: string;
+  verson?: string;
+  author?: string;
 }
 
 export interface StoreInfo {
@@ -59,4 +60,21 @@ export interface ThemeFileSystemEntry {
   isFile: boolean;
   isDirectory: boolean;
   fileType: FileType | null;
+}
+
+export interface OpenThemeResult {
+  themeInfo: ThemeInfo;
+  files: ThemeFileSystemEntry[];
+}
+
+export interface ThemeDirectoryChange {
+  // TODO: for now
+  changedPath: string;
+  type: ThemeDirectoryChangeType
+}
+export const enum ThemeDirectoryChangeType {
+  FILE_ADDED = 'FILE_ADDED',
+  FILE_DELETED = 'FILE_DELETED',
+  FOLDER_ADDED = 'FOLDER_ADDED',
+  FOLDER_REMOVED = 'FOLDER_REMOVED',
 }
