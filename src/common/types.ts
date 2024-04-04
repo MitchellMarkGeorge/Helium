@@ -12,13 +12,13 @@ export const enum PreviewState {
   STOPPING = "STOPPING",
 }
 export interface ThemeInfo {
-  shopifyId?: number;
+  shopifyId: number | null;
 //   heliumId: HeliumId; // not needed right now
   path: string;
   // these values are optional as config files might not be provided
-  name?: string;
-  verson?: string;
-  author?: string;
+  name: string | null;
+  verson: string | null;
+  author: string | null;
 }
 
 export interface StoreInfo {
