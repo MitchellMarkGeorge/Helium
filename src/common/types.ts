@@ -10,6 +10,7 @@ export const enum PreviewState {
   ON = "ON",
   STARTING = "STARTING",
   STOPPING = "STOPPING",
+  ERROR = "ERROR",
 }
 export interface ThemeInfo {
   shopifyId: number | null;

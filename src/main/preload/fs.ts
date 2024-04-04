@@ -13,5 +13,7 @@ export const getFsApi = () => ({
     attatchDirectoryWatcher: renderer.invoke<string>('attach-directory-watcher'),
     removeDirectoryWatcher: renderer.invoke<string>('remove-directory-watcher'),
     removeAllDirectoryWatchers: renderer.invoke<string>('remove-all-directory-watchers'),
-    onThemeDirectoryChange: renderer.listen<ThemeDirectoryChange>('on-theme-directory-change'),
+    onDirectoryChange: renderer.listen<ThemeDirectoryChange>('on-directory-change'),
+    // fix this
+    onFileChange: renderer.listen<ThemeDirectoryChange>('on-file-change'),
 });
