@@ -5,20 +5,22 @@ import { HeliumWindowOptions } from "../types";
 import { initAppService } from "main/services/app";
 import { initShopifyService } from "main/services/shopify";
 import { initFsService } from "main/services/fs";
+import { HeliumAppMenu } from "./menus/HeliumAppMenu";
 
 export class HeliumApplication {
   private static instance: HeliumApplication;
   private windowManager: HeliumWindowManager;
+  private appMenu: HeliumAppMenu
 
   private constructor() {
     // makes sure that no default menu is put in place
-    Menu.setApplicationMenu(null)
-    this.windowManager = new HeliumWindowManager();
-    // build menu bar
-    // build
+    // when is the best time to do this?
     initAppService();
     initShopifyService();
     initFsService();
+
+    this.windowManager = new HeliumWindowManager();
+    this.appMenu = new HeliumAppMenu(this);
 
     // if there are a lot of events to listen to, handle them in another file
   }
@@ -43,6 +45,7 @@ export class HeliumApplication {
 
   public launch() {
     app.whenReady().then(() => {
+      this.appMenu.setAppMenu();
       this.createNewWindow();
 
       app.on("activate", () => {

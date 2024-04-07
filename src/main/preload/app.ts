@@ -13,4 +13,5 @@ export const getAppApi = () => ({
     openFolderDialog: renderer.invoke<void, string[]>('open-folder-dialog'),
     loadInitalState: renderer.invoke<void, InitalState>('load-inital-state'), 
     openUrl: renderer.invoke<string>('open-url'), 
+    on: renderer.on(),
 });

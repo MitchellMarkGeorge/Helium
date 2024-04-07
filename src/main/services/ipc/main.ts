@@ -35,7 +35,7 @@ const triggerEvent = <T>(webContents: WebContents, eventName: string, args: T) =
   webContents.send(eventName, args);
 }
 
-const emitEventFromWindow = <T>(heliumWindow: HeliumWindow, eventName: string, args: T) => {
+const emitEventFromWindow = <T = void>(heliumWindow: HeliumWindow, eventName: string, args?: T) => {
   const webContent = heliumWindow.browserWindow.webContents;
   triggerEvent(webContent, eventName, args);
 }

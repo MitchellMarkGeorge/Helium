@@ -18,15 +18,15 @@ const listen =
     ipcRenderer.on(eventName, (_, arg: A) => callback(arg));
   };
 
-const listenOnce =
-  <A = void>(eventName: string) =>
-  (callback: (arg: A) => void) => {
-    ipcRenderer.once(eventName, (_, arg: A) => callback(arg));
+const on =
+  <E extends string>() =>
+  <T>(eventName: E, callback: (arg: T) => void) => {
+    ipcRenderer.on(eventName, (_, arg: T) => callback(arg));
   };
 
 export default {
   invoke,
   emit,
   listen,
-  listenOnce,
+  on,
 };

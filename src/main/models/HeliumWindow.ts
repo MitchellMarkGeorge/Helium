@@ -1,4 +1,4 @@
-import { BrowserWindow, safeStorage } from "electron";
+import { BrowserWindow, app, safeStorage } from "electron";
 
 import { HeliumWindowOptions, HeliumWindowState } from "../types";
 import ShopifyCli from "./ShopifyCli";
@@ -9,7 +9,6 @@ import {
   PreviewState,
   StoreInfo,
   ThemeDirectoryChange,
-  ThemeDirectoryChangeType,
   ThemeFileSystemEntry,
   ThemeInfo,
 } from "common/types";
@@ -17,7 +16,7 @@ import isDev from "electron-is-dev";
 import { generateHeliumId } from "../generateHeliumId";
 import path from "path";
 import main from "main/services/ipc/main";
-import { isHidden, pathExists, readDirectory } from "main/services/fs";
+import { pathExists, readDirectory } from "main/services/fs";
 import theme from "main/services/theme";
 import { FSWatcher, watch } from "chokidar";
 import { isJunk } from "junk";
@@ -125,7 +124,9 @@ export class HeliumWindow {
     };
 
     // attach watcher to this path so the ui is notified of any changes at the root level
-    this.attatchDirectoryWatcher(themePath);
+    // this.attatchDirectoryWatcher(themePath);
+
+    app.addRecentDocument(themePath);
 
     this.currentTheme = openedTheme;
 
@@ -134,49 +135,42 @@ export class HeliumWindow {
   }
 
   public attatchDirectoryWatcher(dirPath: string) {
-    if (this.directoryWatchers.has(dirPath))
+    if (this.directoryWatchers.has(dirPath)) {
       throw new Error(`${dirPath} already has watcher attached`);
+    }
     const watcher = watch(dirPath, {
       // LOOK INOT ALL OPTIONS
       // think/confirm about this
       ignored: (testPath) => {
         const resolvedPath = path.resolve(testPath);
-        return isJunk(resolvedPath) || isHidden(resolvedPath);
+        return isJunk(resolvedPath);
       },
       followSymlinks: false,
       // depth: 1// confirm this
     });
 
-    watcher.on("addDir", (path) => {
+    const onDirectoryChange = () => {
       const change: ThemeDirectoryChange = {
-        // should this be dirPath instead???
-        // need to test this
-        changedPath: path,
-        type: ThemeDirectoryChangeType.FOLDER_ADDED,
+        changedPath: dirPath,
       };
       main.emitEventFromWindow(this, "on-directory-change", change);
-    });
+    }
 
-    watcher.on("unlinkDir", (path) => {
-      const change: ThemeDirectoryChange = {
-        changedPath: path,
-        type: ThemeDirectoryChangeType.FOLDER_ADDED,
-      };
-      main.emitEventFromWindow(this, "on-directory-change", change);
-    });
+    watcher.on("addDir", onDirectoryChange);
+    watcher.on("unlinkDir", onDirectoryChange);
 
     this.directoryWatchers.set(dirPath, watcher);
   }
 
   public removeDirectoryWatcher(dirPath: string) {
     if (!this.directoryWatchers.has(dirPath))
-      throw new Error(`There is no directory path ${dirPath}`);
+      throw new Error(`There is no directory path ${dirPath} being watched`);
 
     const watcher = this.directoryWatchers.get(dirPath);
 
     // need to confirm which method to use
     watcher.close();
-    watcher.unwatch(dirPath);
+    // watcher.unwatch(dirPath);
 
     this.directoryWatchers.delete(dirPath);
   }
@@ -243,7 +237,7 @@ export class HeliumWindow {
   }
 
   public async loadInitalState(): Promise<InitalState> {
-    // if there are any inital options (stores or themes) to be loaded, they will be done here
+    // if there are any inital options (stores or themes) to be loaded
     if (this.options) {
       const { themePathOrUrl, connectedStore, previewOn } = this.options;
       let files: ThemeFileSystemEntry[] = [];
@@ -270,14 +264,12 @@ export class HeliumWindow {
     } else {
       return DEFAULT_INITAL_STATE;
     }
-
-    // if (this.options?.themePathOrUrl)
-
     // the loading screen should show for a minimum of 1 or 2 seconcds (500ms???) so it doesnt seem too jarring
     // if loading takes longer that is fine
   }
 
-  public emitOnInitalStateReady(initalState: InitalState) {
-    main.emitEventFromWindow(this, "on-inital-state-ready", initalState);
+  public emitEvent<T = void>(eventName: string, args?: T) {
+    this.browserWindow.webContents.send(eventName, args);
+    // main.emitEventFromWindow(this, "on-inital-state-ready", initalState);
   }
 }

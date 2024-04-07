@@ -50,8 +50,22 @@ export interface InitalState {
   previewState: PreviewState;
 }
 
+// mighnt not need this... the languages might come directly from the editor
 export const enum FileType {
-  PLAIN = "PLAIN",
+  LIQUID = 'Liquid',
+  MARKDOWN = 'Markdown',
+  YAML = 'Yaml',
+  TOML = 'Toml',
+  JSON = 'JSON',
+  JAVASCRIPT = 'JavaScript',
+  JSX = 'JSX',
+  TYPESCRIPT = 'TypeScript',
+  TYPESCRIPT_JSX = 'TypeScript JSX',
+  CSS = 'CSS',
+  SASS = 'Sass', //scss
+  LESS = 'Less',
+  HTML = 'HTML',
+  PLAIN = "Plain Text",
 }
 
 // export interface FileSystemEntry {
@@ -60,7 +74,7 @@ export interface ThemeFileSystemEntry {
   basename: string;
   isFile: boolean;
   isDirectory: boolean;
-  fileType: FileType | null;
+  // fileType: FileType | null;
 }
 
 export interface OpenThemeResult {
@@ -71,7 +85,7 @@ export interface OpenThemeResult {
 export interface ThemeDirectoryChange {
   // TODO: for now
   changedPath: string;
-  type: ThemeDirectoryChangeType
+  // type: ThemeDirectoryChangeType
 }
 export const enum ThemeDirectoryChangeType {
   FILE_ADDED = 'FILE_ADDED',

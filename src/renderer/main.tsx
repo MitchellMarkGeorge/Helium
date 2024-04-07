@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import "./index.css";
+// import "./index.css";
 
 import { createRoot } from "react-dom/client";
 
@@ -24,6 +24,9 @@ const Test = () => {
   }, [])
 
   useEffect(() => {
+    window.helium.app.on('open-theme', (name: string) => {
+
+    })
     loadInitalState()
   }, [loadInitalState]);
 
