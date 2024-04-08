@@ -31,6 +31,12 @@ export class HeliumApplication {
     initShopifyService();
     initFsService();
 
+    app.on('open-file', (event, path) => {
+      event.preventDefault();
+      if (this.hasLaunched) {
+        this.createNewWindow({ themePathOrUrl: path });
+      }
+    })
     app.on("activate", () => {
       if (this.windowManager.getNumOfWindows() === 0) {
         this.createNewWindow();
