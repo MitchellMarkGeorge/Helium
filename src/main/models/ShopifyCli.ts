@@ -8,6 +8,7 @@ export default class ShopifyCli {
     private previewLink: string;
     constructor(private heliumWindow: HeliumWindow) {
         this.previewState = PreviewState.OFF;
+        this.previewLink = ''; // FOR NOW
     }
 
     public getPreviewState() {

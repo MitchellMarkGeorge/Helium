@@ -166,7 +166,7 @@ export class HeliumWindow {
     if (!this.directoryWatchers.has(dirPath))
       throw new Error(`There is no directory path ${dirPath} being watched`);
 
-    const watcher = this.directoryWatchers.get(dirPath);
+    const watcher = this.directoryWatchers.get(dirPath) as FSWatcher;
 
     // need to confirm which method to use
     watcher.close();

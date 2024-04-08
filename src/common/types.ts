@@ -44,13 +44,12 @@ export interface HeliumGlobal {
 }
 
 export interface InitalState {
-  connectedStore: StoreInfo;
-  currentTheme: ThemeInfo; // tuple with ThemeFileEntry array
+  connectedStore: StoreInfo | null;
+  currentTheme: ThemeInfo | null; // tuple with ThemeFileEntry array
   themeFiles: ThemeFileSystemEntry[];
   previewState: PreviewState;
 }
 
-// mighnt not need this... the languages might come directly from the editor
 export const enum FileType {
   LIQUID = 'Liquid',
   MARKDOWN = 'Markdown',
@@ -74,7 +73,7 @@ export interface ThemeFileSystemEntry {
   basename: string;
   isFile: boolean;
   isDirectory: boolean;
-  // fileType: FileType | null;
+  fileType: FileType | null;
 }
 
 export interface OpenThemeResult {

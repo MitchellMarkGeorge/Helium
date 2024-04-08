@@ -19,50 +19,50 @@ export const readFile = async (filePath: string) => {
 };
 // this might not be needed as monaco models can detect file type using the path/uri
 // https://microsoft.github.io/monaco-editor/docs.html#functions/editor.createModel.html
-// const detectFileType = (name: string): FileType => {
-//   // handle special names name (eg: .prettier.rc)
-//   if (name === '.eslintrc' || name === '.prettierrc') return FileType.JSON;
-//   // if (name === '.eslintignore' || name === '.prettierignore') return FileType.PLAIN;
-//   const extension = path.extname(name);
-//   switch (extension) {
-//     case '.liquid':
-//       return FileType.LIQUID;
-//     case '.md':
-//     case '.markdown':
-//     case '.mkd':
-//       return FileType.MARKDOWN;
-//     case '.yaml':
-//     case '.yml':
-//       return FileType.YAML;
-//     case '.toml':
-//       return FileType.TOML;
-//     case '.json':
-//     case '.json5':
-//       return FileType.JSON;
-//     case '.js':
-//     case '.cjs':
-//     case '.mjs':
-//       return FileType.JAVASCRIPT;
-//     case '.ts':
-//       return FileType.TYPESCRIPT;
-//     case '.jsx':
-//       return FileType.JSX;
-//     case '.tsx':
-//       return FileType.TYPESCRIPT_JSX;
-//     case '.css':
-//       return FileType.CSS;
-//     case '.scss':
-//     case '.sass':
-//       return FileType.SASS;
-//     case '.less':
-//       return FileType.LESS;
-//     case '.html':
-//     case '.htm':
-//       return FileType.HTML;
-//     default:
-//       return FileType.PLAIN;
-//   }
-// };
+const detectFileType = (name: string): FileType => {
+  // handle special names name (eg: .prettier.rc)
+  if (name === '.eslintrc' || name === '.prettierrc') return FileType.JSON;
+  // if (name === '.eslintignore' || name === '.prettierignore') return FileType.PLAIN;
+  const extension = path.extname(name);
+  switch (extension) {
+    case '.liquid':
+      return FileType.LIQUID;
+    case '.md':
+    case '.markdown':
+    case '.mkd':
+      return FileType.MARKDOWN;
+    case '.yaml':
+    case '.yml':
+      return FileType.YAML;
+    case '.toml':
+      return FileType.TOML;
+    case '.json':
+    case '.json5':
+      return FileType.JSON;
+    case '.js':
+    case '.cjs':
+    case '.mjs':
+      return FileType.JAVASCRIPT;
+    case '.ts':
+      return FileType.TYPESCRIPT;
+    case '.jsx':
+      return FileType.JSX;
+    case '.tsx':
+      return FileType.TYPESCRIPT_JSX;
+    case '.css':
+      return FileType.CSS;
+    case '.scss':
+    case '.sass':
+      return FileType.SASS;
+    case '.less':
+      return FileType.LESS;
+    case '.html':
+    case '.htm':
+      return FileType.HTML;
+    default:
+      return FileType.PLAIN;
+  }
+};
 
 
 // this method is responsible for reading a path and doing a bunch of processing to return a usable array of file entries
@@ -103,7 +103,7 @@ export const readDirectory = async (
       basename: entry.name,
       isDirectory: entry.isDirectory(),
       isFile: entry.isFile(),
-      // fileType: entry.isFile() ? detectFileType(entry.name) : null,
+      fileType: entry.isFile() ? detectFileType(entry.name) : null,
       path: path.join(dirPath, entry.name), // use path.resolve()
     });
   }

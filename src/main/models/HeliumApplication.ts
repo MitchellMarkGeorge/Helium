@@ -1,32 +1,50 @@
-import { BrowserWindow, Menu, WebContents, app } from "electron";
+import { BrowserWindow, WebContents, app } from "electron";
 import { HeliumWindowManager } from "./HeliumWindowManager";
 import utils from "../utils";
-import { HeliumWindowOptions } from "../types";
+import { HeliumLaunchOptions, HeliumWindowOptions } from "../types";
 import { initAppService } from "main/services/app";
 import { initShopifyService } from "main/services/shopify";
 import { initFsService } from "main/services/fs";
 import { HeliumAppMenu } from "./menus/HeliumAppMenu";
+import { HeliumContextMenuManager } from "./menus/HelimContextMenuManager";
+import { HeliumWindow } from "./HeliumWindow";
 
 export class HeliumApplication {
   private static instance: HeliumApplication;
   private windowManager: HeliumWindowManager;
-  private appMenu: HeliumAppMenu
+  private appMenu: HeliumAppMenu;
+  private contextMenuManager: HeliumContextMenuManager;
+  private hasLaunched = false;
 
   private constructor() {
-    // makes sure that no default menu is put in place
+
+    this.windowManager = new HeliumWindowManager();
+    this.appMenu = new HeliumAppMenu(this);
+    this.appMenu.setAppMenu();
+    // think aobut creating the context menus using react...
+    this.contextMenuManager = new HeliumContextMenuManager(this);
+
+    // if there are a lot of events to listen to, handle them in another file
+
     // when is the best time to do this?
     initAppService();
     initShopifyService();
     initFsService();
 
-    this.windowManager = new HeliumWindowManager();
-    this.appMenu = new HeliumAppMenu(this);
+    app.on("activate", () => {
+      if (this.windowManager.getNumOfWindows() === 0) {
+        this.createNewWindow();
+      }
+    });
 
-    // if there are a lot of events to listen to, handle them in another file
+    app.on("window-all-closed", () => {
+      if (utils.isMac) {
+        this.quit();
+      }
+    });
   }
 
-  // simply init???
-  static initInstance() {
+  static init() {
     if (HeliumApplication.instance) {
       throw new Error("HeliumApplication() already initalized");
     } else {
@@ -43,23 +61,28 @@ export class HeliumApplication {
     return HeliumApplication.instance;
   }
 
-  public launch() {
-    app.whenReady().then(() => {
-      this.appMenu.setAppMenu();
-      this.createNewWindow();
+  public launch(options?: HeliumLaunchOptions) {
+    if (!this.hasLaunched) {
+      this.createNewWindow(
+        options ? { themePathOrUrl: options?.themePath } : undefined
+      );
+    } else {
+      throw new Error('HeliumApplication instance has been launched');
+    }
 
-      app.on("activate", () => {
-        if (this.windowManager.getNumOfWindows() === 0) {
-          this.createNewWindow();
-        }
-      });
-    });
+    this.hasLaunched = true;
 
-    app.on("window-all-closed", () => {
-      if (utils.isMac) {
-        this.quit();
-      }
-    });
+    // app.on("activate", () => {
+    //   if (this.windowManager.getNumOfWindows() === 0) {
+    //     this.createNewWindow();
+    //   }
+    // });
+
+    // app.on("window-all-closed", () => {
+    //   if (utils.isMac) {
+    //     this.quit();
+    //   }
+    // });
   }
 
   public getLastFocusedWindow() {
@@ -67,8 +90,12 @@ export class HeliumApplication {
   }
 
   public getWindowFromWebContents(webContent: WebContents) {
-    const browserWindow = BrowserWindow.fromWebContents(webContent);
-    return this.windowManager.getWindowFromBrowserWindow(browserWindow);
+    const browserWindow = BrowserWindow.fromWebContents(
+      webContent
+    ) as BrowserWindow;
+    return this.windowManager.getWindowFromBrowserWindow(
+      browserWindow
+    ) as HeliumWindow; // for now
   }
 
   public quit() {
@@ -79,5 +106,12 @@ export class HeliumApplication {
   public createNewWindow(options?: HeliumWindowOptions) {
     // abstracting this away in case I want to do something else when a new window is opened.
     this.windowManager.openNewWindow(options);
+  }
+
+  public triggerEvent<T = void>(eventName: string, args?: T) {
+    const focusedWindow = this.getLastFocusedWindow();
+    if (focusedWindow) {
+      focusedWindow.emitEvent(eventName, args);
+    }
   }
 }

@@ -14,4 +14,8 @@ export const getAppApi = () => ({
     loadInitalState: renderer.invoke<void, InitalState>('load-inital-state'), 
     openUrl: renderer.invoke<string>('open-url'), 
     on: renderer.on(),
+    showNewFileContextMenu: renderer.emit('show-new-file-context-menu'),
+    showFileItemContextMenu: renderer.emit('show-file-item-context-menu'),
+    showFolderItemContextMenu: renderer.emit('show-folder-item-context-menu'),
+    showEditorContextMenu: renderer.emit('show-editor-context-menu'),
 });
