@@ -7,7 +7,7 @@ export type HeliumId = `helium-${string}`;
 
 export const enum PreviewState {
   OFF = "OFF",
-  ON = "ON",
+  RUNNING = "RUNNING",
   STARTING = "STARTING",
   STOPPING = "STOPPING",
   ERROR = "ERROR",

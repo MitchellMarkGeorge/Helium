@@ -100,9 +100,11 @@ export class HeliumWindow {
     // read the directory to get all the root level files and folders in array
     const files = await readDirectory(themePath);
     // validate theme file structure. if not valid, throw error
-    if (!(await this.isThemeFileStructureValid(themePath, files))) {
-      throw new Error(`${themePath} is not a valid theme`);
-    }
+    // think about this... what if they user is using a setup that includes some kind of build step??
+    // also this does not take into account .git folders and the rest
+    // if (!(await this.isThemeFileStructureValid(themePath, files))) {
+    //   throw new Error(`${themePath} is not a valid theme`);
+    // }
     // read theme info from settings_schema.json
     const settingsSchemaFilePath = theme.configPath(
       themePath,
@@ -179,6 +181,7 @@ export class HeliumWindow {
     themePath: string,
     files: ThemeFileSystemEntry[]
   ) {
+    // IN ITS CURRENT FORM, THIS M#ETHOD DOES NOT WORK
     // much easier to use array as it in an array form, it will only have the files and folders it has, so it is
     // easier to validate if there are any subdirectories that aren't meant to be there
 
@@ -271,5 +274,9 @@ export class HeliumWindow {
   public emitEvent<T = void>(eventName: string, args?: T) {
     this.browserWindow.webContents.send(eventName, args);
     // main.emitEventFromWindow(this, "on-inital-state-ready", initalState);
+  }
+
+  public close() {
+    // needs to shutdown everything (including preview if on)
   }
 }

@@ -23,8 +23,10 @@
     "@electron/fuses": "^1.7.0",
     "@svgr/webpack": "^8.1.0",
     "@types/fs-extra": "^11.0.4",
+    "@types/node": "^20.12.5",
     "@types/react": "^18.2.65",
     "@types/react-dom": "^18.2.22",
+    "@types/wait-on": "^5.3.4",
     "@typescript-eslint/eslint-plugin": "^5.62.0",
     "@typescript-eslint/parser": "^5.62.0",
     "@vercel/webpack-asset-relocator-loader": "^1.7.3",
@@ -58,6 +60,7 @@
     "fs-extra": "^11.2.0",
     "junk": "^4.0.1",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "wait-on": "^7.2.0"
   }
 }
