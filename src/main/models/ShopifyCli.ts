@@ -3,6 +3,10 @@ import { HeliumWindow } from "./HeliumWindow";
 import { ChildProcess, exec, spawn } from "child_process";
 import waitOn from "wait-on";
 
+const COMMANDS = {
+    START_PREVIEW: 'shopify theme dev',
+}
+
 export default class ShopifyCli {
   // operates on the context of the current theme in heliumWinow.getCurrentTheme();
   // might rename to previewStatus
@@ -58,110 +62,156 @@ export default class ShopifyCli {
     // });
   }
 
-  public async startThemePreview() {
+  public startThemePreview() {
     // PREVIEW STATE CHECK WILL BE DONE BY UI
-    if (this.previewChildProcess) {
-      throw new Error("Theme Preview already running");
-    }
 
-    if (this.hasSentPreviewKillSignal) this.hasSentPreviewKillSignal = false; // reset value
-    const command = "shopify theme dev";
-    this.previewChildProcess = spawn(command, {
-      cwd: this.themePath, // might end up not setting this - might just set the theme path manuallu through the env options
-      env: {}, // put all options here
-    });
-
-    // set the preview state to starting
-    this.previewState = PreviewState.STARTING;
-
-    this.previewChildProcess.on("spawn", async () => {
-      // this.previewState = PreviewState.STARTING;
-      // wait for preview url to be avalible
-      try {
-        await waitOn({
-          resources: [`http-get://${this.previewHost}:${this.previewPort}/`],
-        });
-        // once the preview url is avalible set the preview state as running
-        this.currentPreviewState = PreviewState.RUNNING;
-      } catch (error) {
-        // if there was an error in waiting for the preview to be avalible,
-        // change the preview state to error then stopping (might time it out so its not immediate)
-        this.previewState = PreviewState.ERROR;
-
-        this.previewState = PreviewState.STOPPING;
-        // try an kill the kill the process and save if it was killed successfully
-        this.hasSentPreviewKillSignal = this.previewChildProcess?.kill("SIGTERM") as boolean;
-        // this should in turn trigger either the 'error' -> 'exit' event
-        // or just the 'exit' event
+    return new Promise<void>((resolve, reject) => {
+      if (this.previewChildProcess) {
+        throw new Error("Theme Preview process already running");
       }
-    });
 
-    this.previewChildProcess.on("error", async (err) => {
-        // this error event should only handle:
-        // 1) if there is an error in spawining the process
-        // 2) if there is an error in sending the kill signal to the process
-
-      // only problem is that I dont know if this is triggered on kill
-      if (
-        this.previewState === PreviewState.STARTING ||
-        !this.hasSentPreviewKillSignal && this.previewState === PreviewState.STOPPING
-      ) {
-        // if there was an error spawining the preview proccess or the preview kill signal was unable to be send
-        console.log(err.message);
-        // THIS SHOULD ONLY BE CALLED IF THERE WAS A PROBLEM STARTING THE PROCESS,
-        // OR IF THERE WAS AN ERROR TRYING TO KILL IT
-        // set the preview sate to error
-        this.previewState = PreviewState.ERROR;
-        // clean up by removing all listeners and set it to null
-        this.previewChildProcess?.removeAllListeners();
-        this.previewChildProcess = null;
-        // wait for the preview url to no longer be avalible
-        await waitOn({
-          resources: [`http-get://${this.previewHost}:${this.previewPort}/`],
-          reverse: true,
-        });
-        // set preview state to off
-        this.previewState = PreviewState.OFF;
-        // reset value
-        this.hasSentPreviewKillSignal = false;
-      }
-    });
-
-    // should I use close
-    // should probably use close (dont know what other child processes)
-    this.previewChildProcess.on("exit", async (exitCode, signal) => {
-      // 0 is a good exit code
-      // if the process did not end successfully, set the preview state to error
-      if (exitCode !== 0) { // look at the signal
-        // handle any other kind of error
-        this.previewState = PreviewState.ERROR;
-      }
-      // wait for preview url to not be avalible right now
-      await waitOn({
-        resources: [`http-get://${this.previewHost}:${this.previewPort}/`],
-        reverse: true,
+      if (this.hasSentPreviewKillSignal) this.hasSentPreviewKillSignal = false; // reset value
+      // does this need a shell???
+      // I won't be surprised if the command requires shell...
+      this.previewChildProcess = spawn(COMMANDS.START_PREVIEW, {
+        cwd: this.themePath, // might end up not setting this - might just set the theme path manuallu through the env options
+        env: {}, // put all options here
+        // shell: true,
       });
 
-    // clean up by removing all listeners and set the process objects to null
-      this.previewChildProcess?.removeAllListeners();
-      this.previewChildProcess = null;
-        // set preview state to off
-      this.previewState = PreviewState.OFF;
-        // reset value
-      this.hasSentPreviewKillSignal = false;
+      // set the preview state to starting
+      this.previewState = PreviewState.STARTING;
+
+      this.previewChildProcess.on("spawn", async () => {
+        // this.previewState = PreviewState.STARTING;
+        // wait for preview url to be avalible
+        try {
+          await waitOn({
+            resources: [`http-get://${this.previewHost}:${this.previewPort}/`],
+          });
+          // once the preview url is avalible set the preview state as running
+          this.currentPreviewState = PreviewState.RUNNING;
+          resolve();
+        } catch (error) {
+          // if there was an error in waiting for the preview to be avalible,
+          // change the preview state to error then stopping (might time it out so its not immediate)
+          this.previewState = PreviewState.ERROR;
+
+          this.previewState = PreviewState.STOPPING;
+          // try an kill the kill the process and save if it was killed successfully
+          this.hasSentPreviewKillSignal = this.previewChildProcess?.kill(
+            "SIGTERM"
+          ) as boolean;
+          // this should in turn trigger either the 'error' -> 'exit' event
+          // or just the 'exit' event
+        }
+      });
+
+      this.previewChildProcess.on("error", async (err) => {
+        // this error event should only handle if there is an error in spawining the process
+        // 2) if there is an error in sending the kill signal to the process
+
+        // TODO: CREATE ANOTHER ERROR HANDLER FOR THE `stopThemePreview()` to just handle the kill signal error
+
+        // only problem is that I dont know if this is triggered on kill
+        if (this.previewState === PreviewState.STARTING) {
+          // if there was an error spawining the preview proccess or the preview kill signal was unable to be send
+          console.log(err.message);
+          // THIS SHOULD ONLY BE CALLED IF THERE WAS A PROBLEM STARTING THE PROCESS,
+          // OR IF THERE WAS AN ERROR TRYING TO KILL IT
+          // set the preview sate to error
+          this.previewState = PreviewState.ERROR;
+          reject(); // should it reject later??? should it reject as soon as everything is cleaned up???
+          // clean up by removing all listeners and set it to null
+          this.previewChildProcess?.removeAllListeners();
+          this.previewChildProcess = null;
+          // wait for the preview url to no longer be avalible
+          await waitOn({
+            resources: [`http-get://${this.previewHost}:${this.previewPort}/`],
+            reverse: true,
+          });
+          // set preview state to off
+          this.previewState = PreviewState.OFF;
+          // reset value
+          this.hasSentPreviewKillSignal = false;
+        }
+      });
     });
   }
 
   public async stopThemePreview() {
     // PREVIEW STATE CHECK WILL BE DONE BY UI
-    if (!this.previewChildProcess) {
-      throw new Error("Theme Preview is not running");
-    }
-    this.previewState = PreviewState.STOPPING;
-    this.hasSentPreviewKillSignal = this.previewChildProcess?.kill("SIGTERM");
-    // this.previewChildProcess.kill("SIGTERM");
-    // THE PROCESS NEEDS TO BE KILLED GRACEFULLY SO IT DOES NOT TRIGGERE THE "ERROR" event
-    // I need a way to return a promise
+    return new Promise<void>((resolve, reject) => {
+      if (this.previewChildProcess) {
+        // add this error listener specially when the preview is trying to be stopped
+        // shoudl I still handle this
+        this.previewChildProcess.on("error", async (error) => {
+            // this error event should only handle if there is an error in sending the kill signal to the process
+            // if this happens, shouldn't I try and kill it again???
+            // think about this
+            // this.previewChildProcess?.pid;
+            // process.kill()
+          if (
+            !this.hasSentPreviewKillSignal &&
+            this.previewState === PreviewState.STOPPING
+          ) {
+            this.previewState = PreviewState.ERROR;
+            reject('There was an errror in killing the process'); // should it reject later??? should it reject as soon as everything is cleaned up???
+            // clean up by removing all listeners and set it to null
+            this.previewChildProcess?.removeAllListeners();
+            this.previewChildProcess = null;
+            // wait for the preview url to no longer be avalible
+            await waitOn({
+              resources: [
+                `http-get://${this.previewHost}:${this.previewPort}/`,
+              ],
+              reverse: true,
+            });
+            // set preview state to off
+            this.previewState = PreviewState.OFF;
+            // reset value
+            this.hasSentPreviewKillSignal = false;
+          }
+        });
+        // add the close handler before killing the process
+        this.previewChildProcess.on("close", async (exitCode, signal) => {
+          // 0 is a good exit code
+          // if the process did not end successfully, set the preview state to error
+          const exitedWithError = exitCode !== 1;
+
+          if (exitedWithError) {
+            // look at the signal
+            // handle any other kind of error
+            this.previewState = PreviewState.ERROR;
+            reject(); // here for now
+          }
+          // wait for preview url to not be avalible right now
+          await waitOn({
+            resources: [`http-get://${this.previewHost}:${this.previewPort}/`],
+            reverse: true,
+          });
+
+          // clean up by removing all listeners and set the process objects to null
+          this.previewChildProcess?.removeAllListeners();
+          this.previewChildProcess = null;
+          // set preview state to off
+          this.previewState = PreviewState.OFF;
+
+          // reset value
+          this.hasSentPreviewKillSignal = false;
+          resolve();
+        });
+
+        this.previewState = PreviewState.STOPPING;
+        this.hasSentPreviewKillSignal =
+          this.previewChildProcess?.kill("SIGTERM");
+        // this.previewChildProcess.kill("SIGTERM");
+        // I need a way to return a promise
+      } else {
+        // "Theme Process is not running"
+        reject(new Error("Theme Preview process does not exist"));
+      }
+    });
   }
 
   public async pullTheme(id: string) {
