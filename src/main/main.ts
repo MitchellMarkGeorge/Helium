@@ -1,6 +1,7 @@
 import { HeliumApplication } from "./models/HeliumApplication";
 import { Menu, app } from "electron";
 import { HeliumLaunchOptions } from "./types";
+import path from "path";
 
 interface OpenFileEnvent {
   preventDefault: () => void;
@@ -11,9 +12,9 @@ function start() {
   Menu.setApplicationMenu(null);
   let launchOptions: HeliumLaunchOptions | undefined = undefined;
 
-  const setLaunchOptions = (event: OpenFileEnvent, path: string) => {
+  const setLaunchOptions = (event: OpenFileEnvent, openPath: string) => {
     event.preventDefault();
-    launchOptions = { themePath: path };
+    launchOptions = { themePath: path.resolve(openPath) };
   };
 
   app.on("open-file", setLaunchOptions);

@@ -2,41 +2,35 @@ import { BrowserWindow, WebContents, app } from "electron";
 import { HeliumWindowManager } from "./HeliumWindowManager";
 import utils from "../utils";
 import { HeliumLaunchOptions, HeliumWindowOptions } from "../types";
-import { initAppService } from "main/services/app";
-import { initShopifyService } from "main/services/shopify";
-import { initFsService } from "main/services/fs";
+import { AppPreloadApi } from "main/services/app";
+import { ShopifyPreloadApi } from "main/services/shopify";
+import { FsPreloadApi } from "main/services/fs";
 import { HeliumAppMenu } from "./menus/HeliumAppMenu";
 import { HeliumContextMenuManager } from "./menus/HelimContextMenuManager";
 import { HeliumWindow } from "./HeliumWindow";
+import path from 'path';
 
 export class HeliumApplication {
   private static instance: HeliumApplication;
   private windowManager: HeliumWindowManager;
   private appMenu: HeliumAppMenu;
-  private contextMenuManager: HeliumContextMenuManager;
   private hasLaunched = false;
 
   private constructor() {
-
     this.windowManager = new HeliumWindowManager();
     this.appMenu = new HeliumAppMenu(this);
-    this.appMenu.setAppMenu();
-    // think aobut creating the context menus using react...
-    this.contextMenuManager = new HeliumContextMenuManager(this);
+    this.appMenu.init();
 
-    // if there are a lot of events to listen to, handle them in another file
+    HeliumContextMenuManager.init();
+    // init preload services
+    this.initPreloadServices();
 
-    // when is the best time to do this?
-    initAppService();
-    initShopifyService();
-    initFsService();
-
-    app.on('open-file', (event, path) => {
+    app.on("open-file", (event, openPath) => {
       event.preventDefault();
       if (this.hasLaunched) {
-        this.createNewWindow({ themePathOrUrl: path });
+        this.createNewWindow({ themePathOrUrl: path.resolve(openPath) });
       }
-    })
+    });
     app.on("activate", () => {
       if (this.windowManager.getNumOfWindows() === 0) {
         this.createNewWindow();
@@ -73,22 +67,9 @@ export class HeliumApplication {
         options ? { themePathOrUrl: options?.themePath } : undefined
       );
     } else {
-      throw new Error('HeliumApplication instance has been launched');
+      throw new Error("HeliumApplication instance has been launched");
     }
-
-    this.hasLaunched = true;
-
-    // app.on("activate", () => {
-    //   if (this.windowManager.getNumOfWindows() === 0) {
-    //     this.createNewWindow();
-    //   }
-    // });
-
-    // app.on("window-all-closed", () => {
-    //   if (utils.isMac) {
-    //     this.quit();
-    //   }
-    // });
+    this.hasLaunched = true; // do I need to do this???
   }
 
   public getLastFocusedWindow() {
@@ -119,5 +100,11 @@ export class HeliumApplication {
     if (focusedWindow) {
       focusedWindow.emitEvent(eventName, args);
     }
+  }
+
+  private initPreloadServices() {
+    AppPreloadApi.init();
+    ShopifyPreloadApi.init();
+    FsPreloadApi.init();
   }
 }

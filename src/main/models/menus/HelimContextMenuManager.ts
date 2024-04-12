@@ -5,26 +5,22 @@ import { MenuItemConstructorOptions } from "electron";
 import { ThemeFileSystemEntry } from "common/types";
 
 export class HeliumContextMenuManager {
-  private newFileMenu: HeliumContextMenu;
-  private fileItemMenu: HeliumContextMenu;
-  private folderItemMenu: HeliumContextMenu;
-  private editorMenu: HeliumContextMenu;
-  constructor(private heliumApplication: HeliumApplication) {
-    this.newFileMenu = new HeliumContextMenu();
-    this.fileItemMenu = new HeliumContextMenu();
-    this.folderItemMenu = new HeliumContextMenu();
-    this.editorMenu = new HeliumContextMenu();
+  public static init() {
+    const newFileMenu = new HeliumContextMenu();
+    const fileItemMenu = new HeliumContextMenu();
+    const folderItemMenu = new HeliumContextMenu();
+    const editorMenu = new HeliumContextMenu();
 
     main.listen("show-new-file-context-menu", (heliumWindow) => {
       const newFileTemplate = this.getNewFileTemplate();
-      this.newFileMenu.show(heliumWindow, newFileTemplate);
+      newFileMenu.show(heliumWindow, newFileTemplate);
     });
 
     main.listen<ThemeFileSystemEntry>(
       "show-file-item-context-menu",
       (heliumWindow, fileEntry) => {
         const fileItemTemplate = this.getFileItemTemplate(fileEntry);
-        this.fileItemMenu.show(heliumWindow, fileItemTemplate);
+        fileItemMenu.show(heliumWindow, fileItemTemplate);
       }
     );
 
@@ -32,32 +28,34 @@ export class HeliumContextMenuManager {
       "show-folder-item-context-menu",
       (heliumWindow, folderEntry) => {
         const folderItemTemplate = this.getFolderItemTemplate(folderEntry);
-        this.folderItemMenu.show(heliumWindow, folderItemTemplate);
+        folderItemMenu.show(heliumWindow, folderItemTemplate);
       }
     );
 
     main.listen("show-editor-context-menu", (heliumWindow) => {
       const editorTemplate = this.getEditorTemplate();
-      this.editorMenu.show(heliumWindow, editorTemplate);
+      editorMenu.show(heliumWindow, editorTemplate);
     });
   }
 
-  private getNewFileTemplate(): MenuItemConstructorOptions[] {
+  private static getNewFileTemplate(): MenuItemConstructorOptions[] {
+    const heliumApplication = HeliumApplication.getInstance();
     return [
       {
         label: "New File",
-        click: () => this.heliumApplication.triggerEvent("new-file"),
+        click: () => heliumApplication.triggerEvent("new-file"),
       },
       {
         label: "New Folder",
-        click: () => this.heliumApplication.triggerEvent("new-file"),
+        click: () => heliumApplication.triggerEvent("new-file"),
       },
     ];
   }
 
-  private getFileItemTemplate(
+  private static getFileItemTemplate(
     fileEntry: ThemeFileSystemEntry
   ): MenuItemConstructorOptions[] {
+    const heliumApplication = HeliumApplication.getInstance();
     return [
       { label: "Copy" },
       { label: "Paste" },
@@ -75,9 +73,10 @@ export class HeliumContextMenuManager {
     ];
   }
 
-  private getFolderItemTemplate(
+  private static getFolderItemTemplate(
     folderEntry: ThemeFileSystemEntry
   ): MenuItemConstructorOptions[] {
+    const heliumApplication = HeliumApplication.getInstance();
     return [
       { label: "New Folder" },
       { label: "New File" },
@@ -99,15 +98,16 @@ export class HeliumContextMenuManager {
     ];
   }
 
-  private getEditorTemplate(): MenuItemConstructorOptions[] {
+  private static getEditorTemplate(): MenuItemConstructorOptions[] {
+    const heliumApplication = HeliumApplication.getInstance();
     return [
       {
         label: "New File",
-        click: () => this.heliumApplication.triggerEvent("new-file"),
+        click: () => heliumApplication.triggerEvent("new-file"),
       },
       {
         label: "New Folder",
-        click: () => this.heliumApplication.triggerEvent("new-file"),
+        click: () => heliumApplication.triggerEvent("new-file"),
       },
     ];
   }

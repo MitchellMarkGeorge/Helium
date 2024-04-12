@@ -16,8 +16,8 @@ import isDev from "electron-is-dev";
 import { generateHeliumId } from "../generateHeliumId";
 import path from "path";
 import main from "main/services/ipc/main";
-import { pathExists, readDirectory } from "main/services/fs";
-import theme from "main/services/theme";
+import { FsService } from "main/services/fs";
+import { ThemeService } from "main/services/theme";
 import { FSWatcher, watch } from "chokidar";
 import { isJunk } from "junk";
 
@@ -43,7 +43,6 @@ export class HeliumWindow {
   constructor(private options?: HeliumWindowOptions) {
     this.directoryWatchers = new Map<string, FSWatcher>();
     console.log(options);
-    // should this be a circular dependency???
     this.shopifyCli = new ShopifyCli(this);
     // console.log(path.resolve(__dirname, "../assets/icons/Desktop Logo.icns"));
     // console.log(path.join(__dirname, "../assets", "icons", "helium.png"));
@@ -58,11 +57,17 @@ export class HeliumWindow {
       minWidth: 600,
       backgroundColor: "#171717",
       // icon: path.resolve(__dirname, "../assets", "icons", "helium.png"),
-      // show: false,
+      show: false,
       webPreferences: {
         preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,
       },
     });
+
+    // wait for the dom to be ready before showing the window
+    // think about this
+    this.browserWindow.webContents.once('dom-ready', () => {
+      this.browserWindow.show();
+    })
 
     this.browserWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);
 
@@ -88,17 +93,19 @@ export class HeliumWindow {
   }
 
   public async openTheme(themePath: string): Promise<OpenThemeResult> {
+    // RITGHT NOW, THIS ONLY WORKS THEMES THAT USE THE STANDARD DIRECTORY STRUCTURE
+
     // needs to be an absolute path
     if (!path.isAbsolute(themePath)) {
       themePath = path.resolve(themePath);
     }
 
     // check if path exists. if not, throw error
-    if (!(await pathExists(themePath))) {
+    if (!(await FsService.pathExists(themePath))) {
       throw new Error(`${themePath} does not exist`);
     }
     // read the directory to get all the root level files and folders in array
-    const files = await readDirectory(themePath);
+    const files = await FsService.readDirectory(themePath);
     // validate theme file structure. if not valid, throw error
     // think about this... what if they user is using a setup that includes some kind of build step??
     // also this does not take into account .git folders and the rest
@@ -106,16 +113,16 @@ export class HeliumWindow {
     //   throw new Error(`${themePath} is not a valid theme`);
     // }
     // read theme info from settings_schema.json
-    const settingsSchemaFilePath = theme.configPath(
+    const settingsSchemaFilePath = ThemeService.configPath(
       themePath,
       "settings_schema.json"
     );
-    if (!(await pathExists(settingsSchemaFilePath))) {
+    if (!(await FsService.pathExists(settingsSchemaFilePath))) {
       throw new Error(`${settingsSchemaFilePath} does not exist`);
     }
 
     const { theme_author, theme_name, theme_version } =
-      await theme.readThemeInfo(settingsSchemaFilePath);
+      await ThemeService.readThemeInfo(settingsSchemaFilePath);
 
     const openedTheme: ThemeInfo = {
       path: themePath,
@@ -189,21 +196,21 @@ export class HeliumWindow {
     // should return the reason
 
     // should at least have a layout/theme.liquid. if this is not present, throw return false
-    if (!pathExists(theme.layoutPath(themePath, "theme.liquid"))) return false;
+    if (!FsService.pathExists(ThemeService.layoutPath(themePath, "theme.liquid"))) return false;
 
     const VALID_THEME_PATHS = [
-      theme.accessPath(themePath),
-      theme.configPath(themePath),
-      theme.localesPath(themePath),
-      theme.sectionsPath(themePath),
-      theme.snippetsPath(themePath),
-      theme.templatesPath(themePath), // should this be theme/customers instead
+      ThemeService.accessPath(themePath),
+      ThemeService.configPath(themePath),
+      ThemeService.localesPath(themePath),
+      ThemeService.sectionsPath(themePath),
+      ThemeService.snippetsPath(themePath),
+      ThemeService.templatesPath(themePath), // should this be theme/customers instead
     ];
 
     for (let i = 0; i < files.length; i++) {
       // loop over the `files` array and validate that the remaining subdirectories are of the allowed directory types
-      const { path: fileEntryPath, isDirectory } = files[i];
-      if (isDirectory) {
+      const { path: fileEntryPath, isDirectory, basename } = files[i];
+      if (isDirectory && basename.charAt(0) !== '.') { // ignore folders like .git, .vscode
         // if there is only one item in the array and it is the above case, continue
         if (!VALID_THEME_PATHS.includes(fileEntryPath)) return false;
         // if one of the directory paths is not one of the valid theme paths, it is not valid
@@ -256,6 +263,7 @@ export class HeliumWindow {
 
       if (previewOn) {
         await this.shopifyCli.startThemePreview();
+        // handle if there was error
       }
 
       return {

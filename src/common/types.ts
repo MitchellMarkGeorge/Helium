@@ -65,7 +65,7 @@ export const enum FileType {
   SASS = 'Sass', //scss
   LESS = 'Less',
   HTML = 'HTML',
-  PLAIN = "Plain Text",
+  PLAIN_TEXT = "Plain Text",
 }
 
 // export interface FileSystemEntry {

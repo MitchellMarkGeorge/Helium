@@ -1,5 +1,6 @@
-import { Menu, MenuItemConstructorOptions } from "electron";
+import { Menu, MenuItemConstructorOptions, app } from "electron";
 import { HeliumApplication } from "../HeliumApplication";
+import utils from "main/utils";
 const MENU_SEPERATOR = { type: "separator" } as MenuItemConstructorOptions;
 
 export class HeliumAppMenu {
@@ -7,7 +8,7 @@ export class HeliumAppMenu {
     Menu.setApplicationMenu(null);
   }
 
-  public getTemplate(): MenuItemConstructorOptions[] {
+  public getAppMenuTemplate(): MenuItemConstructorOptions[] {
     return [
       this.getAboutMenu(), // only for MacOS
       //   { label: 'Helium IDE', role: "appMenu" }, // think about this
@@ -218,9 +219,23 @@ export class HeliumAppMenu {
     };
   }
 
-  public setAppMenu() {
-    const template = this.getTemplate();
-    Menu.setApplicationMenu(Menu.buildFromTemplate(template));
+  private getMacDockTemplate(): MenuItemConstructorOptions[] {
+    return [
+      {
+        label: 'New Window', 
+        click: () => this.heliumApplication.createNewWindow()
+      }
+    ]
+  }
+
+  public init() {
+    const appMenuTemplate = this.getAppMenuTemplate();
+    Menu.setApplicationMenu(Menu.buildFromTemplate(appMenuTemplate));
+
+    if (utils.isMac) {
+      const macDockTemplate = this.getMacDockTemplate();
+      app.dock.setMenu(Menu.buildFromTemplate(macDockTemplate));
+    }
   }
 
   private triggerEvent<T = void>(eventName: string, args?: T) {

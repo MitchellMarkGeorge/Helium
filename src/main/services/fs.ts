@@ -7,75 +7,70 @@ import { isJunk } from "junk";
 // THINK ABOUT GRACEFUL-FS!!!!!!!
 // FS-EXTRA
 
-export const pathExists = (path: string) =>
-  fs
+export class FsService {
+
+public static pathExists  (path: string) {
+  return fs
     .access(path)
     .then(() => true)
     .catch(() => false);
+} 
+  public static async readFile(filePath: string) {
+    const buffer = await fs.readFile(filePath, { encoding: "utf8" });
+    return buffer.toString();
+  }
 
-export const readFile = async (filePath: string) => {
-  const buffer = await fs.readFile(filePath, { encoding: "utf8" });
-  return buffer.toString();
-};
-// this might not be needed as monaco models can detect file type using the path/uri
-// https://microsoft.github.io/monaco-editor/docs.html#functions/editor.createModel.html
-const detectFileType = (name: string): FileType => {
+  public static detectFileType(name: string): FileType {
   // handle special names name (eg: .prettier.rc)
-  if (name === '.eslintrc' || name === '.prettierrc') return FileType.JSON;
+  if (name === ".eslintrc" || name === ".prettierrc") return FileType.JSON;
   // if (name === '.eslintignore' || name === '.prettierignore') return FileType.PLAIN;
   const extension = path.extname(name);
   switch (extension) {
-    case '.liquid':
+    case ".liquid":
       return FileType.LIQUID;
-    case '.md':
-    case '.markdown':
-    case '.mkd':
+    case ".md":
+    case ".markdown":
+    case ".mkd":
       return FileType.MARKDOWN;
-    case '.yaml':
-    case '.yml':
+    case ".yaml":
+    case ".yml":
       return FileType.YAML;
-    case '.toml':
+    case ".toml":
       return FileType.TOML;
-    case '.json':
-    case '.json5':
+    case ".json":
+    case ".json5":
       return FileType.JSON;
-    case '.js':
-    case '.cjs':
-    case '.mjs':
+    case ".js":
+    case ".cjs":
+    case ".mjs":
       return FileType.JAVASCRIPT;
-    case '.ts':
+    case ".ts":
       return FileType.TYPESCRIPT;
-    case '.jsx':
-      return FileType.JSX;
-    case '.tsx':
-      return FileType.TYPESCRIPT_JSX;
-    case '.css':
+    case ".css":
       return FileType.CSS;
-    case '.scss':
-    case '.sass':
+    case ".scss":
+    case ".sass":
       return FileType.SASS;
-    case '.less':
+    case ".less":
       return FileType.LESS;
-    case '.html':
-    case '.htm':
+    case ".html":
+    case ".htm":
       return FileType.HTML;
     default:
-      return FileType.PLAIN;
+      return FileType.PLAIN_TEXT;
   }
-};
 
+  }
 
 // this method is responsible for reading a path and doing a bunch of processing to return a usable array of file entries
-export const readDirectory = async (
-  dirPath: string
-): Promise<ThemeFileSystemEntry[]> => {
+  public static async readDirectory(dirPath: string): Promise<ThemeFileSystemEntry[]> {
   // think about this
   if (!path.isAbsolute(dirPath)) {
     dirPath = path.resolve(dirPath);
   }
   // check if path exists
   // make sure the path is a directory
-  if (!(await pathExists(dirPath)))
+  if (!(await this.pathExists(dirPath)))
     throw new Error(`${dirPath} does not exist`);
   const stats = await fs.lstat(dirPath); // how do I want to handle symlinks???
   // const stats = await fs.stat(path); // how do I want to handle symlinks???
@@ -103,69 +98,76 @@ export const readDirectory = async (
       basename: entry.name,
       isDirectory: entry.isDirectory(),
       isFile: entry.isFile(),
-      fileType: entry.isFile() ? detectFileType(entry.name) : null,
+      fileType: entry.isFile() ? this.detectFileType(entry.name) : null,
       path: path.join(dirPath, entry.name), // use path.resolve()
     });
   }
 
   return result.sort((a, b) => a.basename.localeCompare(b.basename));
-};
 
-export function initFsService() {
-  main.handle<{ filePath: string; encoding: BufferEncoding }>(
-    "read-file",
-    async (_, { filePath, encoding }) => {
-      // TODO: change this to atomic writes https://www.npmjs.com/package/write-file-atomic
-      const buffer = await fs.readFile(filePath, { encoding });
-      return buffer.toString();
-    }
-  );
+  }
 
-  main.handle<{
-    filePath: string;
-    content: string;
-    encoding: BufferEncoding;
-  }>("write-file", async (_, { filePath, content, encoding }) => {
-    const parentDirectory = path.dirname(filePath);
-    if (!(await pathExists(parentDirectory))) {
-      await fs.mkdir(parentDirectory, { recursive: true });
-    }
-    return fs.writeFile(filePath, content, { encoding });
-  });
+}
 
-  main.handle<string>("delete-file", (_, path) => {
-    return fs.rm(path);
-  });
 
-  main.handle<string>("delete-directory", (_, path) => {
-    return fs.rm(path, { force: true, recursive: true });
-  });
 
-  main.handle<string>("create-directory", (_, path) => {
-    return fs.mkdir(path, { recursive: true });
-  });
+export class FsPreloadApi{
+  public static init() {
+    main.handle<{ filePath: string; encoding: BufferEncoding }>(
+      "read-file",
+      async (_, { filePath, encoding }) => {
+        // TODO: change this to atomic writes https://www.npmjs.com/package/write-file-atomic
+        const buffer = await fs.readFile(filePath, { encoding });
+        return buffer.toString();
+      }
+    );
 
-  // for now
-  main.handle<string, Promise<ThemeFileSystemEntry[]>>(
-    "read-directory",
-    (_, path) => {
-      console.log(path);
+    main.handle<{
+      filePath: string;
+      content: string;
+      encoding: BufferEncoding;
+    }>("write-file", async (_, { filePath, content, encoding }) => {
+      const parentDirectory = path.dirname(filePath);
+      if (!(await FsService.pathExists(parentDirectory))) {
+        await fs.mkdir(parentDirectory, { recursive: true });
+      }
+      return fs.writeFile(filePath, content, { encoding });
+    });
+
+    main.handle<string>("delete-file", (_, path) => {
+      return fs.rm(path);
+    });
+
+    main.handle<string>("delete-directory", (_, path) => {
+      return fs.rm(path, { force: true, recursive: true });
+    });
+
+    main.handle<string>("create-directory", (_, path) => {
+      return fs.mkdir(path, { recursive: true });
+    });
+
+    // for now
+    main.handle<string, Promise<ThemeFileSystemEntry[]>>(
+      "read-directory",
+      (_, path) => {
+        console.log(path);
+        //handle this
+        return Promise.resolve([]);
+        //   return fse.mkdir(path, { recursive: true});
+      }
+    );
+
+    main.handle<string>("path-exists", (_, path) => {
       //handle this
-      return Promise.resolve([]);
-      //   return fse.mkdir(path, { recursive: true});
-    }
-  );
+      return FsService.pathExists(path);
+    });
 
-  main.handle<string>("path-exists", (_, path) => {
-    //handle this
-    return pathExists(path);
-  });
-
-  main.handle<{ oldPath: string; newPath: string }>(
-    "rename",
-    (_, { oldPath, newPath }) => {
-      //handle this
-      return fs.rename(oldPath, newPath);
-    }
-  );
+    main.handle<{ oldPath: string; newPath: string }>(
+      "rename",
+      (_, { oldPath, newPath }) => {
+        //handle this
+        return fs.rename(oldPath, newPath);
+      }
+    );
+  }
 }
