@@ -1,6 +1,6 @@
-import type { getAppApi } from "main/preload/app";
-import type { getFsApi } from "main/preload/fs";
-import type { getShopifyApi } from "main/preload/shopify";
+import type { getAppPreloadApi } from "main/preload/app";
+import type { getFsPreloadApi } from "main/preload/fs";
+import type { getShopifyPreloadApi } from "main/preload/shopify";
 import type utils from "main/utils";
 
 export type HeliumId = `helium-${string}`;
@@ -37,9 +37,9 @@ export interface ConnectStoreOptions {
 
 // HeliumAPI, HeliumGlobal???
 export interface HeliumGlobal {
-  app: ReturnType<typeof getAppApi>;
-  fs: ReturnType<typeof getFsApi>;
-  shopify: ReturnType<typeof getShopifyApi>;
+  app: ReturnType<typeof getAppPreloadApi>;
+  fs: ReturnType<typeof getFsPreloadApi>;
+  shopify: ReturnType<typeof getShopifyPreloadApi>;
   utils: typeof utils;
   // initalState: InitalState;
 }

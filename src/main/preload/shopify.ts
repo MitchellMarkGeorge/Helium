@@ -6,7 +6,7 @@ import {
 } from "common/types";
 import renderer from "main/services/ipc/renderer";
 
-export const getShopifyApi = () => ({
+export const getShopifyPreloadApi = () => ({
   openTheme: renderer.invoke("open-theme"),
   startThemePreview: renderer.invoke("start-theme-preview"),
   stopThemePreview: renderer.invoke("stop-theme-preview"),

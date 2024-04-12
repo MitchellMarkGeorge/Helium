@@ -4,7 +4,7 @@ import { HeliumWindowState } from "../types";
 import renderer from "../services/ipc/renderer";
 import { InitalState } from "common/types";
 
-export const getAppApi = () => ({
+export const getAppPreloadApi = () => ({
     // these ones don't need to return promises...
     closeWindow: renderer.invoke('close-window'),
     minimizeWindow: renderer.invoke('minimize-window'),

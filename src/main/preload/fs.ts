@@ -1,7 +1,7 @@
 import { ThemeDirectoryChange, ThemeFileSystemEntry } from "common/types";
 import renderer from "../services/ipc/renderer";
 
-export const getFsApi = () => ({
+export const getFsPreloadApi = () => ({
     readFile: renderer.invoke<{ filePath: string, encoding: BufferEncoding}, string>('read-file'),
     writeFile: renderer.invoke<{ filePath: string, content: string, encoding: BufferEncoding}, void>('write-file'),
     deleteFile: renderer.invoke<string>('delete-file'),
