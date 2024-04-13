@@ -19,17 +19,17 @@ export class HeliumApplication {
   private constructor() {
     this.windowManager = new HeliumWindowManager();
     this.appMenu = new HeliumAppMenu(this);
-    this.appMenu.init();
 
     HeliumContextMenuManager.init();
     // init preload services
     this.initPreloadServices();
 
+    // used when folder is droped on app icon
+    // and for opening recent file
     app.on("open-file", (event, openPath) => {
       event.preventDefault();
-      if (this.hasLaunched) {
-        this.createNewWindow({ themePathOrUrl: path.resolve(openPath) });
-      }
+      // check if `this.hasLaunched`???
+      this.createNewWindow({ themePathOrUrl: path.resolve(openPath) });
     });
     app.on("activate", () => {
       if (this.windowManager.getNumOfWindows() === 0) {

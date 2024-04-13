@@ -225,17 +225,16 @@ export class HeliumWindow {
     //in UI make sure preview is not running
     // this is used for new stores
     // will this method be async???
+    const themeAccessPassword = safeStorage.encryptString(options.password).toString();
+
     const store = {
       heliumId: generateHeliumId(),
-      themeAccessPassword: safeStorage
-        .encryptString(options.password)
-        .toString(),
+      themeAccessPassword,
       url: options.storeUrl,
     };
 
     this.connectedStore = store;
-
-    return Promise.resolve();
+    this.emitEvent('on-store-change', this.connectedStore);
   }
 
   public getWindowState(): HeliumWindowState {

@@ -1,11 +1,17 @@
-import { PreviewState } from "common/types";
+import { PreviewState, StartThemePreviewOptions, StoreInfo, ThemeInfo } from "common/types";
 import { HeliumWindow } from "./HeliumWindow";
 import { ChildProcess, spawn } from "child_process";
 import waitOn from "wait-on";
+import { safeStorage } from "electron";
+// can use get-port-pleae
 
-const COMMANDS = {
+
+const CLI_COMMANDS = {
   START_PREVIEW: "shopify theme dev",
 };
+
+const DEFAULT_PREVIEW_HOST = "127.0.0.1"; 
+const DEFAULT_PREVIEW_PORT = "9292"; 
 
 export default class ShopifyCli {
   // operates on the context of the current theme in heliumWinow.getCurrentTheme();
@@ -13,7 +19,7 @@ export default class ShopifyCli {
   private currentPreviewState: PreviewState;
   // might group this into some kind of PreviewState
   private previewHost: string;
-  private previewPort: number; // numnber??
+  private previewPort: string; 
   // will just use the native ChildProcess for now
   // need to figure out if I want to use it...
   private previewChildProcess: ChildProcess | null;
@@ -21,11 +27,11 @@ export default class ShopifyCli {
   private hasSentPreviewKillSignal: boolean;
 
   //   private onPreviewProcessExited: () => void;
-  constructor(private heliumWindow: HeliumWindow) {
+  constructor(private readonly heliumWindow: HeliumWindow) {
     this.currentPreviewState = PreviewState.OFF;
     this.previewChildProcess = null;
-    this.previewHost = "127.0.0.1";
-    this.previewPort = 9292;
+    this.previewHost = DEFAULT_PREVIEW_HOST;
+    this.previewPort = DEFAULT_PREVIEW_PORT;
     this.hasSentPreviewKillSignal = false;
   }
 
@@ -62,23 +68,53 @@ export default class ShopifyCli {
     // });
   }
 
-  public startThemePreview() {
-    // PREVIEW STATE CHECK WILL BE DONE BY UI
+  public startThemePreview(options?: StartThemePreviewOptions) {
+    // PREVIEW STATE CHECK AND CONNECTED STORE CHECK WILL BE DONE BY UI
+    // asserting values here again for type system and general correctness
     return new Promise<void>((resolve, reject) => {
-      if (this.previewChildProcess) {
+      const storeInfo = this.heliumWindow.getConnectedStore(); 
+      const currentTheme = this.heliumWindow.getCurrentTheme();
+
+      if (!currentTheme) {
+        return reject(new Error("No Theme opened to use for Theme Preview"));
+      }
+
+      if (!storeInfo) {
+        return reject(new Error("No connected store to use for Theme Preview"));
+      }
+
+      if (this.previewChildProcess || this.previewState === PreviewState.RUNNING) {
         return reject(new Error("Theme Preview process already running"));
         // should this be using a string instead? error parsing from the main process has been spooky
         // reject('');
       }
 
       // reset the value
-      if (this.hasSentPreviewKillSignal) this.hasSentPreviewKillSignal = false; // reset value
+      if (this.hasSentPreviewKillSignal) {
+        this.hasSentPreviewKillSignal = false; 
+      } 
+
+      const themeAccessPassword = safeStorage.decryptString(Buffer.from(storeInfo.themeAccessPassword));
+
+      if (options) {
+        this.previewHost = options.host;
+        this.previewPort = options.port;
+      }
+
       // does this need a shell???
       // I won't be surprised if the command requires/should have the shell...
-      this.previewChildProcess = spawn(COMMANDS.START_PREVIEW, {
+      this.previewChildProcess = spawn(CLI_COMMANDS.START_PREVIEW, {
         cwd: this.themePath, // might end up not setting this - might just set the theme path manually through the env options
-        env: {}, // put all options here
-        // should extend from process.env??
+        env: {
+          // should extend from process.env??
+          // I should look an see wht is in this opject
+          ...process.env, 
+          SHOPIFY_FLAG_STORE: storeInfo.url,
+          SHOPIFY_CLI_THEME_TOKEN: themeAccessPassword,
+          SHOPIFY_FLAG_PATH: this.themePath,
+          SHOPIFY_FLAG_HOST: this.previewHost,
+          SHOPIFY_FLAG_PORT: this.previewPort,
+        }, // put all options here
         // shell: true,
       });
 
@@ -195,6 +231,7 @@ export default class ShopifyCli {
       });
 
       // clean up by removing all listeners and set the process objects to null
+      // this is not neccessary - when the object is garbage collected, the listerners should be collected as well
       this.previewChildProcess?.removeAllListeners(); // is this nessesary?
       this.previewChildProcess = null;
 
@@ -204,16 +241,20 @@ export default class ShopifyCli {
     }
   }
 
-  public async pullTheme(id: string) {
+  public pullTheme(id: string) {
+    // not needed right now
     console.log(id);
+    return Promise.resolve();
   }
 
-  public async pushTheme() {
-    return;
+  public pushTheme() {
+    // not needed right now
+    return Promise.resolve();
   }
 
-  public async publishTheme() {
-    return;
+  public publishTheme() {
+    // not needed right now
+    return Promise.resolve();
   }
 
   public async logOut() {

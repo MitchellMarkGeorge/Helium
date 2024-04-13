@@ -47,7 +47,7 @@ export class HeliumContextMenuManager {
       },
       {
         label: "New Folder",
-        click: () => heliumApplication.triggerEvent("new-file"),
+        click: () => heliumApplication.triggerEvent("new-folder"),
       },
     ];
   }

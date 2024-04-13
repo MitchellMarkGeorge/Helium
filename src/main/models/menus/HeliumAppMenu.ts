@@ -6,6 +6,7 @@ const MENU_SEPERATOR = { type: "separator" } as MenuItemConstructorOptions;
 export class HeliumAppMenu {
   constructor(private heliumApplication: HeliumApplication) {
     Menu.setApplicationMenu(null);
+    this.init();
   }
 
   public getAppMenuTemplate(): MenuItemConstructorOptions[] {

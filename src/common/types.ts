@@ -93,3 +93,8 @@ export const enum ThemeDirectoryChangeType {
   FOLDER_ADDED = 'FOLDER_ADDED',
   FOLDER_REMOVED = 'FOLDER_REMOVED',
 }
+
+export interface StartThemePreviewOptions {
+  host: string;
+  port: string; // should be a number
+}
