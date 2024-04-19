@@ -7,20 +7,18 @@ import { isJunk } from "junk";
 // THINK ABOUT GRACEFUL-FS!!!!!!!
 // FS-EXTRA
 
-export class FsService {
-
-public static pathExists  (path: string) {
+function pathExists(path: string) {
   return fs
     .access(path)
     .then(() => true)
     .catch(() => false);
-} 
-  public static async readFile(filePath: string) {
-    const buffer = await fs.readFile(filePath, { encoding: "utf8" });
-    return buffer.toString();
-  }
+}
+async function readFile(filePath: string) {
+  const buffer = await fs.readFile(filePath, { encoding: "utf8" });
+  return buffer.toString();
+}
 
-  public static detectFileType(name: string): FileType {
+function detectFileType(name: string): FileType {
   // handle special names name (eg: .prettier.rc)
   if (name === ".eslintrc" || name === ".prettierrc") return FileType.JSON;
   // if (name === '.eslintignore' || name === '.prettierignore') return FileType.PLAIN;
@@ -59,18 +57,17 @@ public static pathExists  (path: string) {
     default:
       return FileType.PLAIN_TEXT;
   }
-
-  }
+}
 
 // this method is responsible for reading a path and doing a bunch of processing to return a usable array of file entries
-  public static async readDirectory(dirPath: string): Promise<ThemeFileSystemEntry[]> {
+async function readDirectory(dirPath: string): Promise<ThemeFileSystemEntry[]> {
   // think about this
   if (!path.isAbsolute(dirPath)) {
     dirPath = path.resolve(dirPath);
   }
   // check if path exists
   // make sure the path is a directory
-  if (!(await this.pathExists(dirPath)))
+  if (!(await pathExists(dirPath)))
     throw new Error(`${dirPath} does not exist`);
   const stats = await fs.lstat(dirPath); // how do I want to handle symlinks???
   // const stats = await fs.stat(path); // how do I want to handle symlinks???
@@ -98,76 +95,76 @@ public static pathExists  (path: string) {
       basename: entry.name,
       isDirectory: entry.isDirectory(),
       isFile: entry.isFile(),
-      fileType: entry.isFile() ? this.detectFileType(entry.name) : null,
+      fileType: entry.isFile() ? detectFileType(entry.name) : null,
       path: path.join(dirPath, entry.name), // use path.resolve()
     });
   }
 
   return result.sort((a, b) => a.basename.localeCompare(b.basename));
-
-  }
-
 }
 
+export function initFsPreloadApi() {
+  main.handle<{ filePath: string; encoding: BufferEncoding }>(
+    "read-file",
+    async (_, { filePath, encoding }) => {
+      // TODO: change this to atomic writes https://www.npmjs.com/package/write-file-atomic
+      const buffer = await fs.readFile(filePath, { encoding });
+      return buffer.toString();
+    }
+  );
 
+  main.handle<{
+    filePath: string;
+    content: string;
+    encoding: BufferEncoding;
+  }>("write-file", async (_, { filePath, content, encoding }) => {
+    const parentDirectory = path.dirname(filePath);
+    if (!(await pathExists(parentDirectory))) {
+      await fs.mkdir(parentDirectory, { recursive: true });
+    }
+    return fs.writeFile(filePath, content, { encoding });
+  });
 
-export class FsPreloadApi{
-  public static init() {
-    main.handle<{ filePath: string; encoding: BufferEncoding }>(
-      "read-file",
-      async (_, { filePath, encoding }) => {
-        // TODO: change this to atomic writes https://www.npmjs.com/package/write-file-atomic
-        const buffer = await fs.readFile(filePath, { encoding });
-        return buffer.toString();
-      }
-    );
+  main.handle<string>("delete-file", (_, path) => {
+    return fs.rm(path);
+  });
 
-    main.handle<{
-      filePath: string;
-      content: string;
-      encoding: BufferEncoding;
-    }>("write-file", async (_, { filePath, content, encoding }) => {
-      const parentDirectory = path.dirname(filePath);
-      if (!(await FsService.pathExists(parentDirectory))) {
-        await fs.mkdir(parentDirectory, { recursive: true });
-      }
-      return fs.writeFile(filePath, content, { encoding });
-    });
+  main.handle<string>("delete-directory", (_, path) => {
+    return fs.rm(path, { force: true, recursive: true });
+  });
 
-    main.handle<string>("delete-file", (_, path) => {
-      return fs.rm(path);
-    });
+  main.handle<string>("create-directory", (_, path) => {
+    return fs.mkdir(path, { recursive: true });
+  });
 
-    main.handle<string>("delete-directory", (_, path) => {
-      return fs.rm(path, { force: true, recursive: true });
-    });
-
-    main.handle<string>("create-directory", (_, path) => {
-      return fs.mkdir(path, { recursive: true });
-    });
-
-    // for now
-    main.handle<string, Promise<ThemeFileSystemEntry[]>>(
-      "read-directory",
-      (_, path) => {
-        console.log(path);
-        //handle this
-        return Promise.resolve([]);
-        //   return fse.mkdir(path, { recursive: true});
-      }
-    );
-
-    main.handle<string>("path-exists", (_, path) => {
+  // for now
+  main.handle<string, Promise<ThemeFileSystemEntry[]>>(
+    "read-directory",
+    (_, path) => {
+      console.log(path);
       //handle this
-      return FsService.pathExists(path);
-    });
+      return Promise.resolve([]);
+      //   return fse.mkdir(path, { recursive: true});
+    }
+  );
 
-    main.handle<{ oldPath: string; newPath: string }>(
-      "rename",
-      (_, { oldPath, newPath }) => {
-        //handle this
-        return fs.rename(oldPath, newPath);
-      }
-    );
-  }
+  main.handle<string>("path-exists", (_, path) => {
+    //handle this
+    return pathExists(path);
+  });
+
+  main.handle<{ oldPath: string; newPath: string }>(
+    "rename",
+    (_, { oldPath, newPath }) => {
+      //handle this
+      return fs.rename(oldPath, newPath);
+    }
+  );
 }
+
+export default {
+  pathExists,
+  readDirectory,
+  readFile,
+  detectFileType,
+};

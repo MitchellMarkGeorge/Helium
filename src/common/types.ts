@@ -19,7 +19,7 @@ export interface ThemeInfo {
   path: string;
   // these values are optional as config files might not be provided
   name: string | null;
-  verson: string | null;
+  version: string | null;
   author: string | null;
 }
 

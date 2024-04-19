@@ -16,8 +16,8 @@ import isDev from "electron-is-dev";
 import { generateHeliumId } from "../generateHeliumId";
 import path from "path";
 import main from "main/services/ipc/main";
-import { FsService } from "main/services/fs";
-import { ThemeService } from "main/services/theme";
+import fileSystemService from "main/services/fs";
+import themeService from "main/services/theme";
 import { FSWatcher, watch } from "chokidar";
 import { isJunk } from "junk";
 
@@ -76,10 +76,6 @@ export class HeliumWindow {
     }
   }
 
-  //   public setTheme(path: string) {}
-  //   public disconnectCurrentStore() {}
-  //   public connectStore() {}
-
   public getId() {
     return this.browserWindow.id;
   }
@@ -93,54 +89,52 @@ export class HeliumWindow {
   }
 
   public async openTheme(themePath: string): Promise<OpenThemeResult> {
-    // RITGHT NOW, THIS ONLY WORKS THEMES THAT USE THE STANDARD DIRECTORY STRUCTURE
+    // RITGHT NOW, THIS ONLY WORKS THEMES THAT USE THE STANDARD OS 2.0 DIRECTORY STRUCTURE
 
     // needs to be an absolute path
-    if (!path.isAbsolute(themePath)) {
-      themePath = path.resolve(themePath);
-    }
+    // should be absolute path (base it off on the root path)
+    const resolvedThemePath = path.isAbsolute(themePath) ? themePath : path.resolve(themePath);
 
     // check if path exists. if not, throw error
-    if (!(await FsService.pathExists(themePath))) {
-      throw new Error(`${themePath} does not exist`);
+    if (!(await fileSystemService.pathExists(resolvedThemePath))) {
+      throw new Error(`${resolvedThemePath} does not exist`);
     }
     // read the directory to get all the root level files and folders in array
-    const files = await FsService.readDirectory(themePath);
+    const files = await fileSystemService.readDirectory(resolvedThemePath);
     // validate theme file structure. if not valid, throw error
     // think about this... what if they user is using a setup that includes some kind of build step??
     // also this does not take into account .git folders and the rest
-    // if (!(await this.isThemeFileStructureValid(themePath, files))) {
-    //   throw new Error(`${themePath} is not a valid theme`);
-    // }
+    if (!(await this.isThemeFileStructureValid(resolvedThemePath, files))) {
+      throw new Error(`${resolvedThemePath} is not a valid OS 2.0 theme directory`); // need a better mesage
+    }
     // read theme info from settings_schema.json
-    const settingsSchemaFilePath = ThemeService.configPath(
-      themePath,
+    const settingsSchemaFilePath = themeService.configPath(
+      resolvedThemePath,
       "settings_schema.json"
     );
-    if (!(await FsService.pathExists(settingsSchemaFilePath))) {
+    if (!(await fileSystemService.pathExists(settingsSchemaFilePath))) {
       throw new Error(`${settingsSchemaFilePath} does not exist`);
     }
 
     const { theme_author, theme_name, theme_version } =
-      await ThemeService.readThemeInfo(settingsSchemaFilePath);
+      await themeService.readThemeInfo(settingsSchemaFilePath);
 
     const openedTheme: ThemeInfo = {
-      path: themePath,
+      path: resolvedThemePath,
       name: theme_name,
       author: theme_author,
-      verson: theme_version,
+      version: theme_version,
       shopifyId: null,
     };
 
     // attach watcher to this path so the ui is notified of any changes at the root level
     // this.attatchDirectoryWatcher(themePath);
 
-    app.addRecentDocument(themePath);
+    app.addRecentDocument(resolvedThemePath);
 
     this.currentTheme = openedTheme;
 
-    // return { themeInfo: this.currentTheme, files: [] }; // for now
-    return { themeInfo: openedTheme, files }; // for now
+    return { themeInfo: openedTheme, files }; 
   }
 
   public attatchDirectoryWatcher(dirPath: string) {
@@ -148,12 +142,9 @@ export class HeliumWindow {
       throw new Error(`${dirPath} already has watcher attached`);
     }
     const watcher = watch(dirPath, {
-      // LOOK INOT ALL OPTIONS
+      // LOOK INTO ALL OPTIONS
       // think/confirm about this
-      ignored: (testPath) => {
-        const resolvedPath = path.resolve(testPath);
-        return isJunk(resolvedPath);
-      },
+      ignored: (testPath) => isJunk(testPath), // should just be file name
       followSymlinks: false,
       // depth: 1// confirm this
     });
@@ -188,7 +179,10 @@ export class HeliumWindow {
     themePath: string,
     files: ThemeFileSystemEntry[]
   ) {
-    // IN ITS CURRENT FORM, THIS M#ETHOD DOES NOT WORK
+    // IN ITS CURRENT FORM, THIS METHOD DOES NOT WORK
+
+    // the only way for this method to work is to check if the theme folder at least has the vaid theme paths in its directory
+
     // much easier to use array as it in an array form, it will only have the files and folders it has, so it is
     // easier to validate if there are any subdirectories that aren't meant to be there
 
@@ -196,29 +190,23 @@ export class HeliumWindow {
     // should return the reason
 
     // should at least have a layout/theme.liquid. if this is not present, throw return false
-    if (!FsService.pathExists(ThemeService.layoutPath(themePath, "theme.liquid"))) return false;
+    if (!fileSystemService.pathExists(themeService.layoutPath(themePath, "theme.liquid"))) return false;
 
-    const VALID_THEME_PATHS = [
-      ThemeService.accessPath(themePath),
-      ThemeService.configPath(themePath),
-      ThemeService.localesPath(themePath),
-      ThemeService.sectionsPath(themePath),
-      ThemeService.snippetsPath(themePath),
-      ThemeService.templatesPath(themePath), // should this be theme/customers instead
+    // get all directories
+    // const directories = files.filter(file => file.isDirectory);
+    const directoryPaths = files.filter(file => file.isDirectory).map(dir => dir.path);
+
+    // theme paths that are meant to be in the folder
+    const themePaths = [
+      themeService.accessPath(themePath),
+      themeService.configPath(themePath),
+      themeService.localesPath(themePath),
+      themeService.sectionsPath(themePath),
+      // ThemeService.snippetsPath(themePath),
+      themeService.templatesPath(themePath), 
     ];
 
-    for (let i = 0; i < files.length; i++) {
-      // loop over the `files` array and validate that the remaining subdirectories are of the allowed directory types
-      const { path: fileEntryPath, isDirectory, basename } = files[i];
-      if (isDirectory && basename.charAt(0) !== '.') { // ignore folders like .git, .vscode
-        // if there is only one item in the array and it is the above case, continue
-        if (!VALID_THEME_PATHS.includes(fileEntryPath)) return false;
-        // if one of the directory paths is not one of the valid theme paths, it is not valid
-      }
-    }
-
-    // if none of directory paths are invalid, return true
-    return true;
+    return themePaths.every((themeDir) => directoryPaths.includes(themeDir));
   }
 
   public connectStore(options: ConnectStoreOptions) {
@@ -285,5 +273,6 @@ export class HeliumWindow {
 
   public close() {
     // needs to shutdown everything (including preview if on)
+    this.browserWindow.close();
   }
 }

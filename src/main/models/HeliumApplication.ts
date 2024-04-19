@@ -2,11 +2,11 @@ import { BrowserWindow, WebContents, app } from "electron";
 import { HeliumWindowManager } from "./HeliumWindowManager";
 import utils from "../utils";
 import { HeliumLaunchOptions, HeliumWindowOptions } from "../types";
-import { AppPreloadApi } from "main/services/app";
-import { ShopifyPreloadApi } from "main/services/shopify";
-import { FsPreloadApi } from "main/services/fs";
+import { initAppPreloadApi } from "main/services/app";
+import { initShopifyPreloadApi } from "main/services/shopify";
+import { initFsPreloadApi } from "main/services/fs";
 import { HeliumAppMenu } from "./menus/HeliumAppMenu";
-import { HeliumContextMenuManager } from "./menus/HelimContextMenuManager";
+import { initContextMenuService } from "./menus/HelimContextMenuManager";
 import { HeliumWindow } from "./HeliumWindow";
 import path from 'path';
 
@@ -18,9 +18,9 @@ export class HeliumApplication {
 
   private constructor() {
     this.windowManager = new HeliumWindowManager();
-    this.appMenu = new HeliumAppMenu(this);
+    this.appMenu = new HeliumAppMenu();
 
-    HeliumContextMenuManager.init();
+    initContextMenuService();
     // init preload services
     this.initPreloadServices();
 
@@ -38,7 +38,7 @@ export class HeliumApplication {
     });
 
     app.on("window-all-closed", () => {
-      if (utils.isMac) {
+      if (!utils.isMac) {
         this.quit();
       }
     });
@@ -103,8 +103,8 @@ export class HeliumApplication {
   }
 
   private initPreloadServices() {
-    AppPreloadApi.init();
-    ShopifyPreloadApi.init();
-    FsPreloadApi.init();
+    initAppPreloadApi();
+    initFsPreloadApi();
+    initShopifyPreloadApi();
   }
 }

@@ -4,8 +4,7 @@ import utils from "main/utils";
 const MENU_SEPERATOR = { type: "separator" } as MenuItemConstructorOptions;
 
 export class HeliumAppMenu {
-  constructor(private heliumApplication: HeliumApplication) {
-    Menu.setApplicationMenu(null);
+  constructor() {
     this.init();
   }
 
@@ -42,6 +41,7 @@ export class HeliumAppMenu {
   }
 
   private getAboutMenu(): MenuItemConstructorOptions {
+    const heliumApplication = HeliumApplication.getInstance();
     return {
       label: "Helium IDE",
       submenu: [
@@ -73,7 +73,7 @@ export class HeliumAppMenu {
           label: "Quit",
           accelerator: "Command+Q",
           click: () => {
-            this.heliumApplication.quit();
+            heliumApplication.quit();
           },
         },
       ],
@@ -221,10 +221,11 @@ export class HeliumAppMenu {
   }
 
   private getMacDockTemplate(): MenuItemConstructorOptions[] {
+    const heliumApplication = HeliumApplication.getInstance();
     return [
       {
         label: 'New Window', 
-        click: () => this.heliumApplication.createNewWindow()
+        click: () => heliumApplication.createNewWindow()
       }
     ]
   }
@@ -240,9 +241,11 @@ export class HeliumAppMenu {
   }
 
   private triggerEvent<T = void>(eventName: string, args?: T) {
-    const focusedWindow = this.heliumApplication.getLastFocusedWindow();
-    if (focusedWindow) {
-      focusedWindow.emitEvent(eventName, args);
-    }
+    const heliumApplication = HeliumApplication.getInstance();
+    heliumApplication.triggerEvent(eventName, args);
+    // const focusedWindow = heliumApplication.getLastFocusedWindow();
+    // if (focusedWindow) {
+    //   focusedWindow.emitEvent(eventName, args);
+    // }
   }
 }

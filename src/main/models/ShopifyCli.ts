@@ -4,6 +4,7 @@ import { ChildProcess, spawn } from "child_process";
 import waitOn from "wait-on";
 import { safeStorage } from "electron";
 // can use get-port-pleae
+// think about execa
 
 
 const CLI_COMMANDS = {
@@ -26,7 +27,6 @@ export default class ShopifyCli {
   // tracks if the signal to shutdown the preview process was deleiverd successfuly
   private hasSentPreviewKillSignal: boolean;
 
-  //   private onPreviewProcessExited: () => void;
   constructor(private readonly heliumWindow: HeliumWindow) {
     this.currentPreviewState = PreviewState.OFF;
     this.previewChildProcess = null;

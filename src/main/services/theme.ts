@@ -1,56 +1,68 @@
 import path from "path";
-import { FsService } from "./fs";
+import fileSystemService from "./fs";
 
 interface SettingThemeInfo {
-    name: string;
-    theme_name: string;
-    theme_author: string;
-    theme_version: string;
-    theme_documentation_url?: string;
-    theme_support?: string;
+  name: string;
+  theme_name: string;
+  theme_author: string;
+  theme_version: string;
+  theme_documentation_url?: string;
+  theme_support?: string;
 }
 
-export class ThemeService {
-
-public static accessPath  (rootThemePath: string) {
+function accessPath(rootThemePath: string) {
   return path.join(rootThemePath, "assets");
 }
 
-public static configPath  (rootThemePath: string, ...paths: string[])  {
+function configPath(rootThemePath: string, ...paths: string[]) {
   return path.join(rootThemePath, "config", ...paths);
 }
 
-public static layoutPath  (rootThemePath: string, ...paths: string[])  {
+function layoutPath(rootThemePath: string, ...paths: string[]) {
   return path.join(rootThemePath, "layout", ...paths);
 }
 
-public static localesPath  (rootThemePath: string)  {
+function localesPath(rootThemePath: string) {
   return path.join(rootThemePath, "locales");
 }
 
-public static sectionsPath  (rootThemePath: string)  {
+function sectionsPath(rootThemePath: string) {
   return path.join(rootThemePath, "sections");
 }
 
-public static snippetsPath  (rootThemePath: string)  {
+function snippetsPath(rootThemePath: string) {
   return path.join(rootThemePath, "snippets");
 }
 
-public static templatesPath  (rootThemePath: string)  {
+function templatesPath(rootThemePath: string) {
   return path.join(rootThemePath, "templates");
 }
 
-public static templatesCustommerPath  (rootThemePath: string)  {
+function templatesCustommerPath(rootThemePath: string) {
   return path.join(rootThemePath, "templates", "customers");
 }
 
-public static async readThemeInfo(settingsSchemaPath: string): Promise<SettingThemeInfo>   {
-    // think about this type
-    const settingsSchema: {name: string}[] = JSON.parse(await FsService.readFile(settingsSchemaPath));
+async function readThemeInfo(
+  settingsSchemaPath: string
+): Promise<SettingThemeInfo> {
+  // think about this type
+  const settingsSchema: { name: string }[] = JSON.parse(
+    await fileSystemService.readFile(settingsSchemaPath)
+  );
 
-    return settingsSchema.find(setting => setting.name === 'theme_info') as SettingThemeInfo;
+  return settingsSchema.find(
+    (setting) => setting.name === "theme_info"
+  ) as SettingThemeInfo;
 }
-}
 
-
-
+export default {
+  accessPath,
+  configPath,
+  layoutPath,
+  snippetsPath,
+  localesPath,
+  sectionsPath,
+  templatesPath,
+  templatesCustommerPath,
+  readThemeInfo,
+};

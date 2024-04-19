@@ -46,10 +46,6 @@ export class HeliumWindowManager {
   }
 
   public getLastFocusedWindow() {
-
     return this.lastFocusedWindow;
-    // return this.windows.find((heliumWindows) =>
-    //   heliumWindows.browserWindow.isFocused()
-    // );
   }
 }
