@@ -96,9 +96,17 @@ export class HeliumApplication {
   }
 
   public triggerEvent<T = void>(eventName: string, args?: T) {
+    // triggers event on focused window
     const focusedWindow = this.getLastFocusedWindow();
     if (focusedWindow) {
       focusedWindow.emitEvent(eventName, args);
+    }
+  }
+
+  public closeFocusedWindow() {
+    const focusedWindow = this.getLastFocusedWindow();
+    if (focusedWindow) {
+      focusedWindow.close();
     }
   }
 

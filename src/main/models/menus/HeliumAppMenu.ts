@@ -5,7 +5,13 @@ const MENU_SEPERATOR = { type: "separator" } as MenuItemConstructorOptions;
 
 export class HeliumAppMenu {
   constructor() {
-    this.init();
+    const appMenuTemplate = this.getAppMenuTemplate();
+    Menu.setApplicationMenu(Menu.buildFromTemplate(appMenuTemplate));
+
+    if (utils.isMac) {
+      const macDockTemplate = this.getMacDockTemplate();
+      app.dock.setMenu(Menu.buildFromTemplate(macDockTemplate));
+    }
   }
 
   public getAppMenuTemplate(): MenuItemConstructorOptions[] {
@@ -81,24 +87,25 @@ export class HeliumAppMenu {
   }
 
   private getFileMenu(): MenuItemConstructorOptions {
+    const heliumApplication = HeliumApplication.getInstance();
     return {
       label: "File",
       submenu: [
         {
           label: "New File",
           //   accelerator: "Command+N",
-          click: () => this.triggerEvent("new-file"),
+          click: () => heliumApplication.triggerEvent("new-file"),
         },
         {
           label: "New Window",
           //   accelerator: "Command+N",
-          click: () => this.triggerEvent("new-window"),
+          click: () => heliumApplication.createNewWindow(),
         },
         MENU_SEPERATOR,
         {
           label: "Open Theme",
           //   accelerator: "Command+N",
-          click: () => this.triggerEvent("open-theme"),
+          click: () => heliumApplication.triggerEvent("open-theme"),
         },
         {
           label: "Open Recent",
@@ -109,24 +116,25 @@ export class HeliumAppMenu {
         {
           label: "Save",
           accelerator: "Command+S",
-          click: () => this.triggerEvent("save-file"),
+          click: () => heliumApplication.triggerEvent("save-file"),
         },
         {
           label: "Save As...",
-          click: () => this.triggerEvent("safe-file-as"),
+          click: () => heliumApplication.triggerEvent("safe-file-as"),
         },
         MENU_SEPERATOR,
         {
           label: "Close Tab",
-          click: () => this.triggerEvent("close-tab"),
+          click: () => heliumApplication.triggerEvent("close-tab"),
         },
         {
           label: "Close All Tabs",
-          click: () => this.triggerEvent("close-all-tabs"),
+          click: () => heliumApplication.triggerEvent("close-all-tabs"),
         },
         {
           label: "Close Window",
-          click: () => this.triggerEvent("close-window"),
+          // click: () => heliumApplication.triggerEvent("close-window"), // close this window
+          click: () => heliumApplication.closeFocusedWindow(), // close this window
         },
       ],
     };
@@ -148,6 +156,7 @@ export class HeliumAppMenu {
   }
 
   private getViewMenu(): MenuItemConstructorOptions {
+    const heliumApplication = HeliumApplication.getInstance();
     return {
       label: "View",
       submenu: [
@@ -162,60 +171,61 @@ export class HeliumAppMenu {
           submenu: [
             {
               label: "Split Editor",
-              click: () => this.triggerEvent("split-editor"),
+              click: () => heliumApplication.triggerEvent("split-editor"),
             },
             {
               label: "Toggle Sidebar",
-              click: () => this.triggerEvent("toggle-sidebar"),
+              click: () => heliumApplication.triggerEvent("toggle-sidebar"),
             },
           ],
         },
         MENU_SEPERATOR,
         {
           label: "Files",
-          click: () => this.triggerEvent("open-sidebar", "files"),
+          click: () => heliumApplication.triggerEvent("open-sidebar", "files"),
         },
         {
           label: "Development Store",
-          click: () => this.triggerEvent("open-sidebar", "store"),
+          click: () => heliumApplication.triggerEvent("open-sidebar", "store"),
         },
         {
           label: "Preview",
-          click: () => this.triggerEvent("open-sidebar", "preview"),
+          click: () => heliumApplication.triggerEvent("open-sidebar", "preview"),
         },
         {
           label: "Theme",
-          click: () => this.triggerEvent("open-sidebar", "theme"),
+          click: () => heliumApplication.triggerEvent("open-sidebar", "theme"),
         },
       ],
     };
   }
 
   private getThemeMenu(): MenuItemConstructorOptions {
+    const heliumApplication = HeliumApplication.getInstance();
     return {
       label: "Theme",
       submenu: [
         {
           label: "Create New Theme",
-          click: () => this.triggerEvent("new-theme"),
+          click: () => heliumApplication.triggerEvent("new-theme"),
         },
         MENU_SEPERATOR,
-        { label: "Push Theme", click: () => this.triggerEvent("push-theme") },
+        { label: "Push Theme", click: () => heliumApplication.triggerEvent("push-theme") },
         {
           label: "Publish Theme",
-          click: () => this.triggerEvent("publish-theme"),
+          click: () => heliumApplication.triggerEvent("publish-theme"),
         },
         MENU_SEPERATOR,
         {
           label: "Start Preview",
-          click: () => this.triggerEvent("start-preview"),
+          click: () => heliumApplication.triggerEvent("start-preview"),
         }, // should be dynamic
         MENU_SEPERATOR,
         {
           label: "Connect Shop",
-          click: () => this.triggerEvent("connect-store"),
+          click: () => heliumApplication.triggerEvent("connect-store"),
         }, // should be dynamic
-        { label: "Open Shop", click: () => this.triggerEvent("open-shop") }, // should be dynamic
+        { label: "Open Shop", click: () => heliumApplication.triggerEvent("open-shop") }, // should be dynamic
       ],
     };
   }
@@ -228,24 +238,5 @@ export class HeliumAppMenu {
         click: () => heliumApplication.createNewWindow()
       }
     ]
-  }
-
-  public init() {
-    const appMenuTemplate = this.getAppMenuTemplate();
-    Menu.setApplicationMenu(Menu.buildFromTemplate(appMenuTemplate));
-
-    if (utils.isMac) {
-      const macDockTemplate = this.getMacDockTemplate();
-      app.dock.setMenu(Menu.buildFromTemplate(macDockTemplate));
-    }
-  }
-
-  private triggerEvent<T = void>(eventName: string, args?: T) {
-    const heliumApplication = HeliumApplication.getInstance();
-    heliumApplication.triggerEvent(eventName, args);
-    // const focusedWindow = heliumApplication.getLastFocusedWindow();
-    // if (focusedWindow) {
-    //   focusedWindow.emitEvent(eventName, args);
-    // }
   }
 }

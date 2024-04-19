@@ -1,4 +1,4 @@
-import { BrowserWindow, app, safeStorage } from "electron";
+import { BrowserWindow, app, safeStorage, shell } from "electron";
 
 import { HeliumWindowOptions, HeliumWindowState } from "../types";
 import ShopifyCli from "./ShopifyCli";
@@ -63,11 +63,22 @@ export class HeliumWindow {
       },
     });
 
+    // modified link handlers
+    this.browserWindow.webContents.setWindowOpenHandler((details) => {
+      shell.openExternal(details.url);
+      return { action: "deny" };
+    });
+
+    this.browserWindow.webContents.on("will-navigate", (event) => {
+      event.preventDefault();
+      shell.openExternal(event.url);
+    });
+
     // wait for the dom to be ready before showing the window
     // think about this
-    this.browserWindow.webContents.once('dom-ready', () => {
+    this.browserWindow.webContents.once("dom-ready", () => {
       this.browserWindow.show();
-    })
+    });
 
     this.browserWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);
 
@@ -93,7 +104,9 @@ export class HeliumWindow {
 
     // needs to be an absolute path
     // should be absolute path (base it off on the root path)
-    const resolvedThemePath = path.isAbsolute(themePath) ? themePath : path.resolve(themePath);
+    const resolvedThemePath = path.isAbsolute(themePath)
+      ? themePath
+      : path.resolve(themePath);
 
     // check if path exists. if not, throw error
     if (!(await fileSystemService.pathExists(resolvedThemePath))) {
@@ -105,7 +118,9 @@ export class HeliumWindow {
     // think about this... what if they user is using a setup that includes some kind of build step??
     // also this does not take into account .git folders and the rest
     if (!(await this.isThemeFileStructureValid(resolvedThemePath, files))) {
-      throw new Error(`${resolvedThemePath} is not a valid OS 2.0 theme directory`); // need a better mesage
+      throw new Error(
+        `${resolvedThemePath} is not a valid OS 2.0 theme directory`
+      ); // need a better mesage
     }
     // read theme info from settings_schema.json
     const settingsSchemaFilePath = themeService.configPath(
@@ -134,7 +149,7 @@ export class HeliumWindow {
 
     this.currentTheme = openedTheme;
 
-    return { themeInfo: openedTheme, files }; 
+    return { themeInfo: openedTheme, files };
   }
 
   public attatchDirectoryWatcher(dirPath: string) {
@@ -154,7 +169,7 @@ export class HeliumWindow {
         changedPath: dirPath,
       };
       main.emitEventFromWindow(this, "on-directory-change", change);
-    }
+    };
 
     watcher.on("addDir", onDirectoryChange);
     watcher.on("unlinkDir", onDirectoryChange);
@@ -190,11 +205,18 @@ export class HeliumWindow {
     // should return the reason
 
     // should at least have a layout/theme.liquid. if this is not present, throw return false
-    if (!fileSystemService.pathExists(themeService.layoutPath(themePath, "theme.liquid"))) return false;
+    if (
+      !fileSystemService.pathExists(
+        themeService.layoutPath(themePath, "theme.liquid")
+      )
+    )
+      return false;
 
     // get all directories
     // const directories = files.filter(file => file.isDirectory);
-    const directoryPaths = files.filter(file => file.isDirectory).map(dir => dir.path);
+    const directoryPaths = files
+      .filter((file) => file.isDirectory)
+      .map((dir) => dir.path);
 
     // theme paths that are meant to be in the folder
     const themePaths = [
@@ -203,7 +225,7 @@ export class HeliumWindow {
       themeService.localesPath(themePath),
       themeService.sectionsPath(themePath),
       // ThemeService.snippetsPath(themePath),
-      themeService.templatesPath(themePath), 
+      themeService.templatesPath(themePath),
     ];
 
     return themePaths.every((themeDir) => directoryPaths.includes(themeDir));
@@ -213,7 +235,9 @@ export class HeliumWindow {
     //in UI make sure preview is not running
     // this is used for new stores
     // will this method be async???
-    const themeAccessPassword = safeStorage.encryptString(options.password).toString();
+    const themeAccessPassword = safeStorage
+      .encryptString(options.password)
+      .toString();
 
     const store = {
       heliumId: generateHeliumId(),
@@ -222,7 +246,7 @@ export class HeliumWindow {
     };
 
     this.connectedStore = store;
-    this.emitEvent('on-store-change', this.connectedStore);
+    this.emitEvent("on-store-change", this.connectedStore);
   }
 
   public getWindowState(): HeliumWindowState {

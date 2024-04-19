@@ -14,7 +14,9 @@ export class HeliumWindowManager {
 
   public openNewWindow(options?: HeliumWindowOptions) {
     const newWindow = new HeliumWindow(options);
-    this.windows.push(newWindow);
+    if (this.lastFocusedWindow === null) {
+      this.lastFocusedWindow = newWindow;
+    } 
 
     // add new listener that sets the focused window variable
     newWindow.browserWindow.on("focus", () => {
@@ -22,7 +24,23 @@ export class HeliumWindowManager {
       this.lastFocusedWindow = newWindow;
     });
 
+    newWindow.browserWindow.on('closed', () => {
+      // remove it from the array
+      // should dereference the browser window
+      this.removeWindow(newWindow);
+    });
+
+    this.windows.push(newWindow);
+
     return newWindow;
+  }
+
+  public removeWindow(heliumWindow: HeliumWindow) {
+    const index = this.windows.indexOf(heliumWindow);
+
+    if (index !== -1) {
+      this.windows.splice(index, 1);
+    }
   }
 
   public getWindows() {
