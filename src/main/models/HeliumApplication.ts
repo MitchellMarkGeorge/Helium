@@ -8,7 +8,7 @@ import { initFsPreloadApi } from "main/services/fs";
 import { HeliumAppMenu } from "./menus/HeliumAppMenu";
 import { initContextMenuService } from "../services/contextmenu";
 import { HeliumWindow } from "./HeliumWindow";
-import path from 'path';
+import path from "path";
 
 export class HeliumApplication {
   private static instance: HeliumApplication;
@@ -20,10 +20,6 @@ export class HeliumApplication {
     this.windowManager = new HeliumWindowManager();
     this.appMenu = new HeliumAppMenu();
 
-    initContextMenuService();
-    // init preload services
-    this.initPreloadServices();
-
     // used when folder is droped on app icon
     // and for opening recent file
     app.on("open-file", (event, openPath) => {
@@ -31,11 +27,13 @@ export class HeliumApplication {
       // check if `this.hasLaunched`???
       this.createNewWindow({ themePathOrUrl: path.resolve(openPath) });
     });
+
     app.on("activate", () => {
       if (this.windowManager.getNumOfWindows() === 0) {
         this.createNewWindow();
       }
     });
+
 
     app.on("window-all-closed", () => {
       if (!utils.isMac) {
@@ -48,14 +46,22 @@ export class HeliumApplication {
     if (HeliumApplication.instance) {
       throw new Error("HeliumApplication() already initalized");
     } else {
+      // good thing about this method is that it allows us to do any async loaing here first if needed
       this.instance = new HeliumApplication();
+      // at this point we know the HeliumApplication instance is avalible
+      this.instance.appMenu.init();
+      // can even start lsp service here...
+      initContextMenuService();
+      // init preload services
+      this.instance.initPreloadServices();
+
       return this.instance;
     }
   }
   static getInstance() {
     if (!HeliumApplication.instance) {
       throw new Error(
-        "Must initalize HeliumApplication class using HeliumApplication.initInstance(options)"
+        "Must initalize HeliumApplication class using HeliumApplication.init(options)"
       );
     }
     return HeliumApplication.instance;
@@ -95,8 +101,8 @@ export class HeliumApplication {
     this.windowManager.openNewWindow(options);
   }
 
-  public triggerEvent<T = void>(eventName: string, args?: T) {
-    // triggers event on focused window
+  public emitEventOnFocusedWindow<T = void>(eventName: string, args?: T) {
+    // emit event on focused window
     const focusedWindow = this.getLastFocusedWindow();
     if (focusedWindow) {
       focusedWindow.emitEvent(eventName, args);

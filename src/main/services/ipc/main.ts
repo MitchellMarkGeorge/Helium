@@ -2,11 +2,7 @@ import { WebContents, ipcMain } from "electron";
 import { HeliumApplication } from "main/models/HeliumApplication";
 import { HeliumWindow } from "main/models/HeliumWindow";
 
-console.log(HeliumApplication);
-
 // A for argument type, R for return type
-// for some reason this here dosen't work...
-// const heliumApp = HeliumApplication.getInstance();
 
 const handle = <A = void, R = void>(
   eventName: string,

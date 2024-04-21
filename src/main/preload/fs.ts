@@ -10,8 +10,8 @@ export const getFsPreloadApi = () => ({
     pathExists: renderer.invoke<string, boolean>('path-exists'),
     rename: renderer.invoke<{oldPath: string, newPath: string}>('rename'),
     // NOTE: this is a ROOT LEVEL listener. It should only report on the addition or deletion of files/folders
-    attatchDirectoryWatcher: renderer.invoke<string>('attach-directory-watcher'),
-    removeDirectoryWatcher: renderer.invoke<string>('remove-directory-watcher'),
+    watchDirectory: renderer.invoke<string>('watch-directory'),
+    stopWatchingDirectory: renderer.invoke<string>('stop-watching-directory'),
     removeAllDirectoryWatchers: renderer.invoke<string>('remove-all-directory-watchers'),
     onDirectoryChange: renderer.listen<ThemeDirectoryChange>('on-directory-change'),
     // fix this

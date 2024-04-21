@@ -44,12 +44,12 @@ function getNewFileTemplate(): MenuItemConstructorOptions[] {
     {
       label: "New File",
       // create the new file in the root
-      click: () => heliumApplication.triggerEvent("new-file", null),
+      click: () => heliumApplication.emitEventOnFocusedWindow("new-file", null),
     },
     {
       label: "New Folder",
       // create the new file folder in the root
-      click: () => heliumApplication.triggerEvent("new-folder", null),
+      click: () => heliumApplication.emitEventOnFocusedWindow("new-folder", null),
     },
   ];
 }
@@ -73,11 +73,11 @@ function getFileItemTemplate(
     { type: "separator" },
     {
       label: "Rename",
-      click: () => heliumApplication.triggerEvent("rename-file", fileEntry),
+      click: () => heliumApplication.emitEventOnFocusedWindow("rename-file", fileEntry),
     },
     {
       label: "Delete",
-      click: () => heliumApplication.triggerEvent("delete-file", fileEntry),
+      click: () => heliumApplication.emitEventOnFocusedWindow("delete-file", fileEntry),
     },
   ];
 }
@@ -90,12 +90,12 @@ function getFolderItemTemplate(
     {
       label: "New Folder",
       // folderEntry represents the parent folder
-      click: () => heliumApplication.triggerEvent("new-folder", folderEntry),
+      click: () => heliumApplication.emitEventOnFocusedWindow("new-folder", folderEntry),
     },
     {
       label: "New File",
       // folderEntry represents the parent folder
-      click: () => heliumApplication.triggerEvent("new-file", folderEntry),
+      click: () => heliumApplication.emitEventOnFocusedWindow("new-file", folderEntry),
     },
     {
       label: "Reveal in Finder",
@@ -114,11 +114,11 @@ function getFolderItemTemplate(
     { type: "separator" },
     {
       label: "Rename",
-      click: () => heliumApplication.triggerEvent("rename-file", folderEntry),
+      click: () => heliumApplication.emitEventOnFocusedWindow("rename-file", folderEntry),
     },
     {
       label: "Delete",
-      click: () => heliumApplication.triggerEvent("delete-file", folderEntry),
+      click: () => heliumApplication.emitEventOnFocusedWindow("delete-file", folderEntry),
     },
   ];
 }

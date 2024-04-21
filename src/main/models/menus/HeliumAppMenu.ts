@@ -5,7 +5,7 @@ import { HeliumApplication } from "../HeliumApplication";
 const MENU_SEPERATOR = { type: "separator" } as MenuItemConstructorOptions;
 
 export class HeliumAppMenu {
-  constructor() {
+  public init() {
     const appMenuTemplate = this.getAppMenuTemplate();
     Menu.setApplicationMenu(Menu.buildFromTemplate(appMenuTemplate));
 
@@ -97,7 +97,7 @@ export class HeliumAppMenu {
           //   accelerator: "Command+N",
           // where should this new file be created
           // show new file modal???
-          click: () => heliumApplication.triggerEvent("new-file"),
+          click: () => heliumApplication.emitEventOnFocusedWindow("new-file"),
         },
         {
           label: "New Window",
@@ -108,7 +108,7 @@ export class HeliumAppMenu {
         {
           label: "Open Theme",
           //   accelerator: "Command+N",
-          click: () => heliumApplication.triggerEvent("open-theme"),
+          click: () => heliumApplication.emitEventOnFocusedWindow("open-theme"),
         },
         {
           label: "Open Recent",
@@ -119,20 +119,20 @@ export class HeliumAppMenu {
         {
           label: "Save",
           accelerator: "Command+S",
-          click: () => heliumApplication.triggerEvent("save-file"),
+          click: () => heliumApplication.emitEventOnFocusedWindow("save-file"),
         },
         {
           label: "Save As...",
-          click: () => heliumApplication.triggerEvent("safe-file-as"),
+          click: () => heliumApplication.emitEventOnFocusedWindow("safe-file-as"),
         },
         MENU_SEPERATOR,
         {
           label: "Close Tab",
-          click: () => heliumApplication.triggerEvent("close-tab"),
+          click: () => heliumApplication.emitEventOnFocusedWindow("close-tab"),
         },
         {
           label: "Close All Tabs",
-          click: () => heliumApplication.triggerEvent("close-all-tabs"),
+          click: () => heliumApplication.emitEventOnFocusedWindow("close-all-tabs"),
         },
         {
           label: "Close Window",
@@ -174,30 +174,31 @@ export class HeliumAppMenu {
           submenu: [
             {
               label: "Split Editor",
-              click: () => heliumApplication.triggerEvent("split-editor"),
+              click: () => heliumApplication.emitEventOnFocusedWindow("split-editor"),
             },
             {
               label: "Toggle Sidebar",
-              click: () => heliumApplication.triggerEvent("toggle-sidebar"),
+              click: () => heliumApplication.emitEventOnFocusedWindow("toggle-sidebar"),
             },
           ],
         },
         MENU_SEPERATOR,
         {
           label: "Files",
-          click: () => heliumApplication.triggerEvent("open-sidebar", "files"),
+          click: () => heliumApplication.emitEventOnFocusedWindow("open-sidebar", "files"),
         },
         {
           label: "Development Store",
-          click: () => heliumApplication.triggerEvent("open-sidebar", "store"),
+          click: () => heliumApplication.emitEventOnFocusedWindow("open-sidebar", "store"),
         },
         {
           label: "Preview",
-          click: () => heliumApplication.triggerEvent("open-sidebar", "preview"),
+          click: () =>
+            heliumApplication.emitEventOnFocusedWindow("open-sidebar", "preview"),
         },
         {
           label: "Theme",
-          click: () => heliumApplication.triggerEvent("open-sidebar", "theme"),
+          click: () => heliumApplication.emitEventOnFocusedWindow("open-sidebar", "theme"),
         },
       ],
     };
@@ -210,25 +211,31 @@ export class HeliumAppMenu {
       submenu: [
         {
           label: "Create New Theme",
-          click: () => heliumApplication.triggerEvent("new-theme"),
+          click: () => heliumApplication.emitEventOnFocusedWindow("new-theme"),
         },
         MENU_SEPERATOR,
-        { label: "Push Theme", click: () => heliumApplication.triggerEvent("push-theme") },
+        {
+          label: "Push Theme",
+          click: () => heliumApplication.emitEventOnFocusedWindow("push-theme"),
+        },
         {
           label: "Publish Theme",
-          click: () => heliumApplication.triggerEvent("publish-theme"),
+          click: () => heliumApplication.emitEventOnFocusedWindow("publish-theme"),
         },
         MENU_SEPERATOR,
         {
           label: "Start Preview",
-          click: () => heliumApplication.triggerEvent("start-preview"),
+          click: () => heliumApplication.emitEventOnFocusedWindow("start-preview"),
         }, // should be dynamic
         MENU_SEPERATOR,
         {
           label: "Connect Shop",
-          click: () => heliumApplication.triggerEvent("connect-store"),
+          click: () => heliumApplication.emitEventOnFocusedWindow("connect-store"),
         }, // should be dynamic
-        { label: "Open Shop", click: () => heliumApplication.triggerEvent("open-shop") }, // should be dynamic
+        {
+          label: "Open Shop",
+          click: () => heliumApplication.emitEventOnFocusedWindow("open-shop"),
+        }, // should be dynamic
       ],
     };
   }
@@ -237,9 +244,9 @@ export class HeliumAppMenu {
     const heliumApplication = HeliumApplication.getInstance();
     return [
       {
-        label: 'New Window', 
-        click: () => heliumApplication.createNewWindow()
-      }
-    ]
+        label: "New Window",
+        click: () => heliumApplication.createNewWindow(),
+      },
+    ];
   }
 }

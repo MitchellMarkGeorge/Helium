@@ -3,6 +3,7 @@ import fs from "fs/promises";
 import path from "path";
 import main from "./ipc/main";
 import { isJunk } from "junk";
+import filetypeService from "./filetype";
 
 // THINK ABOUT GRACEFUL-FS!!!!!!!
 // FS-EXTRA
@@ -16,48 +17,6 @@ function pathExists(path: string) {
 async function readFile(filePath: string) {
   const buffer = await fs.readFile(filePath, { encoding: "utf8" });
   return buffer.toString();
-}
-
-function detectFileType(filePath: string, fileName: string): FileType {
-  // handle special names name (eg: .prettier.rc)
-  if (fileName === ".eslintrc" || fileName === ".prettierrc") return FileType.JSON;
-  // if (name === '.eslintignore' || name === '.prettierignore') return FileType.PLAIN;
-  const extension = path.extname(fileName);
-  switch (extension) {
-    case ".liquid":
-      return FileType.LIQUID;
-    case ".md":
-    case ".markdown":
-    case ".mkd":
-      return FileType.MARKDOWN;
-    case ".yaml":
-    case ".yml":
-      return FileType.YAML;
-    case ".toml":
-      return FileType.TOML;
-    case ".json":
-    case ".json5":
-    case ".map":
-      return FileType.JSON;
-    case ".js":
-    case ".cjs":
-    case ".mjs":
-      return FileType.JAVASCRIPT;
-    case ".ts":
-      return FileType.TYPESCRIPT;
-    case ".css":
-      return FileType.CSS;
-    case ".scss":
-    case ".sass":
-      return FileType.SCSS;
-    case ".less":
-      return FileType.LESS;
-    case ".html":
-    case ".htm":
-      return FileType.HTML;
-    default:
-      return FileType.PLAIN_TEXT;
-  }
 }
 
 // this method is responsible for reading a path and doing a bunch of processing to return a usable array of file entries
@@ -99,7 +58,7 @@ async function readDirectory(dirPath: string): Promise<ThemeFileSystemEntry[]> {
       basename: entry.name,
       isDirectory: entry.isDirectory(),
       isFile: entry.isFile(),
-      fileType: entry.isFile() ? detectFileType(fullPath, entry.name) : null,
+      fileType: entry.isFile() ? filetypeService.detect(fullPath) : null,
       path: fullPath,
     });
   }
@@ -147,7 +106,7 @@ export function initFsPreloadApi() {
     (_, path) => {
       console.log(path);
       //handle this
-      return Promise.resolve([]);
+      return readDirectory(path);
       //   return fse.mkdir(path, { recursive: true});
     }
   );
@@ -164,11 +123,19 @@ export function initFsPreloadApi() {
       return fs.rename(oldPath, newPath);
     }
   );
+
+  // what case will I have to do this in the renderer
+  main.handle<string>("watch-directory", (heliumWindow, dirPath) => {
+    heliumWindow.directoryWatcher.watch(dirPath);
+  });
+
+  main.handle<string>("stop-watching-directory", (heliumWindow, dirPath) => {
+    heliumWindow.directoryWatcher.stopWatching(dirPath);
+  });
 }
 
 export default {
   pathExists,
   readDirectory,
   readFile,
-  detectFileType,
 };
