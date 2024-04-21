@@ -1,7 +1,6 @@
 import { HeliumApplication } from "./models/HeliumApplication";
 import { Menu, app } from "electron";
 import { HeliumLaunchOptions } from "./types";
-import path from "path";
 
 interface OpenFileEnvent {
   preventDefault: () => void;
@@ -12,9 +11,11 @@ function start() {
   Menu.setApplicationMenu(null);
   let launchOptions: HeliumLaunchOptions | undefined = undefined;
 
+  // this method is called when a recent document/folder it meant to be opened
   const setLaunchOptions = (event: OpenFileEnvent, openPath: string) => {
     event.preventDefault();
-    launchOptions = { themePath: path.resolve(openPath) };
+    // this path 
+    launchOptions = { themePath: openPath };
   };
 
   app.on("open-file", setLaunchOptions);

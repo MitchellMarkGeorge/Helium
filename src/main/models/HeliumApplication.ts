@@ -6,7 +6,7 @@ import { initAppPreloadApi } from "main/services/app";
 import { initShopifyPreloadApi } from "main/services/shopify";
 import { initFsPreloadApi } from "main/services/fs";
 import { HeliumAppMenu } from "./menus/HeliumAppMenu";
-import { initContextMenuService } from "./menus/HelimContextMenuManager";
+import { initContextMenuService } from "../services/contextmenu";
 import { HeliumWindow } from "./HeliumWindow";
 import path from 'path';
 

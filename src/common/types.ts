@@ -14,7 +14,7 @@ export const enum PreviewState {
   UNAVALIBLE = "UNAVALIBLE",
 }
 export interface ThemeInfo {
-  shopifyId: number | null;
+  shopifyId: number | null; // string
 //   heliumId: HeliumId; // not needed right now
   path: string;
   // these values are optional as config files might not be provided
@@ -26,7 +26,7 @@ export interface ThemeInfo {
 export interface StoreInfo {
   heliumId: HeliumId; // not needed right now
   // UI does not need passworkd
-  themeAccessPassword: string; // hashed
+  themeAccessPassword: string; // encrypted
   url: string;
 }
 
@@ -41,12 +41,11 @@ export interface HeliumGlobal {
   fs: ReturnType<typeof getFsPreloadApi>;
   shopify: ReturnType<typeof getShopifyPreloadApi>;
   utils: typeof utils;
-  // initalState: InitalState;
 }
 
 export interface InitalState {
   connectedStore: StoreInfo | null;
-  currentTheme: ThemeInfo | null; // tuple with ThemeFileEntry array
+  currentTheme: ThemeInfo | null; 
   themeFiles: ThemeFileSystemEntry[];
   previewState: PreviewState;
 }
@@ -54,18 +53,20 @@ export interface InitalState {
 export const enum FileType {
   LIQUID = 'Liquid',
   MARKDOWN = 'Markdown',
-  YAML = 'Yaml',
-  TOML = 'Toml',
+  YAML = 'YAML',
+  TOML = 'TOML',
   JSON = 'JSON',
   JAVASCRIPT = 'JavaScript',
-  JSX = 'JSX',
   TYPESCRIPT = 'TypeScript',
-  TYPESCRIPT_JSX = 'TypeScript JSX',
   CSS = 'CSS',
-  SASS = 'Sass', //scss
+  SCSS = 'SCSS', //scss
   LESS = 'Less',
   HTML = 'HTML',
   PLAIN_TEXT = "Plain Text",
+  IMAGE = "Image",
+  BINARY = "Binary" // show error
+  // should I have a plane Image FileType???
+  // TODO: handle image types
 }
 
 // export interface FileSystemEntry {
@@ -96,5 +97,5 @@ export const enum ThemeDirectoryChangeType {
 
 export interface StartThemePreviewOptions {
   host: string;
-  port: string; // should be a number
+  port: string; 
 }

@@ -10,6 +10,7 @@ export const getAppPreloadApi = () => ({
     minimizeWindow: renderer.invoke('minimize-window'),
     maximizeWindow: renderer.invoke('maximize-window'),
     getWindowState: renderer.invoke<void, HeliumWindowState>('get-window-state'),
+    // can return an empty array
     openFolderDialog: renderer.invoke<void, string[]>('open-folder-dialog'),
     loadInitalState: renderer.invoke<void, InitalState>('load-inital-state'), 
     openUrl: renderer.invoke<string>('open-url'), 

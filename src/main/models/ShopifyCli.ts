@@ -1,4 +1,4 @@
-import { PreviewState, StartThemePreviewOptions, StoreInfo, ThemeInfo } from "common/types";
+import { PreviewState, StartThemePreviewOptions } from "common/types";
 import { HeliumWindow } from "./HeliumWindow";
 import { ChildProcess, spawn } from "child_process";
 import waitOn from "wait-on";
@@ -104,6 +104,7 @@ export default class ShopifyCli {
       // does this need a shell???
       // I won't be surprised if the command requires/should have the shell...
       this.previewChildProcess = spawn(CLI_COMMANDS.START_PREVIEW, {
+        // should the cwd be process.cwd
         cwd: this.themePath, // might end up not setting this - might just set the theme path manually through the env options
         env: {
           // should extend from process.env??

@@ -18,11 +18,11 @@ async function readFile(filePath: string) {
   return buffer.toString();
 }
 
-function detectFileType(name: string): FileType {
+function detectFileType(filePath: string, fileName: string): FileType {
   // handle special names name (eg: .prettier.rc)
-  if (name === ".eslintrc" || name === ".prettierrc") return FileType.JSON;
+  if (fileName === ".eslintrc" || fileName === ".prettierrc") return FileType.JSON;
   // if (name === '.eslintignore' || name === '.prettierignore') return FileType.PLAIN;
-  const extension = path.extname(name);
+  const extension = path.extname(fileName);
   switch (extension) {
     case ".liquid":
       return FileType.LIQUID;
@@ -37,6 +37,7 @@ function detectFileType(name: string): FileType {
       return FileType.TOML;
     case ".json":
     case ".json5":
+    case ".map":
       return FileType.JSON;
     case ".js":
     case ".cjs":
@@ -48,7 +49,7 @@ function detectFileType(name: string): FileType {
       return FileType.CSS;
     case ".scss":
     case ".sass":
-      return FileType.SASS;
+      return FileType.SCSS;
     case ".less":
       return FileType.LESS;
     case ".html":
@@ -61,10 +62,11 @@ function detectFileType(name: string): FileType {
 
 // this method is responsible for reading a path and doing a bunch of processing to return a usable array of file entries
 async function readDirectory(dirPath: string): Promise<ThemeFileSystemEntry[]> {
-  // think about this
-  if (!path.isAbsolute(dirPath)) {
-    dirPath = path.resolve(dirPath);
-  }
+  // needs to be absolute/normalized
+  // as of right now, we only work with absolute paths so there is no need to normalize it
+  // if (!path.isAbsolute(dirPath)) {
+  //   dirPath = path.resolve(dirPath);
+  // }
   // check if path exists
   // make sure the path is a directory
   if (!(await pathExists(dirPath)))
@@ -72,7 +74,7 @@ async function readDirectory(dirPath: string): Promise<ThemeFileSystemEntry[]> {
   const stats = await fs.lstat(dirPath); // how do I want to handle symlinks???
   // const stats = await fs.stat(path); // how do I want to handle symlinks???
   if (!stats.isDirectory()) throw new Error(`${dirPath} is not a directory`);
-  const fileEntries = await fs.readdir(dirPath, { withFileTypes: true }); // use with file types??
+  const fileEntries = await fs.readdir(dirPath, { withFileTypes: true, encoding: 'utf8' }); // use with file types??
   // should filter it out to only folders and directories (what about symlinks??)
 
   const result: ThemeFileSystemEntry[] = [];
@@ -91,12 +93,14 @@ async function readDirectory(dirPath: string): Promise<ThemeFileSystemEntry[]> {
     // my guess is that symlinks cant be handled so it rejects them
     //1. ignore them completly (I don't like this as ther is a reason why it is symlinked)
     // 2. "resolve" them and if it is "dangling", ignore it
+    // entry.path
+    const fullPath = path.join(dirPath, entry.name); // use path.resolve()???
     result.push({
       basename: entry.name,
       isDirectory: entry.isDirectory(),
       isFile: entry.isFile(),
-      fileType: entry.isFile() ? detectFileType(entry.name) : null,
-      path: path.join(dirPath, entry.name), // use path.resolve()
+      fileType: entry.isFile() ? detectFileType(fullPath, entry.name) : null,
+      path: fullPath,
     });
   }
 

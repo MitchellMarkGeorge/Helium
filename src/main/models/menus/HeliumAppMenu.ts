@@ -1,6 +1,7 @@
 import { Menu, MenuItemConstructorOptions, app } from "electron";
-import { HeliumApplication } from "../HeliumApplication";
 import utils from "main/utils";
+import { HeliumApplication } from "../HeliumApplication";
+
 const MENU_SEPERATOR = { type: "separator" } as MenuItemConstructorOptions;
 
 export class HeliumAppMenu {
@@ -94,6 +95,8 @@ export class HeliumAppMenu {
         {
           label: "New File",
           //   accelerator: "Command+N",
+          // where should this new file be created
+          // show new file modal???
           click: () => heliumApplication.triggerEvent("new-file"),
         },
         {
