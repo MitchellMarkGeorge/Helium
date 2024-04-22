@@ -264,8 +264,12 @@ export class HeliumWindow {
     // main.emitEventFromWindow(this, "on-inital-state-ready", initalState);
   }
 
+  public cleanup() {
+    // do all clean up stuff here
+    this.directoryWatcher.removeAllWatchers();
+  }
+
   public close() {
-    // needs to shutdown everything (including preview if on)
     this.browserWindow.close();
   }
 }

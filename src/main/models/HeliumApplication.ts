@@ -34,7 +34,6 @@ export class HeliumApplication {
       }
     });
 
-
     app.on("window-all-closed", () => {
       if (!utils.isMac) {
         this.quit();
@@ -46,6 +45,21 @@ export class HeliumApplication {
     if (HeliumApplication.instance) {
       throw new Error("HeliumApplication() already initalized");
     } else {
+      // prevents second instace from being created
+      const gotTheLock = app.requestSingleInstanceLock();
+      if (!gotTheLock) {
+        app.quit();
+      } else {
+        app.on("second-instance", () => {
+          const lastFocusedWindow = this.instance.getLastFocusedWindow();
+          if (lastFocusedWindow) {
+            if (lastFocusedWindow.browserWindow.isMinimized()) {
+              lastFocusedWindow.browserWindow.restore();
+            }
+            lastFocusedWindow.browserWindow.focus();
+          }
+        });
+      }
       // good thing about this method is that it allows us to do any async loaing here first if needed
       this.instance = new HeliumApplication();
       // at this point we know the HeliumApplication instance is avalible

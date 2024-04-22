@@ -27,6 +27,7 @@ export class HeliumWindowManager {
     newWindow.browserWindow.on('closed', () => {
       // remove it from the array
       // should dereference the browser window
+      newWindow.cleanup();
       this.removeWindow(newWindow);
     });
 
