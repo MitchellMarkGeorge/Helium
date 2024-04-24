@@ -1,4 +1,4 @@
-class HeliumUI {
+class HeliumApp {
 
     // private state;
 
