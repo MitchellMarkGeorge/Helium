@@ -42,4 +42,8 @@ export function initAppPreloadApi() {
   main.handle<string>("open-url", (_, url) => {
     return shell.openExternal(url);
   });
+
+  main.listen("workspace-is-showing", (heliumWindow) => {
+    heliumWindow.setIsWorkspaceShowing(true);
+  })
 }

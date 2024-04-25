@@ -42,7 +42,10 @@ export class HeliumWindow {
   private connectedStore: StoreInfo | null = null;
   public shopifyCli: ShopifyCli;
   public directoryWatcher: Watcher;
+  // this will be informed by the renderer
+  private isWorkspaceShowing: boolean;
   constructor(private options?: HeliumWindowOptions) {
+    this.isWorkspaceShowing = false;
     this.directoryWatcher = new DirectoryWatcher(this);
     console.log(options);
     this.shopifyCli = new ShopifyCli(this);
@@ -101,6 +104,10 @@ export class HeliumWindow {
 
   public getConnectedStore() {
     return this.connectedStore;
+  }
+
+  public setIsWorkspaceShowing(isWorkspaceShowing: boolean) {
+    this.isWorkspaceShowing = isWorkspaceShowing;
   }
 
   public async openTheme(themePath: string): Promise<OpenThemeResult> {
@@ -260,8 +267,11 @@ export class HeliumWindow {
   }
 
   public emitEvent<T = void>(eventName: string, args?: T) {
-    this.browserWindow.webContents.send(eventName, args);
-    // main.emitEventFromWindow(this, "on-inital-state-ready", initalState);
+    // only emit events when the workspace is showing
+    if (this.isWorkspaceShowing) {
+      this.browserWindow.webContents.send(eventName, args);
+      // main.emitEventFromWindow(this, "on-inital-state-ready", initalState);
+    }
   }
 
   public cleanup() {

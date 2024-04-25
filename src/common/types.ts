@@ -1,4 +1,5 @@
 import type { getAppPreloadApi } from "main/preload/app";
+import type { constants } from "main/preload/constants";
 import type { getFsPreloadApi } from "main/preload/fs";
 import type { getShopifyPreloadApi } from "main/preload/shopify";
 import type utils from "main/utils";
@@ -41,6 +42,7 @@ export interface HeliumGlobal {
   fs: ReturnType<typeof getFsPreloadApi>;
   shopify: ReturnType<typeof getShopifyPreloadApi>;
   utils: typeof utils;
+  constants: typeof constants
 }
 
 export interface InitalState {

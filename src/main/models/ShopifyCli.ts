@@ -39,6 +39,7 @@ export default class ShopifyCli {
     return `http://${this.previewHost}:${this.previewPort}`;
   }
 
+  // use a method like `updatePreviewState(state);` instead????
   private set previewState(newState: PreviewState) {
     this.currentPreviewState = newState;
     this.heliumWindow.emitEvent(
@@ -67,6 +68,12 @@ export default class ShopifyCli {
     //     const output = await exec(command, );
     // });
   }
+
+  /**
+   * problem with this right now is that it might try and send preview state updates 
+   * even if the workspace is not showing (like on inital launch with a given inital state).
+   * Simple fix would be to ignore the preview state updates
+   */
 
   public startThemePreview(options?: StartThemePreviewOptions) {
     // PREVIEW STATE CHECK AND CONNECTED STORE CHECK WILL BE DONE BY UI

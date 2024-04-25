@@ -6,6 +6,7 @@ import { getAppPreloadApi } from "./app";
 import { getFsPreloadApi } from "./fs";
 import { getShopifyPreloadApi } from "./shopify";
 import utils from "main/utils";
+import { constants } from "./constants";
 
 contextBridge.exposeInMainWorld("helium", {
   // consider moving these apis to the service folder
@@ -13,4 +14,5 @@ contextBridge.exposeInMainWorld("helium", {
   fs: getFsPreloadApi(),
   shopify: getShopifyPreloadApi(),
   utils,
+  constants
 });

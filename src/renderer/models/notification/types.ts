@@ -1,3 +1,5 @@
+import { intercept } from "mobx";
+
 // think of better name
 export type NotificationType = "success" | "info" | "warning" | "error";
 
@@ -13,25 +15,33 @@ export interface LoadingNotificationOptions {
 }
 
 // all modals have a primary text and secondary text
-export interface ModalOptions<T> {
+export interface ModalOptions {
   // primary button will be optional for some options
   modalType: "message" | "input";
-  primaryButtonText: string;
-  onPrimaryButtonClick: (args: T) => void;
-  secondaryButtonText: string;
 }
-export interface MessageModalOptions extends ModalOptions<void> {
+export interface MessageModalOptions extends ModalOptions {
   modalType: "message";
   type: NotificationType;
   message: string;
+  buttons: [PrimaryModalButton, ModalButton] | ModalButton;
 }
 
-export interface InputModalOptions
-  extends ModalOptions<Record<string, string>> {
+export interface ModalButton {
+    text: string
+}
+
+export interface PrimaryModalButton extends ModalButton {
+  onClick: (inputs?: Record<string, string>) => void;
+}
+
+
+
+export interface InputModalOptions extends ModalOptions {
   modalType: "input";
   title: string;
   // description: string;
   inputFields: InputModalFields[];
+  buttons: [PrimaryModalButton, ModalButton];
 }
 
 export interface InputModalFields {
