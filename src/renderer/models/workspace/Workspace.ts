@@ -12,7 +12,6 @@ export class Workspace {
   public selectedSideBarOption: SideBarItemOption | null;
   public isSidePanelOpen: boolean;
   public readonly notifications: Notifications;
-  public readonly fs: FileSystemManager;
   public theme: Theme | null;
   constructor() {
     this.isShowingWorkspace = false;
@@ -22,7 +21,6 @@ export class Workspace {
     this.isSidePanelOpen = false;
 
     this.notifications = new Notifications(this);
-    this.fs = new FileSystemManager();
     this.theme = null;
   }
 
