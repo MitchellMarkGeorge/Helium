@@ -21,6 +21,9 @@ async function readFile(filePath: string) {
 
 // this method is responsible for reading a path and doing a bunch of processing to return a usable array of file entries
 async function readDirectory(dirPath: string): Promise<ThemeFileSystemEntry[]> {
+  // inspired by https://github.com/atom/tree-view/blob/13053feb6fef5224068b6459340fd6e542b4daec/lib/directory.js#L275
+  // and vscode
+
   // needs to be absolute/normalized
   // as of right now, we only work with absolute paths so there is no need to normalize it
   // if (!path.isAbsolute(dirPath)) {
@@ -33,10 +36,24 @@ async function readDirectory(dirPath: string): Promise<ThemeFileSystemEntry[]> {
   const stats = await fs.lstat(dirPath); // how do I want to handle symlinks???
   // const stats = await fs.stat(path); // how do I want to handle symlinks???
   if (!stats.isDirectory()) throw new Error(`${dirPath} is not a directory`);
-  const fileEntries = await fs.readdir(dirPath, { withFileTypes: true, encoding: 'utf8' }); // use with file types??
+  let fileEntries = await fs.readdir(dirPath, { withFileTypes: true, encoding: 'utf8' }); // use with file types??
   // should filter it out to only folders and directories (what about symlinks??)
 
-  const result: ThemeFileSystemEntry[] = [];
+  // should paths be lowercase??
+
+  // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/localeCompare
+  // think about these options
+  const fileNameCollator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base'  });
+  // sorting them like thins makes sure the files and directories will be in order
+  fileEntries = fileEntries.sort((a, b) => fileNameCollator.compare(a.name, b.name))
+
+  // exit early
+  // think about this
+  if (fileEntries.length === 0) return [];
+
+  const files: ThemeFileSystemEntry[] = [];
+  const directories: ThemeFileSystemEntry[] = [];
+
 
   for (let i = 0; i < fileEntries.length; i++) {
     const entry = fileEntries[i];
@@ -54,16 +71,24 @@ async function readDirectory(dirPath: string): Promise<ThemeFileSystemEntry[]> {
     // 2. "resolve" them and if it is "dangling", ignore it
     // entry.path
     const fullPath = path.join(dirPath, entry.name); // use path.resolve()???
-    result.push({
+
+    const themeFileEntry: ThemeFileSystemEntry = {
       basename: entry.name,
       isDirectory: entry.isDirectory(),
       isFile: entry.isFile(),
       fileType: entry.isFile() ? filetypeService.detect(fullPath) : null,
       path: fullPath,
-    });
+    };
+
+    if (entry.isDirectory()) {
+      directories.push(themeFileEntry);
+    } else if (entry.isFile()) {
+      files.push(themeFileEntry);
+    }
   }
 
-  return result.sort((a, b) => a.basename.localeCompare(b.basename));
+  // directories come first before files
+  return directories.concat(files);
 }
 
 export function initFsPreloadApi() {

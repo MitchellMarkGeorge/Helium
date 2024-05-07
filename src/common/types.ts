@@ -67,8 +67,6 @@ export const enum FileType {
   PLAIN_TEXT = "Plain Text",
   IMAGE = "Image",
   BINARY = "Binary" // show error
-  // should I have a plane Image FileType???
-  // TODO: handle image types
 }
 
 // export interface FileSystemEntry {
