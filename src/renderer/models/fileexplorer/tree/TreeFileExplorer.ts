@@ -174,7 +174,7 @@ export class TreeFileExplorer extends StateModel implements FileExplorer {
   }
 
   private mapTreeToArray(tree: FileExplorerDirectoryNode, depth: number) {
-    let result: FileExplorerEntry[] = [];
+    const result: FileExplorerEntry[] = [];
     if (tree.items === null) return [];
     for (let i = 0; i < tree.items.length; i++) {
       const node = tree.items[i];
@@ -198,7 +198,7 @@ export class TreeFileExplorer extends StateModel implements FileExplorer {
         result.push(directoryEntry);
         if (node.isExpanded && node.items && node.items.length > 0) {
           const subTree = this.mapTreeToArray(node, depth + 1);
-          result = result.concat(subTree);
+          result.push(...subTree);
         }
       }
     }
