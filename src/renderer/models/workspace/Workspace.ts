@@ -11,6 +11,7 @@ import { getErrorMessage } from "common/utils";
 import pathe from "pathe";
 import { TreeFileExplorer } from "../fileexplorer/tree/TreeFileExplorer";
 import { FileExplorer } from "../fileexplorer/types";
+import { TabManager } from "../tabs/TabManager";
 
 export class Workspace {
   //   public currentFilePath: string | null;
@@ -21,7 +22,9 @@ export class Workspace {
   public readonly notifications: Notifications;
   public theme: Theme | null;
   public fileExplorer: FileExplorer;
+  public tabs: TabManager;
   constructor() {
+    // NEED A CLASS TO TRACK TAB/EDITOR STATUS
     this.isShowingWorkspace = false;
     // this.currentFilePath = null;
     this.selectedSideBarOption = null;
@@ -30,6 +33,7 @@ export class Workspace {
 
     this.notifications = new Notifications(this);
     this.fileExplorer = new TreeFileExplorer(this);
+    this.tabs = new TabManager(this);
     this.theme = null;
 
   }
@@ -51,6 +55,7 @@ export class Workspace {
 
     if (connectedStore) {
       // preview state is only possible if there is a stoer
+      this.previewState = previewState;
     }
     this.isShowingWorkspace = true;
     window.helium.app.sendWorkspaceIsShowing();
@@ -65,9 +70,7 @@ export class Workspace {
     // dependednt on current theme name
     // add an effect that whenever the windowTitle changes, set it at the electron level
     if (this.theme) {
-      return this.theme.name
-        ? this.theme.name
-        : pathe.basename(this.theme.path);
+      return this.theme.getThemeName();
     } else {
       return window.helium.constants.DEFAULT_WINOW_TITLE;
     }
@@ -77,6 +80,7 @@ export class Workspace {
   //     return this.currentFilePath ? this.fs.getEntry(this.currentFilePath) : null;
   //   }
 
+  // will become flow
   public async openThemeFromDialog() {
     // check if there is already a theme open
     // if there is, clear everything

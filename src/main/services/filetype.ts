@@ -1,12 +1,13 @@
-import { FileType } from "common/types";
+import { FileType, FileTypeEnum } from "common/types";
 import isBinaryPath from "is-binary-path";
 import isImage from "is-image";
 import isTextPath from "is-text-path";
 import path from "path";
 
+// figure out how to do this
 const fileNameMap: Record<string, FileType> = {
-  ".eslintrc": FileType.JSON,
-  ".prettierrc": FileType.JSON,
+  ".eslintrc": FileTypeEnum.JSON,
+  ".prettierrc": FileTypeEnum.JSON,
 };
 
 // can move this to commmon/utils and use the pathe module instead
@@ -15,39 +16,37 @@ const detectTextFileType = (filePath: string) => {
   switch (fileExtension) {
     // confirm all of these are correct
     case ".liquid":
-      return FileType.LIQUID;
+      return FileTypeEnum.LIQUID;
     case ".md":
     case ".markdown":
     case ".mkd":
-      return FileType.MARKDOWN;
+      return FileTypeEnum.MARKDOWN;
     case ".yaml":
     case ".yml":
-      return FileType.YAML;
-    case ".toml":
-      return FileType.TOML;
+      return FileTypeEnum.YAML;
     case ".json":
     case ".json5":
     case ".map":
-      return FileType.JSON;
+      return FileTypeEnum.JSON;
     case ".js":
     case ".cjs":
     case ".mjs":
-      return FileType.JAVASCRIPT;
+      return FileTypeEnum.JAVASCRIPT;
     case ".ts":
       // what if this is a binary video ts file
-      return FileType.TYPESCRIPT;
+      return FileTypeEnum.TYPESCRIPT;
     case ".css":
-      return FileType.CSS;
+      return FileTypeEnum.CSS;
     case ".scss":
     case ".sass":
-      return FileType.SCSS;
+      return FileTypeEnum.SCSS;
     case ".less":
-      return FileType.LESS;
+      return FileTypeEnum.LESS;
     case ".html":
     case ".htm":
-      return FileType.HTML;
+      return FileTypeEnum.HTML;
     default:
-      return FileType.PLAIN_TEXT;
+      return FileTypeEnum.PLAIN_TEXT;
   }
 };
 
@@ -68,12 +67,12 @@ const detect = (filePath: string): FileType => {
   // handle reguler text files
   if (isTextPath(filePath)) return detectTextFileType(filePath);
   // handle image files
-  if (isImage(filePath)) return FileType.IMAGE;
+  if (isImage(filePath)) return FileTypeEnum.IMAGE;
   // handle binary files
-  if (isBinaryPath(filePath)) return FileType.BINARY;
+  if (isBinaryPath(filePath)) return FileTypeEnum.BINARY;
 
   // if none of the above, just return plain text
-  return FileType.PLAIN_TEXT;
+  return FileTypeEnum.PLAIN_TEXT;
 };
 
 export default { detect };

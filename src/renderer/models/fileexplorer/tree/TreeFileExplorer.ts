@@ -4,19 +4,11 @@
 import { ThemeFileSystemEntry } from "common/types";
 import { StateModel } from "../../StateModel";
 import { Workspace } from "../../workspace/Workspace";
-import {
-  FileExplorerEntry,
-  FileExplorer,
-  FileExplorerFileEntry,
-  FileExplorerDirectoryEntry,
-} from "../types";
-import {
-  FileExplorerDirectoryNode,
-  FileExplorerFileNode,
-  FileExplorerNode,
-} from "./types";
+import { Entry, FileExplorer, FileEntry, DirectoryEntry } from "../types";
+import { DirectoryNode, FileNode, TreeNode } from "./types";
 import { isDirectoryNode, isExpanded, isFileNode } from "./utils";
 import pathe from "pathe";
+import { SideBarItemOption } from "renderer/models/workspace/types";
 
 // right now there is a case where a previously open diractory is cloased and then opened agin
 // and the subtree has been updated while it was closed (and the watcher has been removed)
@@ -34,12 +26,16 @@ import pathe from "pathe";
 
 // unmounted (another sidepanel is shownn)
 export class TreeFileExplorer extends StateModel implements FileExplorer {
-  private fileExplorerTree: FileExplorerDirectoryNode | null;
-  private subTreeCache: Map<string, FileExplorerNode[]>;
+  // root tree node
+  private fileExplorerTree: DirectoryNode | null;
+  private subTreeCache: Map<string, TreeNode[]>;
+  // does this need to be here???
+  public selectedEntry: string | null;
   constructor(workspace: Workspace) {
     super(workspace);
     this.fileExplorerTree = null;
-    this.subTreeCache = new Map<string, FileExplorerNode[]>();
+    this.selectedEntry = null;
+    this.subTreeCache = new Map<string, TreeNode[]>();
     // can add all the listeners here
   }
 
@@ -47,7 +43,7 @@ export class TreeFileExplorer extends StateModel implements FileExplorer {
     if (this.workspace.theme) {
       const { path } = this.workspace.theme;
 
-      const rootNode: FileExplorerDirectoryNode = {
+      const rootNode: DirectoryNode = {
         path,
         name: this.workspace.theme.getThemeName(),
         type: "directory",
@@ -63,9 +59,9 @@ export class TreeFileExplorer extends StateModel implements FileExplorer {
     return files.map(this.toTreeNode);
   }
 
-  private toTreeNode(entry: ThemeFileSystemEntry): FileExplorerNode {
+  private toTreeNode(entry: ThemeFileSystemEntry): TreeNode {
     if (entry.isDirectory) {
-      const dirNode: FileExplorerDirectoryNode = {
+      const dirNode: DirectoryNode = {
         name: entry.basename,
         path: entry.path,
         type: "directory",
@@ -74,7 +70,7 @@ export class TreeFileExplorer extends StateModel implements FileExplorer {
       };
       return dirNode;
     } else {
-      const fileNode: FileExplorerFileNode = {
+      const fileNode: FileNode = {
         name: entry.basename,
         path: entry.path,
         type: "file",
@@ -84,21 +80,18 @@ export class TreeFileExplorer extends StateModel implements FileExplorer {
     }
   }
 
-  private findNode(
-    path: string,
-    tree: FileExplorerDirectoryNode
-  ): FileExplorerNode | null {
+  private findNode(path: string, tree: DirectoryNode): TreeNode | null {
     if (tree.items === null) return null;
     for (let i = 0; i < tree.items.length; i++) {
       const node = tree.items[i];
       if (node.path === path) {
         return node;
-
-        // } else if (path.startsWith(node.path) && isDirectoryNode(node)) {
       } else if (
+        path.startsWith(node.path) &&
         // make sure this condition is correct
-        pathe.dirname(path) === pathe.dirname(node.path) &&
-        // needs to be a directory node
+        // checks if the provided path is a subpath of the directory node path
+        // eg: if path = "name/test.ts" and node path = "name",
+        // we want to continue going down that directory node in order to find the node
         isDirectoryNode(node)
       ) {
         return this.findNode(path, node);
@@ -107,20 +100,19 @@ export class TreeFileExplorer extends StateModel implements FileExplorer {
     return null;
   }
 
+  // is this needed
   public isFileExplorerVisible() {
-    // if the side panel is open
-    // and the current side bar item is Files
-    return true;
+    return (
+      this.workspace.isSidePanelOpen &&
+      this.workspace.selectedSideBarOption === SideBarItemOption.FILES
+    );
   }
 
   public async reload() {
     // is this still needed
     // this method pretty much wipes the slate clean
-    // in an ideal world, it would still keep all expanded subtrees
-
-    // the idea bedind this method is to pretty much rebuild the entire file tree
-    // and remove any subtrees from the cache if their parent directories are not open
-    // (my implementation of) reload will pretty much reset the entire
+    // in an ideal world, it would still keep all expanded subtrees an only update the expanded trees
+    // it would also clean up the sub tree cache
     if (this.workspace.theme) {
       const { path } = this.workspace.theme;
       this.subTreeCache.clear();
@@ -129,24 +121,34 @@ export class TreeFileExplorer extends StateModel implements FileExplorer {
     }
   }
 
+  private expandRecursive(path: string) {
+    // the idea of this mehtod is to recursively expand a dir path that is not in
+  }
+
+  private async getSubtree(dirPath: string) {}
+
   public async expand(dirPath: string) {
     if (this.fileExplorerTree) {
       const node = this.findNode(dirPath, this.fileExplorerTree);
       if (!node || !isDirectoryNode(node)) return;
-      let subTree: FileExplorerNode[] = [];
-      // do we neeed to to handle parent directories that have not been expanded???
+      // we do not need to handle expansion of parent direcotries
+      // as there is no case where that would be possible (for now)
+
+      // the only case that we might want this behaviour is after reloading and the user selects
+      // a tab and the file explorer has to respond (this only happens if we make the file explorer show the current tab)
       if (!node.isExpanded && node.items === null) {
+        let subTree: TreeNode[] = [];
         if (this.subTreeCache.has(dirPath)) {
-          subTree = this.subTreeCache.get(dirPath) as FileExplorerNode[];
+          subTree = this.subTreeCache.get(dirPath) as TreeNode[];
+        } else {
+          const fileEntries = await window.helium.fs.readDirectory(dirPath);
+          subTree = this.toSubTree(fileEntries);
+          // what if it is an empty array???
+          this.subTreeCache.set(dirPath, subTree);
         }
-      } else {
-        const fileEntries = await window.helium.fs.readDirectory(dirPath);
-        subTree = this.toSubTree(fileEntries);
-        // what if it is an empty array???
-        this.subTreeCache.set(dirPath, subTree);
+        node.isExpanded = true;
+        node.items = subTree;
       }
-      node.isExpanded = true;
-      node.items = subTree;
     }
   }
 
@@ -155,31 +157,26 @@ export class TreeFileExplorer extends StateModel implements FileExplorer {
       const node = this.findNode(dirPath, this.fileExplorerTree);
       if (!node || !isDirectoryNode(node)) return;
       if (node.isExpanded && node.items !== null) {
-        // cache the subtreee
-        // is this needed?
-        // handle if empty array
-        if (node.items.length > 0) {
-          this.subTreeCache.set(dirPath, node.items);
-        }
+        // no reason to cache subtree as if it was expanded, its subtree is already cached
         node.isExpanded = false;
         node.items = null;
       }
     }
   }
 
-  public getEntryArray(): FileExplorerEntry[] {
+  public getEntryArray(): Entry[] {
     if (this.fileExplorerTree) {
       return this.mapTreeToArray(this.fileExplorerTree, 0);
     } else return [];
   }
 
-  private mapTreeToArray(tree: FileExplorerDirectoryNode, depth: number) {
-    const result: FileExplorerEntry[] = [];
+  private mapTreeToArray(tree: DirectoryNode, depth: number) {
     if (tree.items === null) return [];
+    const result: Entry[] = [];
     for (let i = 0; i < tree.items.length; i++) {
       const node = tree.items[i];
       if (isFileNode(node)) {
-        const fileEntry: FileExplorerFileEntry = {
+        const fileEntry: FileEntry = {
           basename: node.name,
           depth,
           path: node.path,
@@ -188,7 +185,7 @@ export class TreeFileExplorer extends StateModel implements FileExplorer {
         };
         result.push(fileEntry);
       } else if (isDirectoryNode(node)) {
-        const directoryEntry: FileExplorerDirectoryEntry = {
+        const directoryEntry: DirectoryEntry = {
           basename: node.name,
           depth,
           path: node.path,

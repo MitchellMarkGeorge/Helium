@@ -52,11 +52,10 @@ export interface InitalState {
   previewState: PreviewState;
 }
 
-export const enum FileType {
+export enum Language {
   LIQUID = 'Liquid',
   MARKDOWN = 'Markdown',
   YAML = 'YAML',
-  TOML = 'TOML',
   JSON = 'JSON',
   JAVASCRIPT = 'JavaScript',
   TYPESCRIPT = 'TypeScript',
@@ -65,9 +64,15 @@ export const enum FileType {
   LESS = 'Less',
   HTML = 'HTML',
   PLAIN_TEXT = "Plain Text",
+}
+
+export enum NonTextFileTypes {
   IMAGE = "Image",
   BINARY = "Binary" // show error
 }
+
+export type FileType = Language | NonTextFileTypes
+export const FileTypeEnum = { ...Language,...NonTextFileTypes };
 
 // export interface FileSystemEntry {
 export interface ThemeFileSystemEntry {

@@ -1,18 +1,18 @@
 import { FileType } from "common/types";
 
-export interface FileExplorerNode  {
+export interface TreeNode  {
     type: "directory" | "file"; // is this needed
     name: string;
     path: string;
 }
 
-export interface FileExplorerFileNode extends FileExplorerNode   {
+export interface FileNode extends TreeNode {
     type: "file";
     fileType: FileType | null;
 }
 
-export interface FileExplorerDirectoryNode extends FileExplorerNode {
+export interface DirectoryNode extends TreeNode {
     type: "directory";
     isExpanded: boolean;
-    items: FileExplorerNode[] | null
+    items: TreeNode[] | null
 }
