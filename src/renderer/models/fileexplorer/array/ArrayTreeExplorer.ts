@@ -13,16 +13,22 @@ const ROOT_DEPTH = 0;
 // are not in behavioural parity (see the note on the expand() method) method.
 // As of right now, it is better to use the TreeFileExplorer implementation
 // but down the line, it would be great to move to this implementation (after some fixes)
+
+// realistically, the only difference is that this one soed not use a cache
+// UPDATE: now that it uses a sub tree cache, it ***should*** be on parity witth the TreeFileExplorer
+// but there its correctness and potential side effects have not been fully identified
 export class ArrayFileExplorer extends StateModel implements FileExplorer {
   private entryArray: Entry[];
   public selectedEntry: string | null;
   private expandedDirectories: Set<string>;
+  private subTreeCache: Map<string, Entry[]>;
   // use a weak set?
   constructor(workspace: Workspace) {
     super(workspace);
     this.entryArray = [];
     this.selectedEntry = null;
     this.expandedDirectories = new Set<string>();
+    this.subTreeCache = new Map<string, Entry[]>();
   }
   public init(files: ThemeFileSystemEntry[]): void {
     this.entryArray = this.toEntryArray(files, ROOT_DEPTH);
@@ -53,7 +59,8 @@ export class ArrayFileExplorer extends StateModel implements FileExplorer {
       return fileEntry;
     }
   }
-  collapse(dirPath: string): void {
+
+  public collapse(dirPath: string): void {
     const dirIndex = this.entryArray.findIndex(
       (entry) => entry.path === dirPath
     );
@@ -64,27 +71,43 @@ export class ArrayFileExplorer extends StateModel implements FileExplorer {
       this.expandedDirectories.has(dirPath) &&
       dirEntry.isExpanded
     ) {
-      let subTreeLength = 0;
-      // using dirIndex + 1 as we want to start counting after the directory entry itself
-      for (let i = dirIndex + 1; i < this.entryArray.length; i++) {
-        const entry = this.entryArray[i];
-        // this tests if the given entry is in the subtree of the given directory
-        if (entry.path.startsWith(dirPath)) {
-          subTreeLength += 1;
-        } else {
-          // exit immediately
-          break;
-          // think about this
-        }
-      }
+    const subTree = this.getDirectorySubTree(dirPath, dirIndex);
 
       // confirm numbers
       // does it count the first element as part of the length?
       // should validate that its a directory entry first
       dirEntry.isExpanded = false;
       this.expandedDirectories.delete(dirEntry.path);
-      this.entryArray = this.removeSubtree(dirIndex + 1, subTreeLength);
+      this.entryArray = this.removeSubtree(dirIndex + 1, subTree.length);
+      // by only caching the subtree when the directory is being collapsed, all expanded child trees
+      // are left intact and can be simply substited when expanded again (with expansion states intact)
+      // TLDR: doing it this way makes sure that a "complete" subtree is saved with expansion states intact
+
+      // another reason this works so well is that it also updates the cache from the previous saved sub tree
+      // so if child trees are also expanded and colaped in the subtree, the latest version of the subtree will be saved automatically
+
+      // final advantage of this approach:
+      // it removes the need to have the expandedDirectories set as it was mostly used in rebuilding the sub tree
+      // it ***should*** make the implementation completely reliant on the internal expanded state of the Entry object, just like TreeFileExplorer
+      this.subTreeCache.set(dirPath, subTree);
     }
+  }
+
+  private getDirectorySubTree(dirPath: string, dirIndex: number) {
+      let subTree: Entry[] = [];
+      // using dirIndex + 1 as we want to start counting after the directory entry itself
+      for (let i = dirIndex + 1; i < this.entryArray.length; i++) {
+        const entry = this.entryArray[i];
+        // this tests if the given entry is in the subtree of the given directory
+        if (entry.path.startsWith(dirPath)) {
+          subTree.push(entry)
+        } else {
+          // exit immediately
+          break;
+          // think about this
+        }
+      }
+      return subTree;
   }
 
   private removeSubtree(startingIndex: number, subTreeLength: number) {
@@ -92,6 +115,7 @@ export class ArrayFileExplorer extends StateModel implements FileExplorer {
     clone.splice(startingIndex, subTreeLength);
     return clone;
   }
+
   private insertSubtree(startingIndex: number, subTree: Entry[]) {
     const clone = [...this.entryArray];
     clone.splice(startingIndex, 0, ...subTree);
@@ -100,7 +124,7 @@ export class ArrayFileExplorer extends StateModel implements FileExplorer {
 
   private async buildSubTree(dirPath: string, depth: number) {
     const fileEntries = await window.helium.fs.readDirectory(dirPath);
-    const entries = this.toEntryArray(fileEntries, depth);
+    const entries = this.toEntryArray(fileEntries, depth + 1);
 
     const subTree = [];
     for (let i = 0; i < entries.length; i++) {
@@ -121,6 +145,7 @@ export class ArrayFileExplorer extends StateModel implements FileExplorer {
     return subTree;
   }
 
+  // OLD:
   // the only problem is that this does not have parity with the TreeFileExplorer
   // since the TreeFileExplorer uses a cache, it will not be up to date with the file system
   // howerver, since this array version doesn't use a cache, every time a directory is collapes and expanded again,
@@ -137,8 +162,15 @@ export class ArrayFileExplorer extends StateModel implements FileExplorer {
       isDirectoryEntry(dirEntry) &&
       dirEntry.isExpanded
     ) {
-      // build the subtree (included expanded child trees)
-      const subTree = await this.buildSubTree(dirPath, dirEntry.depth);
+      let subTree: Entry[] = []
+      if (this.subTreeCache.has(dirPath)) {
+        subTree = this.subTreeCache.get(dirPath) as Entry[]
+      } else {
+        // build the subtree (included expanded child trees)
+        // subTree = await this.buildSubTree(dirPath, dirEntry.depth);
+        const fileEntries = await window.helium.fs.readDirectory(dirPath);
+        subTree = this.toEntryArray(fileEntries, dirEntry.depth + 1);
+      }
       this.expandedDirectories.add(dirPath);
       dirEntry.isExpanded = true;
       this.entryArray = this.insertSubtree(dirIndex + 1, subTree);
