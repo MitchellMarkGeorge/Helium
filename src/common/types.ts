@@ -66,22 +66,31 @@ export enum Language {
   PLAIN_TEXT = "Plain Text",
 }
 
-export enum NonTextFileTypes {
+
+export enum BinaryFileType {
   IMAGE = "Image",
   BINARY = "Binary" // show error
 }
 
-export type FileType = Language | NonTextFileTypes
-export const FileTypeEnum = { ...Language,...NonTextFileTypes };
+export type FileType = Language | BinaryFileType
+export const FileTypeEnum = { ...Language,...BinaryFileType };
 
 // export interface FileSystemEntry {
-export interface ThemeFileSystemEntry {
+
+export interface ThemeFile {
   path: string;
   basename: string;
-  isFile: boolean;
-  isDirectory: boolean;
-  fileType: FileType | null;
+  type: "file";
+  fileType: FileType;
 }
+
+export interface ThemeDirectory {
+  path: string;
+  basename: string;
+  type: "directory";
+}
+
+export type ThemeFileSystemEntry = ThemeFile | ThemeDirectory;
 
 export interface OpenThemeResult {
   themeInfo: ThemeInfo;

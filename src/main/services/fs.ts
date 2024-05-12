@@ -1,4 +1,4 @@
-import { FileType, ThemeFileSystemEntry } from "common/types";
+import { FileType, ThemeFile, ThemeFileSystemEntry, ThemeDirectory } from "common/types";
 import fs from "fs/promises";
 import path from "path";
 import main from "./ipc/main";
@@ -72,18 +72,31 @@ async function readDirectory(dirPath: string): Promise<ThemeFileSystemEntry[]> {
     // entry.path
     const fullPath = path.join(dirPath, entry.name); // use path.resolve()???
 
-    const themeFileEntry: ThemeFileSystemEntry = {
-      basename: entry.name,
-      isDirectory: entry.isDirectory(),
-      isFile: entry.isFile(),
-      fileType: entry.isFile() ? filetypeService.detect(fullPath) : null,
-      path: fullPath,
-    };
+    // const themeFileEntry: ThemeFileSystemEntry = {
+    //   basename: entry.name,
+    //   isDirectory: entry.isDirectory(),
+    //   isFile: entry.isFile(),
+    //   fileType: entry.isFile() ? filetypeService.detect(fullPath) : null,
+    //   path: fullPath,
+    // };
 
     if (entry.isDirectory()) {
-      directories.push(themeFileEntry);
+      let themeFolder: ThemeDirectory = {
+        basename: entry.name,
+        type: "directory",
+        path: fullPath,
+
+      }
+      directories.push(themeFolder);
     } else if (entry.isFile()) {
-      files.push(themeFileEntry);
+      let themeFile: ThemeFile = {
+        basename: entry.name,
+        type: "file",
+        fileType: filetypeService.detect(fullPath),
+        path: fullPath,
+
+      }
+      files.push(themeFile);
     }
   }
 

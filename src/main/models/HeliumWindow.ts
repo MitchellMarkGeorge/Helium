@@ -172,7 +172,7 @@ export class HeliumWindow {
     // get all directories in theme folder
     // might try and use a set here since its more efficient
     const directoryPaths = files
-      .filter((file) => file.isDirectory)
+      .filter((file) => file.type === "directory")
       .map((dir) => dir.path);
 
     // theme paths that must to be in the folder to be valid

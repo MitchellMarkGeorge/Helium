@@ -7,8 +7,13 @@ import { Workspace } from "../workspace/Workspace";
 //     status: ...
 // }
 
+interface AddNewTabOptions {
+  entry: FileEntry;
+  setAsActive?: boolean;
+}
+
 export class TabManager extends StateModel {
-  public tabs: FileEntry[];
+  private tabs: FileEntry[];
   //   private currentTab // should this be an index or not???
   // better to
   // public activeEntry
@@ -19,12 +24,28 @@ export class TabManager extends StateModel {
     this.tabs = [];
   }
 
-  public addNewTab(entry: FileEntry, setAsActive = true) {
+  public addNewTab({ entry, setAsActive = true }: AddNewTabOptions) {
     this.tabs.push(entry);
     if (setAsActive) {
       this.activeTabIndex = this.tabs.length - 1;
     }
     // this should in response create a new view (editor, image)
+  }
+
+  public hasTab(entry: FileEntry) {
+    return this.tabs.includes(entry);
+  }
+
+  public selectActiveTab(entry: FileEntry): void;
+  public selectActiveTab(index: number): void;
+  public selectActiveTab(indexOrEntry: number | FileEntry) {
+    const selectedIndex =
+      typeof indexOrEntry === "number"
+        ? indexOrEntry
+        : this.tabs.indexOf(indexOrEntry);
+    if (selectedIndex >= 0 && selectedIndex < this.tabs.length) {
+      this.activeTabIndex = selectedIndex;
+    }
   }
 
   public get activeEntry() {
@@ -78,7 +99,8 @@ export class TabManager extends StateModel {
       }
 
       if (isActiveTab) {
-        const newIndex = tabIndex === newTabsArray.length ? tabIndex - 1 : tabIndex;
+        const newIndex =
+          tabIndex === newTabsArray.length ? tabIndex - 1 : tabIndex;
         this.activeTabIndex = newIndex;
       }
 

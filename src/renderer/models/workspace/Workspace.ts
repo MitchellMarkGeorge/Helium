@@ -12,6 +12,7 @@ import pathe from "pathe";
 import { TreeFileExplorer } from "../fileexplorer/tree/TreeFileExplorer";
 import { FileExplorer } from "../fileexplorer/types";
 import { TabManager } from "../tabs/TabManager";
+import { Editor } from "../editor/Editor";
 
 export class Workspace {
   //   public currentFilePath: string | null;
@@ -21,8 +22,15 @@ export class Workspace {
   public isSidePanelOpen: boolean;
   public readonly notifications: Notifications;
   public theme: Theme | null;
+// NOTE: Due to implementation details, ArrayFileExplorer and TreeFileExplorer
+// are not in behavioural parity (see the note on the ArrayFileExplorer.expand() method) method.
+// As of right now, it is better to use the TreeFileExplorer implementation
+// but down the line, it would be great to move to this implementation (after some fixes)
   public fileExplorer: FileExplorer;
   public tabs: TabManager;
+  public editor: Editor;
+
+  // STILL NEED TO HANDLE FILE STATUSES
   constructor() {
     // NEED A CLASS TO TRACK TAB/EDITOR STATUS
     this.isShowingWorkspace = false;
@@ -34,6 +42,7 @@ export class Workspace {
     this.notifications = new Notifications(this);
     this.fileExplorer = new TreeFileExplorer(this);
     this.tabs = new TabManager(this);
+    this.editor = new Editor(this);
     this.theme = null;
 
   }

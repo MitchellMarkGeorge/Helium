@@ -10,7 +10,7 @@ export interface Entry {
 }
 
 export interface FileEntry extends Entry {
-    fileType: FileType | null; 
+    fileType: FileType; 
     type: "file";
 }
 
@@ -24,8 +24,8 @@ export interface FileExplorer {
     selectedEntry: string | null;
     expand(dirPath: string): Promise<void>;
     collapse(dirPath: string): void;
+    openFile(entry: FileEntry): Promise<void>;
     reload(): Promise<void>;
-    isFileExplorerVisible(): boolean; 
     getEntryArray(): Entry[];
 }
 

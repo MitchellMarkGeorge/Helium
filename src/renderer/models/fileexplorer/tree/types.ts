@@ -8,7 +8,7 @@ export interface TreeNode  {
 
 export interface FileNode extends TreeNode {
     type: "file";
-    fileType: FileType | null;
+    fileType: FileType;
 }
 
 export interface DirectoryNode extends TreeNode {

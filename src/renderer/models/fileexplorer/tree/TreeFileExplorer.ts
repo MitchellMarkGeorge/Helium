@@ -6,26 +6,13 @@ import { StateModel } from "../../StateModel";
 import { Workspace } from "../../workspace/Workspace";
 import { Entry, FileExplorer, FileEntry, DirectoryEntry } from "../types";
 import { DirectoryNode, FileNode, TreeNode } from "./types";
-import { isDirectoryNode, isExpanded, isFileNode } from "./utils";
-import pathe from "pathe";
-import { SideBarItemOption } from "renderer/models/workspace/types";
+import { isDirectoryNode, isFileNode } from "./utils";
+import { SideBarItemOption } from "../../workspace/types";
+import { isDirectory, isTextFile } from "common/utils";
 
-// right now there is a case where a previously open diractory is cloased and then opened agin
-// and the subtree has been updated while it was closed (and the watcher has been removed)
-// then the subtree cache will be invalid
-
-// 2 things to do:
-// 1) keep the watcher for any folder that has been opened and update the cache when anything changes
-// the problem with this approach is that there could be a race condition where the user is expanding the directory again and the watcher has not been triggered/added
-// this would make the subtree inacurate
-// 2) dont have a subtree cache and just read the directory everytime it is expanded
-// this makes sure that it only responds to change update events when the directory is open
-
-// as of right now, I will use approach 2 until I know how to handle the race condition
-// atom does not use a cache system tho
-
-// unmounted (another sidepanel is shownn)
 export class TreeFileExplorer extends StateModel implements FileExplorer {
+  // inspired by 
+  //https://github.com/Graviton-Code-Editor/Graviton-App/blob/main/web/src/modules/side_panels/explorer/components/FilesystemExplorer.tsx
   // root tree node
   private fileExplorerTree: DirectoryNode | null;
   private subTreeCache: Map<string, TreeNode[]>;
@@ -60,7 +47,7 @@ export class TreeFileExplorer extends StateModel implements FileExplorer {
   }
 
   private toTreeNode(entry: ThemeFileSystemEntry): TreeNode {
-    if (entry.isDirectory) {
+    if (isDirectory(entry)) {
       const dirNode: DirectoryNode = {
         name: entry.basename,
         path: entry.path,
@@ -121,9 +108,33 @@ export class TreeFileExplorer extends StateModel implements FileExplorer {
     }
   }
 
+  // needs to use flow
+  public async openFile(entry: FileEntry) {
+    // should we also check if the model exists???
+    // the model should ALWAYS texist if there was a tab
+    // models might still be present even a tab is closed
+    if (this.workspace.tabs.hasTab(entry)) {
+      this.workspace.tabs.selectActiveTab(entry);
+      return;
+    } else {
+      if (
+        isTextFile(entry.fileType) &&
+        !this.workspace.editor.hasEditorModel(entry)
+      ) {
+        // the editor will then open the file
+        // reading the content from the operating system
+        // and then saving the model internally
+        await this.workspace.editor.openFile(entry);
+      }
+      this.workspace.tabs.addNewTab({ entry });
+    }
+  }
+
   private expandRecursive(path: string) {
     // the idea of this mehtod is to recursively expand a dir path that is not in
   }
+
+  private findClosestAncestor(path: string) {}
 
   private async getSubtree(dirPath: string) {}
 
