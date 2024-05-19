@@ -23,7 +23,7 @@ export class DirectoryWatcher extends Watcher {
 
     const onDirectoryChange = () => {
       const change: ThemeDirectoryChange = {
-        changedPath: dirPath,
+        changedDirectory: dirPath,
       };
       this.heliumWindow.emitEvent("on-directory-change", change);
     };

@@ -99,7 +99,7 @@ export interface OpenThemeResult {
 
 export interface ThemeDirectoryChange {
   // TODO: for now
-  changedPath: string;
+  changedDirectory: string;
   // type: ThemeDirectoryChangeType
 }
 export const enum ThemeDirectoryChangeType {

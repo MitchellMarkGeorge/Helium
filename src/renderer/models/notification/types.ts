@@ -30,6 +30,8 @@ export interface ModalButton {
     text: string
 }
 
+type CancelModalButton = ModalButton;
+
 export interface PrimaryModalButton extends ModalButton {
   onClick: (inputs?: Record<string, string>) => void;
 }
@@ -39,12 +41,27 @@ export interface PrimaryModalButton extends ModalButton {
 export interface InputModalOptions extends ModalOptions {
   modalType: "input";
   title: string;
+  isPathInputModal: boolean;
   // description: string;
-  inputFields: InputModalFields[];
-  buttons: [PrimaryModalButton, ModalButton];
+  inputFields: InputModalField[];
+  // first button is used for cancel
+  buttons: [CancelModalButton, PrimaryModalButton];
 }
 
-export interface InputModalFields {
+export interface InputModalField {
   label: string;
   placeholder: string;
 }
+
+export interface PathInputModalOptions extends InputModalOptions {
+  isPathInputModal: true;
+  inputFields: PathInputField[];
+}
+
+export interface PathInputField extends InputModalField {
+  parentPath: string | null;
+  // if the input if for a directory or
+  for: 'directory' | 'file';
+
+}
+

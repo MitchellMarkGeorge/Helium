@@ -4,18 +4,19 @@ import path from "path";
 import main from "./ipc/main";
 import { isJunk } from "junk";
 import filetypeService from "./filetype";
+import fse from "fs-extra";
 
 // THINK ABOUT GRACEFUL-FS!!!!!!!
 // FS-EXTRA
 
-function pathExists(path: string) {
-  return fs
-    .access(path)
-    .then(() => true)
-    .catch(() => false);
-}
+// function pathExists(path: string) {
+//   return fs
+//     .access(path)
+//     .then(() => true)
+//     .catch(() => false);
+// }
 async function readFile(filePath: string) {
-  const buffer = await fs.readFile(filePath, { encoding: "utf8" });
+  const buffer = await fse.readFile(filePath, { encoding: "utf8" });
   return buffer.toString();
 }
 
@@ -31,12 +32,12 @@ async function readDirectory(dirPath: string): Promise<ThemeFileSystemEntry[]> {
   // }
   // check if path exists
   // make sure the path is a directory
-  if (!(await pathExists(dirPath)))
+  if (!(await fse.pathExists(dirPath)))
     throw new Error(`${dirPath} does not exist`);
-  const stats = await fs.lstat(dirPath); // how do I want to handle symlinks???
+  const stats = await fse.lstat(dirPath); // how do I want to handle symlinks???
   // const stats = await fs.stat(path); // how do I want to handle symlinks???
   if (!stats.isDirectory()) throw new Error(`${dirPath} is not a directory`);
-  let fileEntries = await fs.readdir(dirPath, { withFileTypes: true, encoding: 'utf8' }); // use with file types??
+  let fileEntries = await fse.readdir(dirPath, { withFileTypes: true, encoding: 'utf8' }); // use with file types??
   // should filter it out to only folders and directories (what about symlinks??)
 
   // should paths be lowercase??
@@ -109,7 +110,7 @@ export function initFsPreloadApi() {
     "read-file",
     async (_, { filePath, encoding }) => {
       // TODO: change this to atomic writes https://www.npmjs.com/package/write-file-atomic
-      const buffer = await fs.readFile(filePath, { encoding });
+      const buffer = await fse.readFile(filePath, { encoding });
       return buffer.toString();
     }
   );
@@ -120,23 +121,27 @@ export function initFsPreloadApi() {
     encoding: BufferEncoding;
   }>("write-file", async (_, { filePath, content, encoding }) => {
     const parentDirectory = path.dirname(filePath);
-    if (!(await pathExists(parentDirectory))) {
-      await fs.mkdir(parentDirectory, { recursive: true });
+    if (!(await fse.pathExists(parentDirectory))) {
+      await fse.mkdir(parentDirectory, { recursive: true });
     }
-    return fs.writeFile(filePath, content, { encoding });
+    return fse.writeFile(filePath, content, { encoding });
   });
 
   main.handle<string>("delete-file", (_, path) => {
-    return fs.rm(path);
+    return fse.rm(path);
   });
 
   main.handle<string>("delete-directory", (_, path) => {
-    return fs.rm(path, { force: true, recursive: true });
+    return fse.rm(path, { force: true, recursive: true });
   });
 
   main.handle<string>("create-directory", (_, path) => {
-    return fs.mkdir(path, { recursive: true });
+    return fse.mkdir(path, { recursive: true });
   });
+
+  main.handle<string>("create-file", (_, path) => {
+    return fse.ensureFile(path);
+  })
 
   // for now
   main.handle<string, Promise<ThemeFileSystemEntry[]>>(
@@ -151,14 +156,14 @@ export function initFsPreloadApi() {
 
   main.handle<string>("path-exists", (_, path) => {
     //handle this
-    return pathExists(path);
+    return fse.pathExists(path);
   });
 
   main.handle<{ oldPath: string; newPath: string }>(
     "rename",
     (_, { oldPath, newPath }) => {
       //handle this
-      return fs.rename(oldPath, newPath);
+      return fse.rename(oldPath, newPath);
     }
   );
 
@@ -173,7 +178,6 @@ export function initFsPreloadApi() {
 }
 
 export default {
-  pathExists,
   readDirectory,
   readFile,
 };

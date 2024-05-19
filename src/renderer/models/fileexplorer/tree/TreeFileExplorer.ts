@@ -9,9 +9,10 @@ import { DirectoryNode, FileNode, TreeNode } from "./types";
 import { isDirectoryNode, isFileNode } from "./utils";
 import { SideBarItemOption } from "../../workspace/types";
 import { isDirectory, isTextFile } from "common/utils";
+import { isDirectoryEntry } from "../utils";
 
 export class TreeFileExplorer extends StateModel implements FileExplorer {
-  // inspired by 
+  // inspired by
   //https://github.com/Graviton-Code-Editor/Graviton-App/blob/main/web/src/modules/side_panels/explorer/components/FilesystemExplorer.tsx
   // root tree node
   private fileExplorerTree: DirectoryNode | null;
@@ -26,55 +27,90 @@ export class TreeFileExplorer extends StateModel implements FileExplorer {
     // can add all the listeners here
   }
 
+  //
+  private toEntry(entry: ThemeFileSystemEntry, depth: number) {
+    if (isDirectory(entry)) {
+      const dirEntry: DirectoryEntry = {
+        basename: entry.basename,
+        path: entry.path,
+        type: "directory",
+        isExpanded: false,
+        depth,
+      };
+      return dirEntry;
+    } else {
+      const fileEntry: FileEntry = {
+        basename: entry.basename,
+        path: entry.path,
+        type: "file",
+        fileType: entry.fileType,
+        depth,
+      };
+      return fileEntry;
+    }
+  }
+
   public init(files: ThemeFileSystemEntry[]) {
     if (this.workspace.theme) {
       const { path } = this.workspace.theme;
 
       const rootNode: DirectoryNode = {
-        path,
-        name: this.workspace.theme.getThemeName(),
-        type: "directory",
-        isExpanded: false,
-        items: this.toSubTree(files),
+        entry: {
+          basename: this.workspace.theme.getThemeName(),
+          type: "directory",
+          path,
+          depth: 0,
+          isExpanded: false,
+        },
+
+        items: this.toSubTree(files, 1),
       };
 
       this.fileExplorerTree = rootNode;
     }
   }
 
-  private toSubTree(files: ThemeFileSystemEntry[]) {
-    return files.map(this.toTreeNode);
+  private toSubTree(files: ThemeFileSystemEntry[], depth: number) {
+    return files.map((fileEntry) => this.toTreeNode(fileEntry, depth));
   }
 
-  private toTreeNode(entry: ThemeFileSystemEntry): TreeNode {
-    if (isDirectory(entry)) {
+  private toTreeNode(fileEntry: ThemeFileSystemEntry, depth: number): TreeNode {
+    if (isDirectory(fileEntry)) {
       const dirNode: DirectoryNode = {
-        name: entry.basename,
-        path: entry.path,
-        type: "directory",
-        isExpanded: false,
+        entry: {
+          basename: fileEntry.basename,
+          depth,
+          isExpanded: false,
+          path: fileEntry.path,
+          type: "directory",
+        },
         items: null,
       };
       return dirNode;
     } else {
       const fileNode: FileNode = {
-        name: entry.basename,
-        path: entry.path,
-        type: "file",
-        fileType: entry.fileType,
+        entry: {
+          basename: fileEntry.basename,
+          depth,
+          fileType: fileEntry.fileType,
+          path: fileEntry.path,
+          type: "file",
+        },
       };
       return fileNode;
     }
   }
 
   private findNode(path: string, tree: DirectoryNode): TreeNode | null {
+    if (tree.entry.path === path) return tree;
     if (tree.items === null) return null;
     for (let i = 0; i < tree.items.length; i++) {
       const node = tree.items[i];
-      if (node.path === path) {
+      const { entry } = node;
+      if (entry.path === path) {
         return node;
       } else if (
-        path.startsWith(node.path) &&
+        path.startsWith(entry.path) &&
         // make sure this condition is correct
         // checks if the provided path is a subpath of the directory node path
         // eg: if path = "name/test.ts" and node path = "name",
@@ -138,6 +174,41 @@ export class TreeFileExplorer extends StateModel implements FileExplorer {
 
   private async getSubtree(dirPath: string) {}
 
+  private getExpandedPaths(tree: DirectoryNode): string[] {
+    const expandedPaths: string[] = [];
+    if (tree.items === null) return [];
+    for (let i = 0; i < tree.items.length; i++) {
+      const node = tree.items[i];
+      if (isDirectoryNode(node) && node.entry.isExpanded) {
+        expandedPaths.push(node.entry.path);
+        expandedPaths.concat(this.getExpandedPaths(node));
+      }
+    }
+    return [];
+  }
+
+  public async rebuildSubTree(node: DirectoryNode, expandedPaths: string[]) {
+    // get all the expanded folders
+    // const expansionPaths = this.getExpandedPaths(node);
+    // should what about using the sub tree cache
+    // need to update subtree
+    if (this.subTreeCache.has(node.entry.path)) {
+
+    }
+    const files = await window.helium.fs.readDirectory(node.entry.path);
+    const subTree = this.toSubTree(files, node.entry.depth + 1);
+    for (let i = 0; i < subTree.length; i++) {
+      const node = subTree[i];
+      if (isDirectoryNode(node) && expandedPaths.includes(node.entry.path)) {
+        node.entry.isExpanded = true;
+        const childTree = await this.rebuildSubTree(node, expandedPaths);
+        node.items = childTree;
+      }
+    }
+    return subTree;
+    // node.items = subTree;
+  }
+
   public async expand(dirPath: string) {
     if (this.fileExplorerTree) {
       const node = this.findNode(dirPath, this.fileExplorerTree);
@@ -147,17 +218,17 @@ export class TreeFileExplorer extends StateModel implements FileExplorer {
 
       // the only case that we might want this behaviour is after reloading and the user selects
       // a tab and the file explorer has to respond (this only happens if we make the file explorer show the current tab)
-      if (!node.isExpanded && node.items === null) {
+      if (!node.entry.isExpanded && node.items === null) {
         let subTree: TreeNode[] = [];
         if (this.subTreeCache.has(dirPath)) {
           subTree = this.subTreeCache.get(dirPath) as TreeNode[];
         } else {
           const fileEntries = await window.helium.fs.readDirectory(dirPath);
-          subTree = this.toSubTree(fileEntries);
+          subTree = this.toSubTree(fileEntries, node.entry.depth + 1);
           // what if it is an empty array???
           this.subTreeCache.set(dirPath, subTree);
         }
-        node.isExpanded = true;
+        node.entry.isExpanded = true;
         node.items = subTree;
       }
     }
@@ -167,9 +238,9 @@ export class TreeFileExplorer extends StateModel implements FileExplorer {
     if (this.fileExplorerTree) {
       const node = this.findNode(dirPath, this.fileExplorerTree);
       if (!node || !isDirectoryNode(node)) return;
-      if (node.isExpanded && node.items !== null) {
+      if (node.entry.isExpanded && node.items !== null) {
         // no reason to cache subtree as if it was expanded, its subtree is already cached
-        node.isExpanded = false;
+        node.entry.isExpanded = false;
         node.items = null;
       }
     }
@@ -177,35 +248,19 @@ export class TreeFileExplorer extends StateModel implements FileExplorer {
 
   public getEntryArray(): Entry[] {
     if (this.fileExplorerTree) {
-      return this.mapTreeToArray(this.fileExplorerTree, 0);
+      return this.mapTreeToArray(this.fileExplorerTree);
     } else return [];
   }
 
-  private mapTreeToArray(tree: DirectoryNode, depth: number) {
+  private mapTreeToArray(tree: DirectoryNode) {
     if (tree.items === null) return [];
     const result: Entry[] = [];
     for (let i = 0; i < tree.items.length; i++) {
       const node = tree.items[i];
-      if (isFileNode(node)) {
-        const fileEntry: FileEntry = {
-          basename: node.name,
-          depth,
-          path: node.path,
-          fileType: node.fileType,
-          type: "file",
-        };
-        result.push(fileEntry);
-      } else if (isDirectoryNode(node)) {
-        const directoryEntry: DirectoryEntry = {
-          basename: node.name,
-          depth,
-          path: node.path,
-          type: "directory",
-          isExpanded: node.isExpanded,
-        };
-        result.push(directoryEntry);
-        if (node.isExpanded && node.items && node.items.length > 0) {
-          const subTree = this.mapTreeToArray(node, depth + 1);
+      result.push(node.entry);
+      if (isDirectoryNode(node)) {
+        if (node.entry.isExpanded && node.items && node.items.length > 0) {
+          const subTree = this.mapTreeToArray(node);
           result.push(...subTree);
         }
       }

@@ -22,10 +22,10 @@ export class Workspace {
   public isSidePanelOpen: boolean;
   public readonly notifications: Notifications;
   public theme: Theme | null;
-// NOTE: Due to implementation details, ArrayFileExplorer and TreeFileExplorer
-// are not in behavioural parity (see the note on the ArrayFileExplorer.expand() method) method.
-// As of right now, it is better to use the TreeFileExplorer implementation
-// but down the line, it would be great to move to this implementation (after some fixes)
+  // NOTE: Due to implementation details, ArrayFileExplorer and TreeFileExplorer
+  // are not in behavioural parity (see the note on the ArrayFileExplorer.expand() method) method.
+  // As of right now, it is better to use the TreeFileExplorer implementation
+  // but down the line, it would be great to move to this implementation (after some fixes)
   public fileExplorer: FileExplorer;
   public tabs: TabManager;
   public editor: Editor;
@@ -44,7 +44,6 @@ export class Workspace {
     this.tabs = new TabManager(this);
     this.editor = new Editor(this);
     this.theme = null;
-
   }
 
   public initFromInitalState({
@@ -59,7 +58,7 @@ export class Workspace {
     if (this.theme) throw new Error();
     if (themInfo) {
       this.theme = new Theme(themInfo);
-      this.fileExplorer.init(themeFiles)
+      this.fileExplorer.init(themeFiles);
     }
 
     if (connectedStore) {
@@ -85,9 +84,44 @@ export class Workspace {
     }
   }
 
-  //   public get currentFileEntry(): ThemeFileSystemEntry | null {
-  //     return this.currentFilePath ? this.fs.getEntry(this.currentFilePath) : null;
-  //   }
+  public showNewFileDialog(parentPath?: string) {
+    // should validate if path already exists
+    this.notifications.showPathInputModal({
+      title: "New File",
+      // might be better to use an object...
+      inputFields: [
+        {
+          label: "Name",
+          for: "file",
+          parentPath: parentPath || null,
+          placeholder: "Enter file name",
+        },
+      ],
+      buttons: [
+        {
+          text: "Cancel",
+        },
+        {
+          text: "Create File",
+          onClick: (inputs) => {
+            // should it be a map instead???
+            console.log(inputs);
+            if (inputs?.filePath) {
+              this.createNewFile(inputs.filePath);
+            }
+          },
+        },
+      ],
+    });
+  }
+
+  public async createNewFile(filePath: string) {
+    // check
+    await window.helium.fs.createFile(filePath);
+    // reload directory if open
+    // this.fileExplorer.
+
+  }
 
   // will become flow
   public async openThemeFromDialog() {
@@ -113,7 +147,7 @@ export class Workspace {
       // set values from here
       if (themeInfo) {
         this.theme = new Theme(themeInfo);
-        this.fileExplorer.init(files)
+        this.fileExplorer.init(files);
       }
     }
   }

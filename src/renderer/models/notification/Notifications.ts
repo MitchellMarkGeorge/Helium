@@ -6,6 +6,7 @@ import {
   ModalOptions,
   MessageModalOptions,
   InputModalOptions,
+  PathInputModalOptions,
 } from "./types";
 
 export class Notifications extends StateModel {
@@ -28,7 +29,7 @@ export class Notifications extends StateModel {
   public showNotification(options: NotificationOptions) {}
   public showLoadingNotification(options: LoadingNotificationOptions) {}
   // need to find a way to get thier results
-  private openModal(options: ModalOptions) {
+  private openModal<T extends ModalOptions>(options: T) {
     if (this.modalOpen || this.modalOptions) {
       throw new Error("Modal already open");
     }
@@ -45,7 +46,12 @@ export class Notifications extends StateModel {
   public showMessageModal(options: Omit<MessageModalOptions, 'modalType'>) {
     this.openModal({ modalType: 'message', ...options});
   }
+
   public showInputModal(options: Omit<InputModalOptions, 'modalType'>) {
     this.openModal({ modalType: 'input', ...options});
+  }
+
+  public showPathInputModal(options: Omit<PathInputModalOptions, 'modalType' | 'isPathInputModal'>) {
+    this.openModal({ modalType: 'input', isPathInputModal: true ...options});
   }
 }

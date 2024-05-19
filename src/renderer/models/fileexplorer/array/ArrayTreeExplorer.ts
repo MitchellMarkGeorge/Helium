@@ -111,7 +111,8 @@ export class ArrayFileExplorer extends StateModel implements FileExplorer {
   }
 
   private removeSubtree(startingIndex: number, subTreeLength: number) {
-    const clone = this.entryArray.slice(); // [...this.entryArray]
+    const clone = [...this.entryArray];
+    // const clone = this.entryArray.slice(); // [...this.entryArray]
     clone.splice(startingIndex, subTreeLength);
     return clone;
   }
@@ -122,9 +123,11 @@ export class ArrayFileExplorer extends StateModel implements FileExplorer {
     return clone;
   }
 
-  private async buildSubTree(dirPath: string, depth: number) {
-    const fileEntries = await window.helium.fs.readDirectory(dirPath);
-    const entries = this.toEntryArray(fileEntries, depth + 1);
+  // the exanded paths should be provided
+  private async rebuildSubTree(entry: DirectoryEntry, expandedPaths: string[]) {
+
+    const fileEntries = await window.helium.fs.readDirectory(entry.path);
+    const entries = this.toEntryArray(fileEntries, entry.depth + 1);
 
     const subTree = [];
     for (let i = 0; i < entries.length; i++) {
@@ -134,10 +137,10 @@ export class ArrayFileExplorer extends StateModel implements FileExplorer {
       // only problem with this is that the sub tree will not be "cleaned"
       // i.e if there are any folders that no longer exist when being expanded like this,
       // they will stay in the set
-      if (isDirectoryEntry(entry) && this.expandedDirectories.has(entry.path)) {
+      if (isDirectoryEntry(entry) && expandedPaths.includes(entry.path)) {
         // recursively build the subtree based on their saved expandion state
         entry.isExpanded = true;
-        let childTree = await this.buildSubTree(entry.path, entry.depth + 1);
+        let childTree = await this.rebuildSubTree(entry, expandedPaths);
         // insert built child tree into stubtree
         subTree.splice(i + 1, 0, ...childTree);
       }
@@ -206,6 +209,7 @@ export class ArrayFileExplorer extends StateModel implements FileExplorer {
     if (this.workspace.theme) {
       const { path } = this.workspace.theme;
       this.expandedDirectories.clear();
+      this.subTreeCache.clear();
       const rootFiles = await window.helium.fs.readDirectory(path);
       this.init(rootFiles);
     }

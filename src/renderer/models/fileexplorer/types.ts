@@ -19,6 +19,7 @@ export interface DirectoryEntry extends Entry {
     type: "directory";
 }
 
+// change this to abstract class
 export interface FileExplorer {
     init(files: ThemeFileSystemEntry[]): void;
     selectedEntry: string | null;
@@ -27,6 +28,8 @@ export interface FileExplorer {
     openFile(entry: FileEntry): Promise<void>;
     reload(): Promise<void>;
     getEntryArray(): Entry[];
+    // think about this
+    // rebuildSubTree<T>(path: string): Promise<T[] | null>;
 }
 
 
