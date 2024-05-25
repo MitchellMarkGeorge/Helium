@@ -1,14 +1,14 @@
 import { StateModel } from "renderer/models/StateModel";
 import { DirectoryEntry, Entry, FileEntry, FileExplorer } from "../types";
 import { Workspace } from "renderer/models/workspace/Workspace";
-import { ThemeFileSystemEntry } from "common/types";
-import { isDirectory, isTextFile } from "common/utils";
+import { FileTypeEnum, ThemeFileSystemEntry } from "common/types";
+import { isBinaryFile, isDirectory, isTextFile } from "common/utils";
 import { isDirectoryEntry } from "../utils";
 
-// NOTE: ThemeFileSytemEntry and File entry are pretty similar...
 
 const ROOT_DEPTH = 0;
 
+// OLD
 // NOTE: Due to implementation details, ArrayFileExplorer and TreeFileExplorer
 // are not in behavioural parity (see the note on the expand() method) method.
 // As of right now, it is better to use the TreeFileExplorer implementation
@@ -17,7 +17,7 @@ const ROOT_DEPTH = 0;
 // realistically, the only difference is that this one soed not use a cache
 // UPDATE: now that it uses a sub tree cache, it ***should*** be on parity witth the TreeFileExplorer
 // but there its correctness and potential side effects have not been fully identified
-export class ArrayFileExplorer extends StateModel implements FileExplorer {
+export class ArrayFileExplorer extends FileExplorer {
   private entryArray: Entry[];
   public selectedEntry: string | null;
   private expandedDirectories: Set<string>;
@@ -32,6 +32,19 @@ export class ArrayFileExplorer extends StateModel implements FileExplorer {
   }
   public init(files: ThemeFileSystemEntry[]): void {
     this.entryArray = this.toEntryArray(files, ROOT_DEPTH);
+  }
+
+  public isExpanded(dirPath: string) {
+      const entry = this.entryArray.find(entry => entry.path === dirPath);
+      if (!entry) return false;
+      return isDirectoryEntry(entry) && entry.isExpanded;
+  }
+
+  public cleanup(): void {
+    this.entryArray = [];
+    this.selectedEntry = null;
+    this.expandedDirectories.clear();
+    this.subTreeCache.clear();
   }
 
   private toEntryArray(files: ThemeFileSystemEntry[], depth: number) {
@@ -71,7 +84,7 @@ export class ArrayFileExplorer extends StateModel implements FileExplorer {
       this.expandedDirectories.has(dirPath) &&
       dirEntry.isExpanded
     ) {
-    const subTree = this.getDirectorySubTree(dirPath, dirIndex);
+      const subTree = this.getDirectorySubTree(dirPath, dirIndex);
 
       // confirm numbers
       // does it count the first element as part of the length?
@@ -94,20 +107,20 @@ export class ArrayFileExplorer extends StateModel implements FileExplorer {
   }
 
   private getDirectorySubTree(dirPath: string, dirIndex: number) {
-      let subTree: Entry[] = [];
-      // using dirIndex + 1 as we want to start counting after the directory entry itself
-      for (let i = dirIndex + 1; i < this.entryArray.length; i++) {
-        const entry = this.entryArray[i];
-        // this tests if the given entry is in the subtree of the given directory
-        if (entry.path.startsWith(dirPath)) {
-          subTree.push(entry)
-        } else {
-          // exit immediately
-          break;
-          // think about this
-        }
+    let subTree: Entry[] = [];
+    // using dirIndex + 1 as we want to start counting after the directory entry itself
+    for (let i = dirIndex + 1; i < this.entryArray.length; i++) {
+      const entry = this.entryArray[i];
+      // this tests if the given entry is in the subtree of the given directory
+      if (entry.path.startsWith(dirPath)) {
+        subTree.push(entry);
+      } else {
+        // exit immediately
+        break;
+        // think about this
       }
-      return subTree;
+    }
+    return subTree;
   }
 
   private removeSubtree(startingIndex: number, subTreeLength: number) {
@@ -123,9 +136,31 @@ export class ArrayFileExplorer extends StateModel implements FileExplorer {
     return clone;
   }
 
-  // the exanded paths should be provided
-  private async rebuildSubTree(entry: DirectoryEntry, expandedPaths: string[]) {
+  public async rebuildSubTree(dirPath: string) {
+    // review this method
+    const entryIndex = this.entryArray.findIndex(
+      (entry) => entry.path === dirPath
+    );
+    if (entryIndex >= 0 && entryIndex < this.entryArray.length) {
+      const entry = this.entryArray[entryIndex];
+      const subTree = this.getDirectorySubTree(dirPath, entryIndex)
+      if (!entry || !isDirectoryEntry(entry) || !entry.isExpanded) return;
+      const newEntryArray = this.removeSubtree(entryIndex + 1, subTree.length);
+      const expandedDirectories = subTree
+        .filter((entry) => isDirectoryEntry(entry) && entry.isExpanded)
+        .map((entry) => entry.path);
+      const newSubTree = await this.rebuildSubTreeInternal(entry, expandedDirectories);
 
+      newEntryArray.splice(entryIndex + 1, 0, ...newSubTree);
+      this.entryArray = newEntryArray;
+    }
+  }
+
+  // the exanded paths should be provided
+  private async rebuildSubTreeInternal(
+    entry: DirectoryEntry,
+    expandedPaths: string[]
+  ) {
     const fileEntries = await window.helium.fs.readDirectory(entry.path);
     const entries = this.toEntryArray(fileEntries, entry.depth + 1);
 
@@ -140,7 +175,7 @@ export class ArrayFileExplorer extends StateModel implements FileExplorer {
       if (isDirectoryEntry(entry) && expandedPaths.includes(entry.path)) {
         // recursively build the subtree based on their saved expandion state
         entry.isExpanded = true;
-        let childTree = await this.rebuildSubTree(entry, expandedPaths);
+        let childTree = await this.rebuildSubTreeInternal(entry, expandedPaths);
         // insert built child tree into stubtree
         subTree.splice(i + 1, 0, ...childTree);
       }
@@ -165,9 +200,9 @@ export class ArrayFileExplorer extends StateModel implements FileExplorer {
       isDirectoryEntry(dirEntry) &&
       dirEntry.isExpanded
     ) {
-      let subTree: Entry[] = []
+      let subTree: Entry[] = [];
       if (this.subTreeCache.has(dirPath)) {
-        subTree = this.subTreeCache.get(dirPath) as Entry[]
+        subTree = this.subTreeCache.get(dirPath) as Entry[];
       } else {
         // build the subtree (included expanded child trees)
         // subTree = await this.buildSubTree(dirPath, dirEntry.depth);
@@ -185,23 +220,30 @@ export class ArrayFileExplorer extends StateModel implements FileExplorer {
   }
 
   public async openFile(entry: FileEntry) {
-    // should we also check if the model exists???
-    // the model should ALWAYS texist if there was a tab
-    // models might still be present even a tab is closed
-    if (this.workspace.tabs.hasTab(entry)) {
-      this.workspace.tabs.selectActiveTab(entry);
+    const isImage = entry.fileType === FileTypeEnum.IMAGE;
+    if (isBinaryFile(entry.fileType) && !isImage) {
+      this.workspace.notifications.showNotification({
+        type: "error",
+        message: `Unable to open binary file at ${entry.path}`,
+      });
       return;
+    }
+
+    if (this.workspace.tabs.hasTab(entry.path)) {
+      this.workspace.tabs.selectTab(entry.path);
     } else {
-      if (
-        isTextFile(entry.fileType) &&
-        !this.workspace.editor.hasEditorModel(entry)
-      ) {
-        // the editor will then open the file
-        // reading the content from the operating system
-        // and then saving the model internally
-        await this.workspace.editor.openFile(entry);
-      }
-      this.workspace.tabs.addNewTab({ entry });
+      const tab = {
+        basename: entry.basename,
+        fileType: entry.fileType,
+        path: entry.path,
+      };
+      this.workspace.tabs.addTab({ tab });
+      // this.workspace.tabs.selectActiveTab(entry);
+      // the editor will then open the file
+      // reading the content from the operating system
+      // and then saving the model internally
+      // await this.workspace.editor.openFile(entry);
+      // await this.workspace.editor.openFile(entry.path);
     }
   }
 

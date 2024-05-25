@@ -5,11 +5,13 @@ import { DirectoryEntry, Entry, FileEntry } from "../types";
 export interface TreeNode  {
     // type: "directory" | "file"; // is this needed
     entry: Entry; // this way data is not duplicated
+    // it should point to a file
 }
 
 export interface FileNode extends TreeNode {
     // type: "file";
     entry: FileEntry; // this way data is not duplicated
+    // it should point to a file
 }
 
 export interface DirectoryNode extends TreeNode {

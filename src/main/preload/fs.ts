@@ -5,6 +5,7 @@ export const getFsPreloadApi = () => ({
     readFile: renderer.invoke<{ filePath: string, encoding: BufferEncoding}, string>('read-file'),
     writeFile: renderer.invoke<{ filePath: string, content: string, encoding: BufferEncoding}, void>('write-file'),
     deleteFile: renderer.invoke<string>('delete-file'),
+    deleteDirectory: renderer.invoke<string>('delete-directory'),
     createDirectory: renderer.invoke<string>('create-directory'),
     createFile: renderer.invoke<string>('create-file'),
     readDirectory: renderer.invoke<string, Promise<ThemeFileSystemEntry[]>>('read-directory'),

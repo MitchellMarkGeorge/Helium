@@ -1,57 +1,68 @@
+import { enqueueSnackbar } from "notistack";
 import { StateModel } from "../StateModel";
 import { Workspace } from "../workspace/Workspace";
 import {
   NotificationOptions,
-  LoadingNotificationOptions,
   ModalOptions,
   MessageModalOptions,
   InputModalOptions,
   PathInputModalOptions,
+  ModalState,
 } from "./types";
 
 export class Notifications extends StateModel {
-  private modalOpen: boolean;
-  private modalOptions: ModalOptions | null;
+  private modalState: ModalState;
   constructor(workspace: Workspace) {
     super(workspace);
-    this.modalOpen = false;
-    this.modalOptions = null;
+    this.modalState = {
+      isOpen: false,
+      options: null, 
+    };
   }
 
   public get isModalOpen() {
-    return this.modalOpen;
+    return this.modalState.isOpen;
   }
 
+  public showNotification(options: NotificationOptions) {
+    enqueueSnackbar({
+      message: options.message,
+      key: window.helium.utils.generateHeliumId(),
+      variant: options.type,
+    });
+  }
 
-  // should i use radix-ui toasts or react-hot-toasts
-  // react-hot-toast has a lot of customization options and is easier to work with
-  // advantage of radix is that if I use radix-ui for the modal they might not collide (from same libraray)
-  public showNotification(options: NotificationOptions) {}
-  public showLoadingNotification(options: LoadingNotificationOptions) {}
-  // need to find a way to get thier results
   private openModal<T extends ModalOptions>(options: T) {
-    if (this.modalOpen || this.modalOptions) {
+    if (this.isModalOpen) {
       throw new Error("Modal already open");
     }
-    this.modalOpen = true;
-    this.modalOptions = options;
+    this.modalState = {
+      isOpen: true,
+      options,
+    }
   }
 
   public closeModal() {
-    this.modalOpen = false;
-    if (this.modalOptions) {
-      this.modalOptions = null;
+    this.modalState = {
+      isOpen: false,
+      options: null,
     }
   }
+
   public showMessageModal(options: Omit<MessageModalOptions, 'modalType'>) {
-    this.openModal({ modalType: 'message', ...options});
+      this.openModal({ modalType: 'message', ...options});
+      // can use return when(() => this.modalOpen === false);
   }
 
   public showInputModal(options: Omit<InputModalOptions, 'modalType'>) {
-    this.openModal({ modalType: 'input', ...options});
+      this.openModal({ modalType: 'input', ...options});
   }
 
   public showPathInputModal(options: Omit<PathInputModalOptions, 'modalType' | 'isPathInputModal'>) {
-    this.openModal({ modalType: 'input', isPathInputModal: true ...options});
+      this.openModal({ modalType: 'input', isPathInputModal: true, ...options});
+  }
+  public cleanup() {
+    // no-op
+      return;
   }
 }

@@ -1,4 +1,12 @@
-import { BinaryFileType, FileType, FileTypeEnum, Language, ThemeFileSystemEntry, ThemeDirectory, ThemeFile } from "./types";
+import {
+  BinaryFileType,
+  FileType,
+  FileTypeEnum,
+  Language,
+  ThemeFileSystemEntry,
+  ThemeDirectory,
+  ThemeFile,
+} from "./types";
 
 export const assertIsDefined = <T>(
   value: T,
@@ -28,10 +36,15 @@ export function isTextFile(fileType: FileType): fileType is Language {
   return !isBinaryFile(fileType) && Object.values(Language).includes(fileType);
 }
 
-export function isDirectory(themeEntry: ThemeFileSystemEntry): themeEntry is ThemeDirectory {
+export function isDirectory(
+  themeEntry: ThemeFileSystemEntry
+): themeEntry is ThemeDirectory {
   return themeEntry.type === "directory";
 }
 
-export function isFile(themeEntry: ThemeFileSystemEntry): themeEntry is ThemeFile {
+export function isFile(
+  themeEntry: ThemeFileSystemEntry
+): themeEntry is ThemeFile {
   return themeEntry.type === "file";
 }
+

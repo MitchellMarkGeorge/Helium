@@ -1,4 +1,5 @@
 import { FileType, ThemeFileSystemEntry } from "common/types";
+import { StateModel } from "../StateModel";
 
 // TODO: rename all of these types to remove the *FileExplorer* prefix
 
@@ -19,17 +20,16 @@ export interface DirectoryEntry extends Entry {
     type: "directory";
 }
 
-// change this to abstract class
-export interface FileExplorer {
-    init(files: ThemeFileSystemEntry[]): void;
-    selectedEntry: string | null;
-    expand(dirPath: string): Promise<void>;
-    collapse(dirPath: string): void;
-    openFile(entry: FileEntry): Promise<void>;
-    reload(): Promise<void>;
-    getEntryArray(): Entry[];
-    // think about this
-    // rebuildSubTree<T>(path: string): Promise<T[] | null>;
+export abstract class FileExplorer extends StateModel {
+    public abstract init(files: ThemeFileSystemEntry[]): void;
+    public abstract selectedEntry: string | null;
+    public abstract expand(dirPath: string): Promise<void>;
+    public abstract collapse(dirPath: string): void;
+    public abstract openFile(entry: FileEntry): Promise<void>;
+    public abstract reload(): Promise<void>;
+    public abstract getEntryArray(): Entry[];
+    public abstract isExpanded(dirPath: string): boolean;
+    public abstract rebuildSubTree(dirPath: string): Promise<void>;
 }
 
 

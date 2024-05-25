@@ -1,11 +1,19 @@
-import { intercept } from "mobx";
+import { HeliumId } from "common/types";
 
+export interface ModalState {
+  isOpen: boolean;
+  options: ModalOptions | null;
+}
 // think of better name
 export type NotificationType = "success" | "info" | "warning" | "error";
 
 export interface NotificationOptions {
   type: NotificationType;
   message: string;
+}
+
+export interface Notification extends NotificationOptions {
+  id: HeliumId;
 }
 
 export interface LoadingNotificationOptions {
