@@ -130,7 +130,7 @@ export class TabManager extends StateModel {
     }
   }
 
-  public cleanup(): void {
+  public reset(): void {
     this.activeTabIndex = null;
     this.tabs = [];
   }

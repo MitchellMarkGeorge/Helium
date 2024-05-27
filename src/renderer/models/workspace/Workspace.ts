@@ -6,7 +6,12 @@ import {
   ThemeFileSystemEntry,
   ThemeInfo,
 } from "common/types";
-import { CreateNewFileOptions, LoadingState, SideBarItemOption } from "./types";
+import {
+  NewFileOptions,
+  LoadingState,
+  SideBarItemOption,
+  NewFolderOptions,
+} from "./types";
 import { Notifications } from "../notification/Notifications";
 import { Theme } from "../Theme";
 import { getErrorMessage, isBinaryFile } from "common/utils";
@@ -23,7 +28,7 @@ import { OpenFileOptions } from "../editor/types";
 const DEFAULT_LOADING_STATE: LoadingState = {
   isLoading: false,
   loadingMessage: null,
-}
+};
 
 export class Workspace {
   //   public currentFilePath: string | null;
@@ -57,7 +62,6 @@ export class Workspace {
     this.fileExplorer = new TreeFileExplorer(this);
     this.tabs = new TabManager(this);
     this.editor = new Editor(this);
-    // this.editor = new Editor(this);
     this.theme = null;
     this.unsavedPaths = new Set<string>();
     this.loadingState = DEFAULT_LOADING_STATE;
@@ -87,12 +91,29 @@ export class Workspace {
     // window.helium.app.sendReadyToShowWorkspace();
   }
 
-  public updateLoadingState(state: LoadingState) {
-    this.loadingState = state;
+  // shows loading indicator in status bar and if it is already loading,
+  // it updates the loading message
+  public showIsLoading(loadingMessage: string) {
+    if (!this.isLoading) {
+      this.loadingState = {
+        isLoading: true,
+        loadingMessage,
+      };
+    } else {
+      this.loadingState.loadingMessage = loadingMessage;
+    }
+  }
+
+  public updateLoadingMessage(loadingMessage: string) {
+    if (this.isLoading) {
+      this.loadingState.loadingMessage = loadingMessage;
+    }
   }
 
   public get isLoading() {
-    return this.loadingState.isLoading && this.loadingState.loadingMessage !== null;
+    return (
+      this.loadingState.isLoading && this.loadingState.loadingMessage !== null
+    );
   }
 
   public resetLoadingState() {
@@ -113,12 +134,12 @@ export class Workspace {
     }
   }
 
-  public showNewFileDialog(parentPath?: string) {
+  private showNewFileModal(parentPath?: string) {
     // should validate if path already exists
-    this.notifications.showPathInputModal({
+    return this.notifications.showPathInputModal<NewFileOptions>({
       title: "New File",
-      // might be better to use an object...
       inputFields: [
+        // make sure to only allow text files
         {
           label: "Name",
           for: "file",
@@ -126,109 +147,106 @@ export class Workspace {
           placeholder: "Enter file name",
         },
       ],
-      buttons: [
-        {
-          text: "Cancel",
-        },
-        {
-          text: "Create File",
-          onClick: (inputs) => {
-            // should it be a map instead???
-            console.log(inputs);
-            if (inputs?.filePath && inputs.fileType && inputs.fileName) {
-              // this.createNewFile(inputs.filePath, inputs.fileType as Language);
-              this.createNewFile({
-                fileName: inputs.fileName,
-                filePath: inputs.filePath,
-                fileType: inputs.fileType as Language,
-              });
-            }
-          },
-        },
-      ],
+      primaryButtonText: "Create File",
+      secondaryButtonText: "Cancel",
     });
   }
 
-  public showNewFolderDialog(parentPath?: string) {
+  private showNewFolderModal(parentPath?: string) {
     // should validate if path already exists
-    this.notifications.showPathInputModal({
+    return this.notifications.showPathInputModal<NewFolderOptions>({
       title: "New Folder",
-      // might be better to use an object...
       inputFields: [
         {
           label: "Name",
           for: "directory",
           parentPath: parentPath || null,
-          placeholder: "Enter directory name",
+          placeholder: "Enter folder name",
         },
       ],
-      buttons: [
-        {
-          text: "Cancel",
-        },
-        {
-          text: "Create Folder",
-          onClick: (inputs) => {
-            console.log(inputs);
-            if (inputs?.folderPath) {
-              this.createNewFolder(inputs.folderPath);
-            }
-          },
-        },
-      ],
+      primaryButtonText: "Create Folder",
+      secondaryButtonText: "Cancel",
     });
   }
 
-  public async createNewFile({
-    fileName,
-    filePath,
-    fileType,
-  }: CreateNewFileOptions) {
-    await window.helium.fs.createFile(filePath);
-    const parerentDirectory = pathe.dirname(filePath);
-    if (this.fileExplorer.isExpanded(parerentDirectory)) {
-      await this.fileExplorer.rebuildSubTree(parerentDirectory);
-    }
-
-    this.tabs.addTab({
-      tab: {
-        path: filePath,
-        fileType,
-        basename: fileName,
-      },
+  private showTrashItemConfirmation(name: string, isFile: boolean) {
+    // should validate if path already exists
+    return this.notifications.showMessageModal({
+      type: "warning",
+      message: `Are you sure you want to delete ${
+        isFile ? "file" : "folder"
+      } ${name}`,
+      primaryButtonText: "Move to Trash",
+      secondaryButtonText: "Cancel",
     });
   }
 
-  public async deleteFile(filePath: string) {
-    await window.helium.fs.deleteFile(filePath);
-    const parerentDirectory = pathe.dirname(filePath);
-    if (this.fileExplorer.isExpanded(parerentDirectory)) {
-      await this.fileExplorer.rebuildSubTree(parerentDirectory);
-    }
+  public async createNewFile(parentPath?: string) {
+    const modalResponse = await this.showNewFileModal(parentPath);
 
-    if (this.tabs.hasTab(filePath)) {
-      this.tabs.closeTab(filePath);
+    if (modalResponse.buttonClicked === "primary" && modalResponse.result) {
+      const { fileName, filePath, fileType } = modalResponse.result;
+      await window.helium.fs.createFile(filePath);
+      const parerentDirectory = pathe.dirname(filePath);
+
+      if (this.fileExplorer.isExpanded(parerentDirectory)) {
+        await this.fileExplorer.rebuildSubTree(parerentDirectory);
+      }
+
+      this.tabs.addTab({
+        tab: {
+          path: filePath,
+          fileType,
+          basename: fileName,
+        },
+      });
     }
-    // also delete model in editor (inlcuding if it was a markdown file)
   }
 
-  public async createNewFolder(folderPath: string) {
-    await window.helium.fs.createDirectory(folderPath);
-    const parerentDirectory = pathe.dirname(folderPath);
-    if (this.fileExplorer.isExpanded(parerentDirectory)) {
-      await this.fileExplorer.rebuildSubTree(parerentDirectory);
+  public async trashFile(filePath: string, fileName: string) {
+    const modalResponse = await this.showTrashItemConfirmation(fileName, true);
+
+    if (modalResponse.buttonClicked === "primary") {
+      await window.helium.fs.trashItem(filePath);
+      const parerentDirectory = pathe.dirname(filePath);
+      if (this.fileExplorer.isExpanded(parerentDirectory)) {
+        await this.fileExplorer.rebuildSubTree(parerentDirectory);
+      }
+
+      if (this.tabs.hasTab(filePath)) {
+        this.tabs.closeTab(filePath);
+      }
+      // also delete model in editor (inlcuding if it was a markdown file)
     }
   }
 
-  public async deleteFolder(directoryPath: string) {
-    await window.helium.fs.de(filePath);
-    const parerentDirectory = pathe.dirname(filePath);
-    if (this.fileExplorer.isExpanded(parerentDirectory)) {
-      await this.fileExplorer.rebuildSubTree(parerentDirectory);
-    }
+  public async createNewFolder(parentFolderPath: string) {
+    const modalResponse = await this.showNewFolderModal(parentFolderPath);
 
-    if (this.tabs.hasTab(filePath)) {
-      this.tabs.closeTab(filePath);
+    if (modalResponse.buttonClicked === "primary" && modalResponse.result) {
+      const { folderPath } = modalResponse.result;
+      await window.helium.fs.createDirectory(folderPath);
+      const parerentDirectory = pathe.dirname(folderPath);
+      if (this.fileExplorer.isExpanded(parerentDirectory)) {
+        await this.fileExplorer.rebuildSubTree(parerentDirectory);
+      }
+    }
+  }
+
+  public async trashFolder(folderPath: string, folderName: string) {
+    const modalResponse = await this.showTrashItemConfirmation(
+      folderName,
+      true
+    );
+
+    if (modalResponse.buttonClicked === "primary") {
+      await window.helium.fs.trashItem(folderPath);
+      const parerentDirectory = pathe.dirname(folderPath);
+      if (this.fileExplorer.isExpanded(parerentDirectory)) {
+        await this.fileExplorer.rebuildSubTree(parerentDirectory);
+      }
+
+      // this should also remove any open editor models or tabs that are in said directory
     }
   }
 
@@ -247,24 +265,16 @@ export class Workspace {
         files = results.files;
       } catch (error) {
         this.notifications.showMessageModal({
-          message: getErrorMessage(error),
+          message: `Unable to open folder: ${getErrorMessage(error)}`,
           type: "error",
-          buttons: { text: "Close" },
+          secondaryButtonText: "Close",
         });
         return;
       }
 
-      if (this.hasTheme) {
-        // clean up
-        // this  removing all
-        // this.theme.cleanup();
-        this.fileExplorer.cleanup();
-        this.tabs.cleanup();
-        this.editor.cleanup();
-        this.notifications.cleanup();
-      }
       // set values from here
-      if (themeInfo) {
+      if (this.hasTheme && themeInfo) {
+        this.reset();
         this.theme = new Theme(themeInfo);
         this.fileExplorer.init(files);
       }
@@ -274,9 +284,10 @@ export class Workspace {
   public openFile(options: OpenFileOptions) {
     const isImage = options.fileType === FileTypeEnum.IMAGE;
     if (isBinaryFile(options.fileType) && !isImage) {
-      this.notifications.showNotification({
+      this.notifications.showMessageModal({
         type: "error",
         message: `Unable to open binary file at ${options.path}`,
+        secondaryButtonText: "Close",
       });
       return;
     }
@@ -313,10 +324,12 @@ export class Workspace {
   }
 
   public markAsUnsaved(path: string) {
-      this.unsavedPaths.add(path);
+    // will only add if not in set
+    this.unsavedPaths.add(path);
   }
 
   public markAsSaved(path: string) {
+    // will only delete if in set
     this.unsavedPaths.delete(path);
   }
 
@@ -346,5 +359,15 @@ export class Workspace {
 
   public selectSideBarOption(option: SideBarItemOption) {
     this.selectedSideBarOption = option;
+  }
+
+  public reset() {
+    this.fileExplorer.reset();
+    this.tabs.reset();
+    this.editor.reset();
+    this.notifications.reset();
+    if (this.isLoading) {
+      this.resetLoadingState();
+    }
   }
 }

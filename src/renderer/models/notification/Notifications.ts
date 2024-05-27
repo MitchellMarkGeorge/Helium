@@ -8,7 +8,29 @@ import {
   InputModalOptions,
   PathInputModalOptions,
   ModalState,
+  ModalResponse,
 } from "./types";
+
+type ShowMessageModalOptions = Pick<MessageModalOptions, "type" | "message"> & {
+  primaryButtonText?: string;
+  secondaryButtonText: string;
+};
+
+type ShowInputModalOptions<T> = Pick<
+  InputModalOptions<T>,
+  "title" | "inputFields"
+> & {
+  primaryButtonText: string;
+  secondaryButtonText: string;
+};
+
+type ShowPathInputModalOptions<T> = Pick<
+  PathInputModalOptions<T>,
+  "title" | "inputFields"
+> & {
+  primaryButtonText: string;
+  secondaryButtonText: string;
+};
 
 export class Notifications extends StateModel {
   private modalState: ModalState;
@@ -16,7 +38,7 @@ export class Notifications extends StateModel {
     super(workspace);
     this.modalState = {
       isOpen: false,
-      options: null, 
+      options: null,
     };
   }
 
@@ -33,12 +55,11 @@ export class Notifications extends StateModel {
   }
 
   private openModal<T extends ModalOptions>(options: T) {
-    if (this.isModalOpen) {
-      throw new Error("Modal already open");
-    }
-    this.modalState = {
-      isOpen: true,
-      options,
+    if (!this.isModalOpen) {
+      this.modalState = {
+        isOpen: true,
+        options,
+      };
     }
   }
 
@@ -46,23 +67,92 @@ export class Notifications extends StateModel {
     this.modalState = {
       isOpen: false,
       options: null,
-    }
+    };
   }
 
-  public showMessageModal(options: Omit<MessageModalOptions, 'modalType'>) {
-      this.openModal({ modalType: 'message', ...options});
-      // can use return when(() => this.modalOpen === false);
+  public showMessageModal(
+    options: ShowMessageModalOptions
+  ): Promise<ModalResponse> {
+    return new Promise((resolve) => {
+      this.openModal<MessageModalOptions>({
+        modalType: "message",
+        type: options.type,
+        message: options.message,
+        buttons: options.primaryButtonText
+          ? [
+              {
+                text: options.primaryButtonText,
+                onClick: () =>
+                  resolve({ buttonClicked: "primary", result: null }),
+              },
+              {
+                text: options.secondaryButtonText,
+                onClick: () =>
+                  resolve({ buttonClicked: "secondary", result: null }),
+              },
+            ]
+          : {
+              text: options.secondaryButtonText,
+
+              onClick: () =>
+                resolve({ buttonClicked: "secondary", result: null }),
+            },
+      });
+    });
   }
 
-  public showInputModal(options: Omit<InputModalOptions, 'modalType'>) {
-      this.openModal({ modalType: 'input', ...options});
+  public showInputModal<T>(
+    options: ShowInputModalOptions<T>
+  ): Promise<ModalResponse<T>> {
+    return new Promise((resolve) => {
+      this.openModal<InputModalOptions<T>>({
+        modalType: "input",
+        title: options.title,
+        inputFields: options.inputFields,
+        onCloseButtonClick: () =>
+          resolve({ buttonClicked: "close", result: null }),
+        buttons: [
+          {
+            text: options.secondaryButtonText,
+            onClick: () =>
+              resolve({ buttonClicked: "secondary", result: null }),
+          },
+          {
+            text: options.primaryButtonText,
+            onClick: (result) => resolve({ buttonClicked: "primary", result }),
+          },
+        ],
+      });
+    });
   }
 
-  public showPathInputModal(options: Omit<PathInputModalOptions, 'modalType' | 'isPathInputModal'>) {
-      this.openModal({ modalType: 'input', isPathInputModal: true, ...options});
+  public showPathInputModal<T>(
+    options: ShowPathInputModalOptions<T>
+  ): Promise<ModalResponse<T>> {
+    return new Promise((resolve) => {
+      this.openModal<PathInputModalOptions<T>>({
+        modalType: "pathInput",
+        title: options.title,
+        inputFields: options.inputFields,
+        onCloseButtonClick: () =>
+          resolve({ buttonClicked: "close", result: null }),
+        buttons: [
+          {
+            text: options.secondaryButtonText,
+            onClick: () =>
+              resolve({ buttonClicked: "secondary", result: null }),
+          },
+          {
+            text: options.primaryButtonText,
+            onClick: (result) => resolve({ buttonClicked: "primary", result }),
+          },
+        ],
+      });
+    });
   }
-  public cleanup() {
+
+  public reset() {
     // no-op
-      return;
+    return;
   }
 }

@@ -16,18 +16,18 @@ export function initContextMenuService() {
     newFileMenu.show(heliumWindow, newFileTemplate);
   });
 
-  main.listen<ThemeFileSystemEntry>(
+  main.listen<string>(
     "show-file-item-context-menu",
-    (heliumWindow, fileEntry) => {
-      const fileItemTemplate = getFileItemTemplate(fileEntry);
+    (heliumWindow, filePath) => {
+      const fileItemTemplate = getFileItemTemplate(filePath);
       fileItemMenu.show(heliumWindow, fileItemTemplate);
     }
   );
 
-  main.listen<ThemeFileSystemEntry>(
+  main.listen<string>(
     "show-folder-item-context-menu",
-    (heliumWindow, folderEntry) => {
-      const folderItemTemplate = getFolderItemTemplate(folderEntry);
+    (heliumWindow, folderPath) => {
+      const folderItemTemplate = getFolderItemTemplate(folderPath);
       folderItemMenu.show(heliumWindow, folderItemTemplate);
     }
   );
@@ -55,7 +55,7 @@ function getNewFileTemplate(): MenuItemConstructorOptions[] {
 }
 
 function getFileItemTemplate(
-  fileEntry: ThemeFileSystemEntry
+  filePath: string
 ): MenuItemConstructorOptions[] {
   const heliumApplication = HeliumApplication.getInstance();
   return [
@@ -67,39 +67,39 @@ function getFileItemTemplate(
     {
       label: "Copy Path",
       click: () => {
-        clipboard.writeText(fileEntry.path);
+        clipboard.writeText(filePath);
       },
     },
     { type: "separator" },
     {
       label: "Rename",
-      click: () => heliumApplication.emitEventOnFocusedWindow("rename-file", fileEntry),
+      click: () => heliumApplication.emitEventOnFocusedWindow("rename-file", filePath),
     },
     {
       label: "Delete",
-      click: () => heliumApplication.emitEventOnFocusedWindow("delete-file", fileEntry),
+      click: () => heliumApplication.emitEventOnFocusedWindow("delete-file", filePath),
     },
   ];
 }
 
 function getFolderItemTemplate(
-  folderEntry: ThemeFileSystemEntry
+  folderPath: string
 ): MenuItemConstructorOptions[] {
   const heliumApplication = HeliumApplication.getInstance();
   return [
     {
       label: "New Folder",
       // folderEntry represents the parent folder
-      click: () => heliumApplication.emitEventOnFocusedWindow("new-folder", folderEntry),
+      click: () => heliumApplication.emitEventOnFocusedWindow("new-folder", folderPath),
     },
     {
       label: "New File",
       // folderEntry represents the parent folder
-      click: () => heliumApplication.emitEventOnFocusedWindow("new-file", folderEntry),
+      click: () => heliumApplication.emitEventOnFocusedWindow("new-file", folderPath),
     },
     {
       label: "Reveal in Finder",
-      click: () => shell.showItemInFolder(folderEntry.path),
+      click: () => shell.showItemInFolder(folderPath),
     },
     { type: "separator" },
     // { label: "Copy" },
@@ -108,17 +108,17 @@ function getFolderItemTemplate(
     {
       label: "Copy Path",
       click: () => {
-        clipboard.writeText(folderEntry.path);
+        clipboard.writeText(folderPath);
       },
     },
     { type: "separator" },
     {
       label: "Rename",
-      click: () => heliumApplication.emitEventOnFocusedWindow("rename-file", folderEntry),
+      click: () => heliumApplication.emitEventOnFocusedWindow("rename-file", folderPath),
     },
     {
       label: "Delete",
-      click: () => heliumApplication.emitEventOnFocusedWindow("delete-file", folderEntry),
+      click: () => heliumApplication.emitEventOnFocusedWindow("delete-file", folderPath),
     },
   ];
 }

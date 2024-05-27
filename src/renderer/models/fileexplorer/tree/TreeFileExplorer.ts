@@ -27,7 +27,7 @@ export class TreeFileExplorer extends StateModel implements FileExplorer {
     // can add all the listeners here
   }
 
-  public cleanup(): void {
+  public reset(): void {
       this.selectedEntry = null;
       this.fileExplorerTree = null;
       this.subTreeCache.clear(); // could also react a new one

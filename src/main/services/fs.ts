@@ -5,6 +5,7 @@ import main from "./ipc/main";
 import { isJunk } from "junk";
 import filetypeService from "./filetype";
 import fse from "fs-extra";
+import { shell } from "electron";
 
 // THINK ABOUT GRACEFUL-FS!!!!!!!
 // FS-EXTRA
@@ -131,6 +132,10 @@ export function initFsPreloadApi() {
     return fse.rm(path);
   });
 
+  main.handle<string>("trash-item", (_, path) => {
+    return shell.trashItem(path);
+  });
+
   main.handle<string>("delete-directory", (_, path) => {
     return fse.rm(path, { force: true, recursive: true });
   });
@@ -174,6 +179,11 @@ export function initFsPreloadApi() {
 
   main.handle<string>("stop-watching-directory", (heliumWindow, dirPath) => {
     heliumWindow.directoryWatcher.stopWatching(dirPath);
+  });
+
+  main.handle<string>("detect-file-type", (heliumWindow, fileType) => {
+    return filetypeService.detect(fileType);
+    // heliumWindow.directoryWatcher.stopWatching(dirPath);
   });
 }
 

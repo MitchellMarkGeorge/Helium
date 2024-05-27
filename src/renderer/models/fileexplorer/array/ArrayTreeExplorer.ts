@@ -40,7 +40,7 @@ export class ArrayFileExplorer extends FileExplorer {
       return isDirectoryEntry(entry) && entry.isExpanded;
   }
 
-  public cleanup(): void {
+  public reset(): void {
     this.entryArray = [];
     this.selectedEntry = null;
     this.expandedDirectories.clear();

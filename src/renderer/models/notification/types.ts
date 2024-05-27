@@ -1,4 +1,4 @@
-import { HeliumId } from "common/types";
+import { HeliumId, StoreInfo } from "common/types";
 
 export interface ModalState {
   isOpen: boolean;
@@ -25,35 +25,39 @@ export interface LoadingNotificationOptions {
 // all modals have a primary text and secondary text
 export interface ModalOptions {
   // primary button will be optional for some options
-  modalType: "message" | "input";
+  modalType: "message" | "input" | "pathInput";
 }
 export interface MessageModalOptions extends ModalOptions {
   modalType: "message";
   type: NotificationType;
   message: string;
   buttons: [PrimaryModalButton, ModalButton] | ModalButton;
+  // can be canceld by closeing the modal via the "X" button or the cancel button
 }
 
 export interface ModalButton {
-    text: string
+    text: string;
+    onClick: () => void;
 }
+
 
 type CancelModalButton = ModalButton;
 
-export interface PrimaryModalButton extends ModalButton {
-  onClick: (inputs?: Record<string, string>) => void;
+export interface PrimaryModalButton<T = void> {
+  text: string;
+  onClick: (inputs: T) => void;
 }
 
 
 
-export interface InputModalOptions extends ModalOptions {
+export interface InputModalOptions<T> extends ModalOptions {
   modalType: "input";
   title: string;
-  isPathInputModal: boolean;
   // description: string;
   inputFields: InputModalField[];
-  // first button is used for cancel
-  buttons: [CancelModalButton, PrimaryModalButton];
+  // first button is generally used for cancel
+  buttons: [ModalButton, PrimaryModalButton<T>];
+  onCloseButtonClick: () => void;
 }
 
 export interface InputModalField {
@@ -61,9 +65,13 @@ export interface InputModalField {
   placeholder: string;
 }
 
-export interface PathInputModalOptions extends InputModalOptions {
-  isPathInputModal: true;
+export interface PathInputModalOptions<T> extends ModalOptions {
+  modalType: "pathInput"
+  title: string;
   inputFields: PathInputField[];
+  // first button is used for cancel
+  buttons: [ModalButton, PrimaryModalButton<T>];
+  onCloseButtonClick: () => void;
 }
 
 export interface PathInputField extends InputModalField {
@@ -71,5 +79,10 @@ export interface PathInputField extends InputModalField {
   // if the input if for a directory or
   for: 'directory' | 'file';
 
+}
+
+export interface ModalResponse<T = void> {
+  buttonClicked: "primary" | "secondary" | "close";
+  result: T | null;
 }
 

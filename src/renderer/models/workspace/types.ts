@@ -7,10 +7,14 @@ export const enum SideBarItemOption {
   THEME_INFO = "THEME_INFO",
 }
 
-export interface CreateNewFileOptions {
+export interface NewFileOptions {
   fileName: string;
   fileType: Language;
   filePath: string;
+}
+
+export interface NewFolderOptions {
+  folderPath: string
 }
 
 export interface LoadingState {
