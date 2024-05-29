@@ -2,6 +2,7 @@ import {
   ConnectStoreOptions,
   OpenThemeResult,
   PreviewState,
+  StartThemePreviewOptions,
   StoreInfo,
   ThemeInfo,
 } from "common/types";
@@ -9,7 +10,7 @@ import renderer from "main/services/ipc/renderer";
 
 export const getShopifyPreloadApi = () => ({
   openTheme: renderer.invoke<string, OpenThemeResult>("open-theme"),
-  startThemePreview: renderer.invoke("start-theme-preview"),
+  startThemePreview: renderer.invoke<StartThemePreviewOptions | undefined>("start-theme-preview"),
   stopThemePreview: renderer.invoke("stop-theme-preview"),
   pullTheme: renderer.invoke<string>("pull-theme"),
   pushTheme: renderer.invoke<string>("push-theme"),

@@ -10,6 +10,10 @@ import { isDirectoryNode, isFileNode } from "./utils";
 import { SideBarItemOption } from "../../workspace/types";
 import { isBinaryFile, isDirectory, isTextFile } from "common/utils";
 import { isDirectoryEntry } from "../utils";
+import pathe from "pathe";
+
+const EXPAND_DIRECTORY_LOADER_DELAY = 3 * 1000; // 3 seconds
+const REBUILD_DIRECTORY_LOADER_DELAY = 3 * 1000; // 3 seconds
 
 export class TreeFileExplorer extends StateModel implements FileExplorer {
   // inspired by
@@ -28,10 +32,10 @@ export class TreeFileExplorer extends StateModel implements FileExplorer {
   }
 
   public reset(): void {
-      this.selectedEntry = null;
-      this.fileExplorerTree = null;
-      this.subTreeCache.clear(); // could also react a new one
-      // it shoudl also stop watching all folders
+    this.selectedEntry = null;
+    this.fileExplorerTree = null;
+    this.subTreeCache.clear(); // could also react a new one
+    // it shoudl also stop watching all folders
   }
 
   public isExpanded(dirPath: string): boolean {
@@ -155,37 +159,17 @@ export class TreeFileExplorer extends StateModel implements FileExplorer {
     if (this.workspace.theme) {
       const { path } = this.workspace.theme;
       this.subTreeCache.clear();
-      const rootFiles = await window.helium.fs.readDirectory(path);
+      let rootFiles: ThemeFileSystemEntry[] = [];
+      try {
+        rootFiles = await window.helium.fs.readDirectory(path);
+      } catch (error) {
+        this.workspace.notifications.showMessageModal({
+          type: "error",
+          message: "Unable to reload the file explorer.",
+          secondaryButtonText: "Close",
+        });
+      }
       this.init(rootFiles);
-    }
-  }
-
-  // needs to use flow
-  public async openFile(entry: FileEntry) {
-    const isImage = entry.fileType === FileTypeEnum.IMAGE;
-    if (isBinaryFile(entry.fileType) && !isImage) {
-      this.workspace.notifications.showNotification({
-        type: "error",
-        message: `Unable to open binary file at ${entry.path}`,
-      });
-      return;
-    }
-
-    if (this.workspace.tabs.hasTab(entry.path)) {
-      this.workspace.tabs.selectTab(entry.path);
-    } else {
-      const tab = {
-        basename: entry.basename,
-        fileType: entry.fileType,
-        path: entry.path,
-      };
-      this.workspace.tabs.addTab({ tab });
-      // this.workspace.tabs.selectActiveTab(entry);
-      // the editor will then open the file
-      // reading the content from the operating system
-      // and then saving the model internally
-      // await this.workspace.editor.openFile(entry);
-      // await this.workspace.editor.openFile(entry.path);
     }
   }
 
@@ -202,18 +186,32 @@ export class TreeFileExplorer extends StateModel implements FileExplorer {
     return expandedPaths;
   }
 
-  public async rebuildSubTree(dirPath: string): Promise<void> {
+  public async reloadDirectory(dirPath: string): Promise<void> {
     if (this.fileExplorerTree) {
-      const node = this.findNode(dirPath, this.fileExplorerTree);    
+      const node = this.findNode(dirPath, this.fileExplorerTree);
       if (!node || !isDirectoryNode(node) || !node.entry.isExpanded) return;
-      const expandedDirectories = this.getExpandedDirectories(node);
-      const subTree = await this.rebuildSubTreeNode(node, expandedDirectories);
-      node.entry.isExpanded = true;
-      node.items = subTree;
+      try {
+        const expandedDirectories = this.getExpandedDirectories(node);
+        const subTree = await this.rebuildSubTreeNode(
+          node,
+          expandedDirectories
+        );
+        node.entry.isExpanded = true;
+        node.items = subTree;
+      } catch {
+        this.workspace.notifications.showMessageModal({
+          type: "error",
+          message: `Unable to reload ${node.entry.basename} directory.`,
+          secondaryButtonText: "Close",
+        });
+      }
     }
   }
 
-  public async rebuildSubTreeNode(node: DirectoryNode, expandedPaths: string[]) {
+  private async rebuildSubTreeNode(
+    node: DirectoryNode,
+    expandedPaths: string[]
+  ) {
     // get all the expanded folders
     // const expansionPaths = this.getExpandedPaths(node);
     // should what about using the sub tree cache
@@ -248,25 +246,43 @@ export class TreeFileExplorer extends StateModel implements FileExplorer {
 
   public async expand(dirPath: string) {
     if (this.fileExplorerTree) {
-      const node = this.findNode(dirPath, this.fileExplorerTree);
-      if (!node || !isDirectoryNode(node)) return;
-      // we do not need to handle expansion of parent direcotries
-      // as there is no case where that would be possible (for now)
+      // should this be done in the try catch???
+      const delayLoaderTimeout = setTimeout(
+        () => this.workspace.showIsLoading("Expanding Directory"),
+        EXPAND_DIRECTORY_LOADER_DELAY
+      );
+      try {
+        const node = this.findNode(dirPath, this.fileExplorerTree);
+        if (!node || !isDirectoryNode(node)) return;
+        // we do not need to handle expansion of parent direcotries
+        // as there is no case where that would be possible (for now)
 
-      // the only case that we might want this behaviour is after reloading and the user selects
-      // a tab and the file explorer has to respond (this only happens if we make the file explorer show the current tab)
-      if (!node.entry.isExpanded && node.items === null) {
-        let subTree: TreeNode[] = [];
-        if (this.subTreeCache.has(dirPath)) {
-          subTree = this.subTreeCache.get(dirPath) as TreeNode[];
-        } else {
-          const fileEntries = await window.helium.fs.readDirectory(dirPath);
-          subTree = this.toSubTree(fileEntries, node.entry.depth + 1);
-          // what if it is an empty array???
-          this.subTreeCache.set(dirPath, subTree);
+        // the only case that we might want this behaviour is after reloading and the user selects
+        // a tab and the file explorer has to respond (this only happens if we make the file explorer show the current tab)
+        if (!node.entry.isExpanded && node.items === null) {
+          let subTree: TreeNode[] = [];
+          if (this.subTreeCache.has(dirPath)) {
+            subTree = this.subTreeCache.get(dirPath) as TreeNode[];
+          } else {
+            const fileEntries = await window.helium.fs.readDirectory(dirPath);
+            subTree = this.toSubTree(fileEntries, node.entry.depth + 1);
+            // what if it is an empty array???
+            this.subTreeCache.set(dirPath, subTree);
+          }
+          node.entry.isExpanded = true;
+          node.items = subTree;
         }
-        node.entry.isExpanded = true;
-        node.items = subTree;
+      } catch {
+        this.workspace.notifications.showMessageModal({
+          type: "error",
+          message: `Unable to expand folder ${pathe.basename(dirPath)}`,
+          secondaryButtonText: "Close",
+        });
+      } finally {
+        clearTimeout(delayLoaderTimeout);
+        if (this.workspace.isLoading) {
+          this.workspace.resetLoadingState();
+        }
       }
     }
   }
@@ -281,7 +297,7 @@ export class TreeFileExplorer extends StateModel implements FileExplorer {
         // do I ***really*** need to set this to null?
         // when producing the entry array, I can just skip over it...
         // TODO: explore benefits of it being null
-        node.items = null; 
+        node.items = null;
       }
     }
   }

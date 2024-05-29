@@ -65,6 +65,7 @@ export class TabManager extends StateModel {
 
       this.activeTabIndex = selectedIndex;
 
+      // in reality this should not be "attached to this mehtod"
       this.workspace.editor.openFile({
         path: tab.path,
         fileType: tab.fileType,

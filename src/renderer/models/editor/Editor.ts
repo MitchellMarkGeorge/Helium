@@ -7,8 +7,9 @@ import { CodeEditorView } from "./CodeEditor";
 import { MarkdownView } from "./MarkdownView";
 import { ImageView } from "./ImageView";
 
-const OPEN_FILE_DELAY = 3 * 1000; // 3 seconds
+const OPEN_FILE_LOADER_DELAY = 3 * 1000; // 3 seconds
 
+// pretty much the EditorPanel state
 export class Editor extends StateModel {
   private viewType: ViewType;
   // TODO: figure out how to give access to these objects
@@ -36,7 +37,8 @@ export class Editor extends StateModel {
 
   public async openFile(options: OpenFileOptions) {
     // this will show the loader after 3 seconds if it has not finished reading the file
-    const delayLoaderTimeout = setTimeout(() => this.workspace.showIsLoading("Opening File"), OPEN_FILE_DELAY);
+    // should this be donw in the try catch???
+    // const delayLoaderTimeout = setTimeout(() => this.workspace.showIsLoading("Opening File"), OPEN_FILE_LOADER_DELAY);
     const { fileType } = options;
     const isImage = isBinaryFile(fileType) && fileType === FileTypeEnum.IMAGE;
     try {
@@ -66,10 +68,10 @@ export class Editor extends StateModel {
       });
       return; // is this needed?
     } finally {
-      clearTimeout(delayLoaderTimeout);
-      if (this.workspace.isLoading) {
-        this.workspace.resetLoadingState();
-      }
+      // clearTimeout(delayLoaderTimeout);
+      // if (this.workspace.isLoading) {
+      //   this.workspace.resetLoadingState();
+      // }
     }
   }
 

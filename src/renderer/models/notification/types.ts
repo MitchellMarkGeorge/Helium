@@ -41,8 +41,6 @@ export interface ModalButton {
 }
 
 
-type CancelModalButton = ModalButton;
-
 export interface PrimaryModalButton<T = void> {
   text: string;
   onClick: (inputs: T) => void;

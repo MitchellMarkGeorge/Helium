@@ -14,7 +14,8 @@ export interface NewFileOptions {
 }
 
 export interface NewFolderOptions {
-  folderPath: string
+  folderPath: string;
+  folderName: string;
 }
 
 export interface LoadingState {

@@ -136,7 +136,7 @@ export class ArrayFileExplorer extends FileExplorer {
     return clone;
   }
 
-  public async rebuildSubTree(dirPath: string) {
+  public async reloadDirectory(dirPath: string) {
     // review this method
     const entryIndex = this.entryArray.findIndex(
       (entry) => entry.path === dirPath
@@ -217,34 +217,6 @@ export class ArrayFileExplorer extends FileExplorer {
 
   public getEntryArray(): Entry[] {
     return this.entryArray;
-  }
-
-  public async openFile(entry: FileEntry) {
-    const isImage = entry.fileType === FileTypeEnum.IMAGE;
-    if (isBinaryFile(entry.fileType) && !isImage) {
-      this.workspace.notifications.showNotification({
-        type: "error",
-        message: `Unable to open binary file at ${entry.path}`,
-      });
-      return;
-    }
-
-    if (this.workspace.tabs.hasTab(entry.path)) {
-      this.workspace.tabs.selectTab(entry.path);
-    } else {
-      const tab = {
-        basename: entry.basename,
-        fileType: entry.fileType,
-        path: entry.path,
-      };
-      this.workspace.tabs.addTab({ tab });
-      // this.workspace.tabs.selectActiveTab(entry);
-      // the editor will then open the file
-      // reading the content from the operating system
-      // and then saving the model internally
-      // await this.workspace.editor.openFile(entry);
-      // await this.workspace.editor.openFile(entry.path);
-    }
   }
 
   public async reload() {

@@ -25,11 +25,10 @@ export abstract class FileExplorer extends StateModel {
     public abstract selectedEntry: string | null;
     public abstract expand(dirPath: string): Promise<void>;
     public abstract collapse(dirPath: string): void;
-    public abstract openFile(entry: FileEntry): Promise<void>;
     public abstract reload(): Promise<void>;
     public abstract getEntryArray(): Entry[];
     public abstract isExpanded(dirPath: string): boolean;
-    public abstract rebuildSubTree(dirPath: string): Promise<void>;
+    public abstract reloadDirectory(dirPath: string): Promise<void>;
 }
 
 

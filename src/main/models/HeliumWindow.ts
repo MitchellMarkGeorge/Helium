@@ -263,6 +263,7 @@ export class HeliumWindow {
 
   public emitEvent<T = void>(eventName: string, args?: T) {
     // only emit events when the workspace is showing
+    // i could also queue this up and emit it later
     if (this.isWorkspaceShowing) {
       this.browserWindow.webContents.send(eventName, args);
       // main.emitEventFromWindow(this, "on-inital-state-ready", initalState);

@@ -14,13 +14,14 @@ import {
 } from "./types";
 import { Notifications } from "../notification/Notifications";
 import { Theme } from "../Theme";
-import { getErrorMessage, isBinaryFile } from "common/utils";
+import { getErrorMessage, isBinaryFile, wait } from "common/utils";
 import pathe from "pathe";
 import { TreeFileExplorer } from "../fileexplorer/tree/TreeFileExplorer";
 import { FileExplorer } from "../fileexplorer/types";
 import { TabManager } from "../tabs/TabManager";
 import { Editor } from "../editor/Editor";
 import { OpenFileOptions } from "../editor/types";
+import { ThemePreview } from "../ThemePreview";
 
 // NOTE
 // WHEN READING FILES, I NEED A WAY TO SHOW A PROGRESSBAR IF IT TAKES TOO LONG
@@ -32,7 +33,6 @@ const DEFAULT_LOADING_STATE: LoadingState = {
 
 export class Workspace {
   //   public currentFilePath: string | null;
-  public previewState: PreviewState; // should this be null by default (since no state has been given)
   private isShowingWorkspace: boolean;
   public selectedSideBarOption: SideBarItemOption | null;
   public isSidePanelOpen: boolean;
@@ -45,8 +45,8 @@ export class Workspace {
   // but down the line, it would be great to move to this implementation (after some fixes)
   public fileExplorer: FileExplorer;
   public tabs: TabManager;
-  // public editor: Editor;
   public editor: Editor;
+  public themePreview: ThemePreview;
   private unsavedPaths: Set<string>;
 
   // STILL NEED TO HANDLE FILE STATUSES
@@ -55,18 +55,22 @@ export class Workspace {
     this.isShowingWorkspace = false;
     // this.currentFilePath = null;
     this.selectedSideBarOption = null;
-    this.previewState = PreviewState.OFF; // by default
     this.isSidePanelOpen = false;
 
     this.notifications = new Notifications(this);
     this.fileExplorer = new TreeFileExplorer(this);
     this.tabs = new TabManager(this);
     this.editor = new Editor(this);
+    this.themePreview = new ThemePreview(this);
+
     this.theme = null;
     this.unsavedPaths = new Set<string>();
     this.loadingState = DEFAULT_LOADING_STATE;
   }
 
+  // set values using loadInitalState()
+  // if there is an error loading the inital state, show an error
+  // and initalize it with default values
   public initFromInitalState({
     themeFiles,
     currentTheme: themInfo,
@@ -84,7 +88,7 @@ export class Workspace {
 
     if (connectedStore) {
       // preview state is only possible if there is a stoer
-      this.previewState = previewState;
+      this.themePreview.setPreviewState(previewState);
     }
     this.isShowingWorkspace = true;
     window.helium.app.sendWorkspaceIsShowing();
@@ -186,11 +190,20 @@ export class Workspace {
 
     if (modalResponse.buttonClicked === "primary" && modalResponse.result) {
       const { fileName, filePath, fileType } = modalResponse.result;
-      await window.helium.fs.createFile(filePath);
+      try {
+        await window.helium.fs.createFile(filePath);
+      } catch {
+        this.notifications.showMessageModal({
+          type: "error",
+          message: `Unable to create the new ${fileName} file`,
+          secondaryButtonText: "Close",
+        });
+        return;
+      }
       const parerentDirectory = pathe.dirname(filePath);
 
       if (this.fileExplorer.isExpanded(parerentDirectory)) {
-        await this.fileExplorer.rebuildSubTree(parerentDirectory);
+        await this.fileExplorer.reloadDirectory(parerentDirectory);
       }
 
       this.tabs.addTab({
@@ -207,10 +220,20 @@ export class Workspace {
     const modalResponse = await this.showTrashItemConfirmation(fileName, true);
 
     if (modalResponse.buttonClicked === "primary") {
-      await window.helium.fs.trashItem(filePath);
+      try {
+        await window.helium.fs.trashItem(filePath);
+      } catch (error) {
+        // await wait(500); // have a small delay between the modal showing and the message modal showing
+        this.notifications.showMessageModal({
+          type: "error",
+          message: `Unable to trash ${fileName} file.`,
+          secondaryButtonText: "Close",
+        });
+        return;
+      }
       const parerentDirectory = pathe.dirname(filePath);
       if (this.fileExplorer.isExpanded(parerentDirectory)) {
-        await this.fileExplorer.rebuildSubTree(parerentDirectory);
+        await this.fileExplorer.reloadDirectory(parerentDirectory);
       }
 
       if (this.tabs.hasTab(filePath)) {
@@ -224,11 +247,21 @@ export class Workspace {
     const modalResponse = await this.showNewFolderModal(parentFolderPath);
 
     if (modalResponse.buttonClicked === "primary" && modalResponse.result) {
-      const { folderPath } = modalResponse.result;
-      await window.helium.fs.createDirectory(folderPath);
+      const { folderPath, folderName } = modalResponse.result;
+      try {
+        await window.helium.fs.createDirectory(folderPath);
+      } catch (error) {
+        // await wait(500); // have a small delay between the modal showing and the message modal showing
+        this.notifications.showMessageModal({
+          type: "error",
+          message: `Unable to create ${folderName} folder.`,
+          secondaryButtonText: "Close",
+        });
+        return;
+      }
       const parerentDirectory = pathe.dirname(folderPath);
       if (this.fileExplorer.isExpanded(parerentDirectory)) {
-        await this.fileExplorer.rebuildSubTree(parerentDirectory);
+        await this.fileExplorer.reloadDirectory(parerentDirectory);
       }
     }
   }
@@ -240,10 +273,20 @@ export class Workspace {
     );
 
     if (modalResponse.buttonClicked === "primary") {
-      await window.helium.fs.trashItem(folderPath);
+      try {
+        await window.helium.fs.trashItem(folderPath);
+      } catch (error) {
+        // await wait(500); // have a small delay between the modal showing and the message modal showing
+        this.notifications.showMessageModal({
+          type: "error",
+          message: `Unable to trash ${folderName} file.`,
+          secondaryButtonText: "Close",
+        });
+        return;
+      }
       const parerentDirectory = pathe.dirname(folderPath);
       if (this.fileExplorer.isExpanded(parerentDirectory)) {
-        await this.fileExplorer.rebuildSubTree(parerentDirectory);
+        await this.fileExplorer.reloadDirectory(parerentDirectory);
       }
 
       // this should also remove any open editor models or tabs that are in said directory
@@ -255,7 +298,18 @@ export class Workspace {
     // check if there is already a theme open
     // if there is, clear everything
     // this should not fail
-    const [themePath] = await window.helium.app.openFolderDialog();
+    let themePath: string | undefined = undefined;
+    try {
+      const paths = await window.helium.app.openFolderDialog();
+      themePath = paths[0] || undefined;
+    } catch {
+      this.notifications.showMessageModal({
+        type: "error",
+        message: "Unable to open Theme dialog.",
+        secondaryButtonText: "Close",
+      });
+      return;
+    }
     if (themePath) {
       let themeInfo: ThemeInfo | null = null;
       let files: ThemeFileSystemEntry[] = [];
@@ -265,8 +319,8 @@ export class Workspace {
         files = results.files;
       } catch (error) {
         this.notifications.showMessageModal({
-          message: `Unable to open folder: ${getErrorMessage(error)}`,
           type: "error",
+          message: `Unable to open folder: ${getErrorMessage(error)}`,
           secondaryButtonText: "Close",
         });
         return;
@@ -314,12 +368,21 @@ export class Workspace {
     const activeTab = this.tabs.getActiveTab();
     const currentEditorValue = this.editor.codeEditor.getEditorValue();
     if (activeTab && this.isFileUnsaved(activeTab.path) && currentEditorValue) {
-      await window.helium.fs.writeFile({
-        filePath: activeTab.path,
-        content: currentEditorValue,
-        encoding: "utf8",
-      });
-      this.markAsSaved(activeTab.path);
+      try {
+        await window.helium.fs.writeFile({
+          filePath: activeTab.path,
+          content: currentEditorValue,
+          encoding: "utf8",
+        });
+
+        this.markAsSaved(activeTab.path);
+      } catch {
+        this.notifications.showMessageModal({
+          type: "error",
+          message: "Unable to save current file",
+          secondaryButtonText: "Close",
+        });
+      }
     }
   }
 
@@ -361,11 +424,16 @@ export class Workspace {
     this.selectedSideBarOption = option;
   }
 
+  public get hasStoreConnected() {
+    return false;
+  }
+
   public reset() {
     this.fileExplorer.reset();
     this.tabs.reset();
     this.editor.reset();
     this.notifications.reset();
+    this.themePreview.reset();
     if (this.isLoading) {
       this.resetLoadingState();
     }
