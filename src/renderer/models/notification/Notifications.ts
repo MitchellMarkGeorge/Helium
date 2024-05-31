@@ -10,6 +10,7 @@ import {
   ModalState,
   ModalResponse,
 } from "./types";
+import { action, computed, observable } from "mobx";
 
 type ShowMessageModalOptions = Pick<MessageModalOptions, "type" | "message"> & {
   primaryButtonText?: string;
@@ -33,7 +34,7 @@ type ShowPathInputModalOptions<T> = Pick<
 };
 
 export class Notifications extends StateModel {
-  private modalState: ModalState;
+  @observable private accessor modalState: ModalState;
   constructor(workspace: Workspace) {
     super(workspace);
     this.modalState = {
@@ -42,6 +43,7 @@ export class Notifications extends StateModel {
     };
   }
 
+  @computed
   public get isModalOpen() {
     return this.modalState.isOpen;
   }
@@ -54,6 +56,7 @@ export class Notifications extends StateModel {
     });
   }
 
+  @action
   private openModal<T extends ModalOptions>(options: T) {
     if (!this.isModalOpen) {
       this.modalState = {
@@ -63,6 +66,7 @@ export class Notifications extends StateModel {
     }
   }
 
+  @action
   public closeModal() {
     this.modalState = {
       isOpen: false,
@@ -70,6 +74,7 @@ export class Notifications extends StateModel {
     };
   }
 
+  @action
   public showMessageModal(
     options: ShowMessageModalOptions
   ): Promise<ModalResponse> {
@@ -101,6 +106,7 @@ export class Notifications extends StateModel {
     });
   }
 
+  @action
   public showInputModal<T>(
     options: ShowInputModalOptions<T>
   ): Promise<ModalResponse<T>> {
@@ -126,6 +132,7 @@ export class Notifications extends StateModel {
     });
   }
 
+  @action
   public showPathInputModal<T>(
     options: ShowPathInputModalOptions<T>
   ): Promise<ModalResponse<T>> {
@@ -151,6 +158,7 @@ export class Notifications extends StateModel {
     });
   }
 
+  @action
   public reset() {
     // no-op
     return;

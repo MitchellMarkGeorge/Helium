@@ -7,17 +7,18 @@ import { CodeEditorView } from "./CodeEditor";
 import { ImageView } from "./ImageView";
 import { TabManager } from "../tabs/TabManager";
 import pathe from "pathe";
+import { action, computed, observable } from "mobx";
 
 const OPEN_FILE_LOADER_DELAY = 3 * 1000; // 3 seconds
 
 // pretty much the EditorPanel state
 export class Editor extends StateModel {
-  private viewType: ViewType;
+  @observable private accessor viewType: ViewType;
   // TODO: figure out how to give access to these objects
-  public codeEditor: CodeEditorView;
-  public imageViewer: ImageView;
-  public tabs: TabManager;
-  public activeFile: string | null;
+  private codeEditor: CodeEditorView;
+  private imageViewer: ImageView;
+  private tabs: TabManager;
+  private activeFile: string | null;
   constructor(workspace: Workspace) {
     super(workspace);
     this.activeFile = null;
@@ -29,6 +30,7 @@ export class Editor extends StateModel {
   }
 
 
+  @action
   public reset(): void {
     this.viewType = ViewType.DEFAULT;
     this.tabs.reset();
@@ -36,11 +38,13 @@ export class Editor extends StateModel {
     this.imageViewer.reset();
   }
 
-  public isShowingCodeEditor() {
+  @computed
+  public get isShowingCodeEditor() {
     return this.viewType === ViewType.CODE;
   }
 
-  public isShowingImagePreview() {
+  @computed
+  public get isShowingImagePreview() {
     return this.viewType === ViewType.IMAGE;
   }
 
@@ -49,7 +53,7 @@ export class Editor extends StateModel {
   }
 
   public getActiveTab() {
-    return this.tabs.getActiveTab();
+    return this.tabs.activeTab;
   }
 
   public isFileOpen(filePath: string) {
@@ -60,6 +64,7 @@ export class Editor extends StateModel {
     return this.tabs.getTabs();
   }
 
+  @action
   public closeFile(filePath: string) {
     // look back at this
     const closedTab = this.tabs.getTab(filePath);
@@ -77,7 +82,7 @@ export class Editor extends StateModel {
       // removes and selects new tab
       this.tabs.removeTab(filePath);
       // get the new active tab after
-      const newActiveTab = this.tabs.getActiveTab();
+      const newActiveTab = this.tabs.activeTab;
       if (newActiveTab) {
         if (wasActiveTab) {
           // should not be async
@@ -111,21 +116,25 @@ export class Editor extends StateModel {
     }
   }
 
+  @action
   public closeAll(files: string[]) {
     // will implement later lol
   }
 
+  @action
   public async selectOpenFile(options: OpenFileOptions) {
     if (this.tabs.hasTab(options.path)) {
     }
   }
 
+  // computed???
   public getEditorValue() {
-    if (this.isShowingCodeEditor()) {
+    if (this.isShowingCodeEditor) {
       return this.codeEditor.getEditorValue();
     } else return null;
   }
 
+  @action
   public async openFile(options: OpenFileOptions) {
     const { fileType } = options;
     const isImage = isBinaryFile(fileType) && fileType === FileTypeEnum.IMAGE;
@@ -182,6 +191,7 @@ export class Editor extends StateModel {
     }
   }
 
+  @action
   public resetViewType() {
     this.viewType = ViewType.DEFAULT;
   }

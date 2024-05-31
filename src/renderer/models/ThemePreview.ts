@@ -1,6 +1,7 @@
 import { PreviewState } from "common/types";
 import { StateModel } from "./StateModel";
 import { Workspace } from "./workspace/Workspace";
+import { makeObservable } from "mobx";
 
 export class ThemePreview extends StateModel {
     // i could also just read only
@@ -9,6 +10,9 @@ export class ThemePreview extends StateModel {
   private previewPort: string;
   constructor(workspace: Workspace) {
     super(workspace);
+    makeObservable(this, {
+      
+    })
     this.previewState = PreviewState.UNAVALIBLE;
     this.previewHost = window.helium.constants.DEFAULT_PREVIEW_HOST;
     this.previewPort = window.helium.constants.DEFAULT_PREVIEW_PORT;
@@ -87,7 +91,7 @@ export class ThemePreview extends StateModel {
 
   public reset(): void {
     // depends on whether there is a connected store and if it is running
-    if (this.workspace.hasStoreConnected) {
+    if (this.workspace.isStoreConnected) {
       this.previewState = PreviewState.OFF;
     } else {
       this.previewState = PreviewState.OFF;

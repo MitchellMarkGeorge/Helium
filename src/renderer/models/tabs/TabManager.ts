@@ -2,6 +2,7 @@ import { FileType } from "common/types";
 import { StateModel } from "../StateModel";
 import { FileEntry } from "../fileexplorer/types";
 import { Workspace } from "../workspace/Workspace";
+import { action, computed, observable } from "mobx";
 
 type Tab = Omit<FileEntry, "depth" | "type">;
 
@@ -14,11 +15,11 @@ interface AddNewTabOptions {
 }
 
 export class TabManager extends StateModel {
-  private tabs: Tab[];
+  @observable private accessor tabs: Tab[];
   //   private currentTab // should this be an index or not???
   // better to
   // public activeEntry
-  public activeTabIndex: number | null;
+  @observable public accessor activeTabIndex: number | null;
   constructor(workspace: Workspace) {
     super(workspace);
     this.activeTabIndex = null;
@@ -33,6 +34,7 @@ export class TabManager extends StateModel {
     return this.tabs.find(tab => tab.fileType === filePath) || null;
   }
 
+  @action
   public addTab({ tab, setAsActive = true }: AddNewTabOptions) {
     this.tabs.push(tab);
     if (setAsActive) {
@@ -42,14 +44,15 @@ export class TabManager extends StateModel {
     // this should in response create a new view (editor, image)
   }
 
-  public getActiveTab() {
+  @computed
+  public get activeTab() {
     if (this.activeTabIndex) {
       return this.tabs[this.activeTabIndex];
     } else return null;
   }
 
   public isActiveTab(filePath: string) {
-    const activeTab = this.getActiveTab();
+    const activeTab = this.activeTab;
     return activeTab ? activeTab.path === filePath : false;
   }
 
@@ -59,6 +62,7 @@ export class TabManager extends StateModel {
 
   public selectTab(path: string): void;
   public selectTab(index: number): void;
+  @action
   public selectTab(indexOrPath: number | string) {
     const selectedIndex =
       typeof indexOrPath === "number"
@@ -79,6 +83,7 @@ export class TabManager extends StateModel {
     }
   }
 
+  @action
   public goToNextTab() {
     if (this.activeTabIndex && this.tabs.length > 1) {
       const isLastTab = this.activeTabIndex === this.tabs.length - 1;
@@ -90,6 +95,7 @@ export class TabManager extends StateModel {
     }
   }
 
+  @action
   public goToPrevioudTab() {
     if (this.activeTabIndex && this.tabs.length > 1) {
       const isFirstTab = this.activeTabIndex === 0;
@@ -103,6 +109,7 @@ export class TabManager extends StateModel {
 
   public removeTab(filePath: string): void;
   public removeTab(tabIndex: number): void;
+  @action
   public removeTab(indexOrPath: number | string) {
     // inspired by this
     // https://ant.design/components/tabs
@@ -137,10 +144,12 @@ export class TabManager extends StateModel {
     }
   }
 
+  @action
   public removeAll(filePaths: string[]) {
     // implement later lool
   }
 
+  @action
   public reset(): void {
     this.activeTabIndex = null;
     this.tabs = [];

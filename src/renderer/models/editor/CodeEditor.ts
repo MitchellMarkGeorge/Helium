@@ -11,6 +11,7 @@ import {
   View,
 } from "./types";
 import { isTextFile } from "common/utils";
+import { action, observable } from "mobx";
 
 interface CreateEditorModelOptions {
   path: string;
@@ -20,11 +21,13 @@ interface CreateEditorModelOptions {
 
 // think about better name for this
 export class CodeEditorView implements View {
-  private editorModelMap: Map<string, MonacoTextModel>;
+  // think about this
+  @observable.shallow private accessor editorModelMap: Map<string, MonacoTextModel>;
   // this should be a file object
   // private editorModelMap: WeakMap<ThemeFile, MonacoTextModel>;
-  private monacoCodeEditor: MonacoCodeEditor | null;
-  private activeModel: MonacoTextModel | null;
+  // does this need to be an observable???
+  @observable.ref private accessor monacoCodeEditor: MonacoCodeEditor | null;
+  @observable.shallow private accessor activeModel: MonacoTextModel | null;
   // if for some reason the CodeEditor is showing and the activeModel is null
   // it should render an error page
   // private unsavedPaths: Set<string>;
@@ -34,6 +37,7 @@ export class CodeEditorView implements View {
     this.activeModel = null; // or should I use a default model???
   }
 
+  @action
   public setMonacoCodeEditor(instace: MonacoCodeEditor) {
     this.monacoCodeEditor = instace;
   }
@@ -42,6 +46,7 @@ export class CodeEditorView implements View {
     return this.activeModel;
   }
 
+  @action
   public setActiveModelFromPath(path: string, fileType: Language) {
     let model = this.getEditorModel(path);
     // if (!model) {
@@ -56,6 +61,7 @@ export class CodeEditorView implements View {
     this.activeModel = model;
   }
 
+  // computed???
   public getEditorValue() {
     // could throw an error
     return this.monacoCodeEditor ? this.monacoCodeEditor.getValue() : null;
@@ -71,6 +77,7 @@ export class CodeEditorView implements View {
     return this.editorModelMap.has(path);
   }
 
+  @action
   public saveEditorModel(path: string, model: MonacoTextModel) {
     this.editorModelMap.set(path, model);
   }
@@ -79,10 +86,12 @@ export class CodeEditorView implements View {
     return this.editorModelMap.get(path) || null;
   }
 
+  // computed???
   public getCursorPosition() {
     return this.monacoCodeEditor ? this.monacoCodeEditor.getPosition() : null;
   }
 
+  @action
   public async openFile({ path, fileType }: OpenFileOptions) {
     let model: MonacoTextModel;
     if (isTextFile(fileType)) {
@@ -104,6 +113,7 @@ export class CodeEditorView implements View {
     }
   }
 
+  @action
   public deleteEditorModel(filePath: string) {
     if (this.editorModelMap.has(filePath)) {
       const model = this.editorModelMap.get(filePath);
@@ -131,6 +141,7 @@ export class CodeEditorView implements View {
     return encodeURI(`file://${pathName}`).replace(/[?#]/g, encodeURIComponent);
   }
 
+  @action
   reset(): void {
     // dispose of all models
     for (let model of this.editorModelMap.values()) {

@@ -4,6 +4,7 @@ import { Workspace } from "renderer/models/workspace/Workspace";
 import { FileTypeEnum, ThemeFileSystemEntry } from "common/types";
 import { isBinaryFile, isDirectory, isTextFile } from "common/utils";
 import { isDirectoryEntry } from "../utils";
+import { action, computed, observable } from "mobx";
 
 
 const ROOT_DEPTH = 0;
@@ -18,10 +19,10 @@ const ROOT_DEPTH = 0;
 // UPDATE: now that it uses a sub tree cache, it ***should*** be on parity witth the TreeFileExplorer
 // but there its correctness and potential side effects have not been fully identified
 export class ArrayFileExplorer extends FileExplorer {
-  private entryArray: Entry[];
-  public selectedEntry: string | null;
-  private expandedDirectories: Set<string>;
-  private subTreeCache: Map<string, Entry[]>;
+  @observable private accessor entryArray: Entry[];
+  @observable public accessor selectedEntry: string | null;
+  @observable private accessor expandedDirectories: Set<string>;
+  @observable private accessor subTreeCache: Map<string, Entry[]>;
   // use a weak set?
   constructor(workspace: Workspace) {
     super(workspace);
@@ -30,6 +31,8 @@ export class ArrayFileExplorer extends FileExplorer {
     this.expandedDirectories = new Set<string>();
     this.subTreeCache = new Map<string, Entry[]>();
   }
+
+  @action
   public init(files: ThemeFileSystemEntry[]): void {
     this.entryArray = this.toEntryArray(files, ROOT_DEPTH);
   }
@@ -40,6 +43,7 @@ export class ArrayFileExplorer extends FileExplorer {
       return isDirectoryEntry(entry) && entry.isExpanded;
   }
 
+  @action
   public reset(): void {
     this.entryArray = [];
     this.selectedEntry = null;
@@ -73,6 +77,7 @@ export class ArrayFileExplorer extends FileExplorer {
     }
   }
 
+  @action
   public collapse(dirPath: string): void {
     const dirIndex = this.entryArray.findIndex(
       (entry) => entry.path === dirPath
@@ -136,6 +141,7 @@ export class ArrayFileExplorer extends FileExplorer {
     return clone;
   }
 
+  @action
   public async reloadDirectory(dirPath: string) {
     // review this method
     const entryIndex = this.entryArray.findIndex(
@@ -188,6 +194,7 @@ export class ArrayFileExplorer extends FileExplorer {
   // since the TreeFileExplorer uses a cache, it will not be up to date with the file system
   // howerver, since this array version doesn't use a cache, every time a directory is collapes and expanded again,
   // the entire subtree is rebuilt with changes, leaving other parts of the subtree dout of sync
+  @action
   public async expand(dirPath: string) {
     // recursively build the sub tree based on the expansion state then insert it
     const dirIndex = this.entryArray.findIndex(
@@ -215,10 +222,12 @@ export class ArrayFileExplorer extends FileExplorer {
     }
   }
 
-  public getEntryArray(): Entry[] {
+  @computed
+  public get asEntryArray(): Entry[] {
     return this.entryArray;
   }
 
+  @action
   public async reload() {
     if (this.workspace.theme) {
       const { path } = this.workspace.theme;

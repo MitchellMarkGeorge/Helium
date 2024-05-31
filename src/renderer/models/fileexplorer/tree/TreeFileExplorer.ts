@@ -11,6 +11,7 @@ import { SideBarItemOption } from "../../workspace/types";
 import { isBinaryFile, isDirectory, isTextFile } from "common/utils";
 import { isDirectoryEntry } from "../utils";
 import pathe from "pathe";
+import { action, computed, observable } from "mobx";
 
 const EXPAND_DIRECTORY_LOADER_DELAY = 3 * 1000; // 3 seconds
 const REBUILD_DIRECTORY_LOADER_DELAY = 3 * 1000; // 3 seconds
@@ -19,10 +20,10 @@ export class TreeFileExplorer extends StateModel implements FileExplorer {
   // inspired by
   //https://github.com/Graviton-Code-Editor/Graviton-App/blob/main/web/src/modules/side_panels/explorer/components/FilesystemExplorer.tsx
   // root tree node
-  private fileExplorerTree: DirectoryNode | null;
-  private subTreeCache: Map<string, TreeNode[]>;
+  @observable private accessor fileExplorerTree: DirectoryNode | null;
+  @observable private accessor subTreeCache: Map<string, TreeNode[]>;
   // does this need to be here???
-  public selectedEntry: string | null;
+  @observable public accessor selectedEntry: string | null;
   constructor(workspace: Workspace) {
     super(workspace);
     this.fileExplorerTree = null;
@@ -31,6 +32,7 @@ export class TreeFileExplorer extends StateModel implements FileExplorer {
     // can add all the listeners here
   }
 
+  @action
   public reset(): void {
     this.selectedEntry = null;
     this.fileExplorerTree = null;
@@ -47,36 +49,15 @@ export class TreeFileExplorer extends StateModel implements FileExplorer {
     } else return false;
   }
 
-  //
-  private toEntry(entry: ThemeFileSystemEntry, depth: number) {
-    if (isDirectory(entry)) {
-      const dirEntry: DirectoryEntry = {
-        basename: entry.basename,
-        path: entry.path,
-        type: "directory",
-        isExpanded: false,
-        depth,
-      };
-      return dirEntry;
-    } else {
-      const fileEntry: FileEntry = {
-        basename: entry.basename,
-        path: entry.path,
-        type: "file",
-        fileType: entry.fileType,
-        depth,
-      };
-      return fileEntry;
-    }
-  }
 
+  @action
   public init(files: ThemeFileSystemEntry[]) {
     if (this.workspace.theme) {
       const { path } = this.workspace.theme;
 
       const rootNode: DirectoryNode = {
         entry: {
-          basename: this.workspace.theme.getThemeName(),
+          basename: this.workspace.theme.themeName,
           type: "directory",
           path,
           depth: 0,
@@ -144,13 +125,15 @@ export class TreeFileExplorer extends StateModel implements FileExplorer {
   }
 
   // is this needed
-  public isFileExplorerVisible() {
+  @computed
+  public get isFileExplorerVisible() {
     return (
       this.workspace.isSidePanelOpen &&
       this.workspace.selectedSideBarOption === SideBarItemOption.FILES
     );
   }
 
+  @action
   public async reload() {
     // is this still needed
     // this method pretty much wipes the slate clean
@@ -159,6 +142,8 @@ export class TreeFileExplorer extends StateModel implements FileExplorer {
     if (this.workspace.theme) {
       const { path } = this.workspace.theme;
       this.subTreeCache.clear();
+      // could just reload
+      // return this.rebuildSubTreeNode(this.fileExplorerTree, )
       let rootFiles: ThemeFileSystemEntry[] = [];
       try {
         rootFiles = await window.helium.fs.readDirectory(path);
@@ -186,6 +171,7 @@ export class TreeFileExplorer extends StateModel implements FileExplorer {
     return expandedPaths;
   }
 
+  @action
   public async reloadDirectory(dirPath: string): Promise<void> {
     if (this.fileExplorerTree) {
       const node = this.findNode(dirPath, this.fileExplorerTree);
@@ -244,6 +230,7 @@ export class TreeFileExplorer extends StateModel implements FileExplorer {
     // node.items = subTree;
   }
 
+  @action
   public async expand(dirPath: string) {
     if (this.fileExplorerTree) {
       // should this be done in the try catch???
@@ -287,6 +274,7 @@ export class TreeFileExplorer extends StateModel implements FileExplorer {
     }
   }
 
+  @action
   public collapse(dirPath: string) {
     if (this.fileExplorerTree) {
       const node = this.findNode(dirPath, this.fileExplorerTree);
@@ -302,7 +290,8 @@ export class TreeFileExplorer extends StateModel implements FileExplorer {
     }
   }
 
-  public getEntryArray(): Entry[] {
+  @computed
+  public get asEntryArray(): Entry[] {
     if (this.fileExplorerTree) {
       return this.mapTreeToArray(this.fileExplorerTree);
     } else return [];

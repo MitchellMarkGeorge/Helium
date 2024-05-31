@@ -1,10 +1,6 @@
 import {
-  FileTypeEnum,
-  InitalState,
-  Language,
-  PreviewState,
-  ThemeFileSystemEntry,
-  ThemeInfo,
+  InitalState, ThemeFileSystemEntry,
+  ThemeInfo
 } from "common/types";
 import {
   NewFileModalOptions,
@@ -15,15 +11,15 @@ import {
 } from "./types";
 import { Notifications } from "../notification/Notifications";
 import { Theme } from "../Theme";
-import { getErrorMessage, isBinaryFile, wait } from "common/utils";
+import { getErrorMessage } from "common/utils";
 import pathe from "pathe";
 import { TreeFileExplorer } from "../fileexplorer/tree/TreeFileExplorer";
 import { FileExplorer } from "../fileexplorer/types";
-import { TabManager } from "../tabs/TabManager";
 import { Editor } from "../editor/Editor";
 import { OpenFileOptions } from "../editor/types";
 import { ThemePreview } from "../ThemePreview";
 import { Store } from "../Store";
+import { action, computed, observable } from "mobx";
 
 // NOTE
 // WHEN READING FILES, I NEED A WAY TO SHOW A PROGRESSBAR IF IT TAKES TOO LONG
@@ -35,21 +31,22 @@ const DEFAULT_LOADING_STATE: LoadingState = {
 
 export class Workspace {
   //   public currentFilePath: string | null;
-  private isShowingWorkspace: boolean;
-  public selectedSideBarOption: SideBarItemOption | null;
-  public isSidePanelOpen: boolean;
-  public readonly notifications: Notifications;
-  public theme: Theme | null;
-  public connectedStore: Store | null;
-  private loadingState: LoadingState;
+  @observable private accessor isShowingWorkspace: boolean;
+  @observable public accessor selectedSideBarOption: SideBarItemOption | null;
+  @observable public accessor isSidePanelOpen: boolean;
+  @observable public accessor theme: Theme | null;
+  @observable public accessor connectedStore: Store | null;
+  @observable private accessor loadingState: LoadingState;
+  @observable private unsavedPaths: Set<string>; // think about decorator
+
   // NOTE: Due to implementation details, ArrayFileExplorer and TreeFileExplorer
   // are not in behavioural parity (see the note on the ArrayFileExplorer.expand() method) method.
   // As of right now, it is better to use the TreeFileExplorer implementation
   // but down the line, it would be great to move to this implementation (after some fixes)
+  public notifications: Notifications;
   public fileExplorer: FileExplorer;
   public editor: Editor;
   public themePreview: ThemePreview;
-  private unsavedPaths: Set<string>;
 
   // STILL NEED TO HANDLE FILE STATUSES
   constructor() {
@@ -67,13 +64,16 @@ export class Workspace {
 
     this.theme = null;
     this.connectedStore = null;
+    // think about this
     this.unsavedPaths = new Set<string>();
+    // this.unsavedPaths = observable.set<string>();
     this.loadingState = DEFAULT_LOADING_STATE;
   }
 
   // set values using loadInitalState()
   // if there is an error loading the inital state, show an error
   // and initalize it with default values
+  @action
   public initFromInitalState({
     themeFiles,
     currentTheme: themInfo,
@@ -100,6 +100,7 @@ export class Workspace {
 
   // shows loading indicator in status bar and if it is already loading,
   // it updates the loading message
+  @action
   public showIsLoading(loadingMessage: string) {
     if (!this.isLoading) {
       this.loadingState = {
@@ -111,36 +112,42 @@ export class Workspace {
     }
   }
 
+  @action
   public updateLoadingMessage(loadingMessage: string) {
     if (this.isLoading) {
       this.loadingState.loadingMessage = loadingMessage;
     }
   }
 
+  @computed
   public get isLoading() {
     return (
       this.loadingState.isLoading && this.loadingState.loadingMessage !== null
     );
   }
 
+  @action
   public resetLoadingState() {
     this.loadingState = DEFAULT_LOADING_STATE;
   }
 
+  @action
   public setTheme(theme: Theme) {
     this.theme = theme;
   }
 
+  @computed
   public get windowTitle(): string {
     // dependednt on current theme name
     // add an effect that whenever the windowTitle changes, set it at the electron level
     if (this.theme) {
-      return this.theme.getThemeName();
+      return this.theme.themeName;
     } else {
       return window.helium.constants.DEFAULT_WINOW_TITLE;
     }
   }
 
+  @action
   private showNewFileModal(parentPath?: string) {
     // should validate if path already exists
     return this.notifications.showPathInputModal<NewFileModalOptions>({
@@ -158,6 +165,7 @@ export class Workspace {
     });
   }
 
+  @action
   private showConnectStoreModal() {
     // should validate if path already exists
     return this.notifications.showInputModal<ConnectStoreModalOptions>({
@@ -176,11 +184,12 @@ export class Workspace {
           placeholder: "Enter Theme Access Password",
         },
       },
-      primaryButtonText: "Connect Store",
+      primaryButtonText: "Connect",
       secondaryButtonText: "Cancel",
     });
   }
 
+  @action
   private showNewFolderModal(parentPath?: string) {
     // should validate if path already exists
     return this.notifications.showPathInputModal<NewFolderModalOptions>({
@@ -198,6 +207,7 @@ export class Workspace {
     });
   }
 
+  @action
   private showTrashItemConfirmation(name: string, isFile: boolean) {
     // should validate if path already exists
     return this.notifications.showMessageModal({
@@ -209,6 +219,8 @@ export class Workspace {
       secondaryButtonText: "Cancel",
     });
   }
+
+  @action
   private showDisconnectStoreConfirmation() {
     // should validate if path already exists
     return this.notifications.showMessageModal({
@@ -219,6 +231,7 @@ export class Workspace {
     });
   }
 
+  @action
   public async createNewFile(parentPath?: string) {
     const modalResponse = await this.showNewFileModal(parentPath);
 
@@ -249,6 +262,7 @@ export class Workspace {
     }
   }
 
+  @action
   public async trashFile(filePath: string, fileName: string) {
     const modalResponse = await this.showTrashItemConfirmation(fileName, true);
 
@@ -275,6 +289,7 @@ export class Workspace {
     }
   }
 
+  @action
   public async createNewFolder(parentFolderPath: string) {
     const modalResponse = await this.showNewFolderModal(parentFolderPath);
 
@@ -299,6 +314,7 @@ export class Workspace {
     }
   }
 
+  @action
   public async trashFolder(folderPath: string, folderName: string) {
     const modalResponse = await this.showTrashItemConfirmation(
       folderName,
@@ -333,6 +349,7 @@ export class Workspace {
   }
 
   // will become flow
+  @action
   public async openThemeFromDialog() {
     // check if there is already a theme open
     // if there is, clear everything
@@ -374,13 +391,15 @@ export class Workspace {
     }
   }
 
+  @action
   public async openFile(options: OpenFileOptions) {
     return this.editor.openFile(options);
   }
 
+  @action
   public async saveCurrentFile() {
     const activeTab = this.editor.getActiveTab();
-    if (this.editor.isShowingCodeEditor()) {
+    if (this.editor.isShowingCodeEditor) {
       const currentEditorValue = this.editor.getEditorValue();
       if (
         activeTab &&
@@ -407,46 +426,57 @@ export class Workspace {
     }
   }
 
+  @action
   public markAsUnsaved(path: string) {
     // will only add if not in set
     this.unsavedPaths.add(path);
   }
 
+  @action
   public markAsSaved(path: string) {
     // will only delete if in set
     this.unsavedPaths.delete(path);
   }
 
+  // @computed
+  // https://mobx.js.org/computeds-with-args.html#1-derivations-dont-_need_-to-be-computed
   public isFileUnsaved(path: string) {
     return this.unsavedPaths.has(path);
   }
 
+  @computed
   public get shouldShowWorkspace() {
     return this.isShowingWorkspace;
   }
 
+  @computed
   public get hasTheme() {
     return this.theme !== null;
   }
 
+  @computed
   public get isWorkspaceUnsaved() {
     return this.unsavedPaths.size >= 1;
   }
 
+  @action
   public setShowWorkspace(showWorkspace: boolean) {
     this.isShowingWorkspace = showWorkspace;
   }
 
+  @action
   public toggleSidePanel() {
     this.isSidePanelOpen = !this.isSidePanelOpen;
   }
 
+  @action
   public selectSideBarOption(option: SideBarItemOption) {
     this.selectedSideBarOption = option;
   }
 
+  @action
   public async connectStore() {
-    if (!this.hasStoreConnected) {
+    if (!this.isStoreConnected) {
       const modalResponse = await this.showConnectStoreModal();
 
       if (modalResponse.buttonClicked === "primary" && modalResponse.result) {
@@ -480,8 +510,9 @@ export class Workspace {
     }
   }
 
+  @action
   public async disconnectStore() {
-    if (this.hasStoreConnected) {
+    if (this.isStoreConnected) {
       const modalResponse = await this.showDisconnectStoreConfirmation();
       if (modalResponse.buttonClicked === "primary") {
         try {
@@ -502,10 +533,12 @@ export class Workspace {
     }
   }
 
-  public get hasStoreConnected() {
+  @computed
+  public get isStoreConnected() {
     return this.connectedStore !== null;
   }
 
+  @action
   public reset() {
     this.fileExplorer.reset();
     this.editor.reset();

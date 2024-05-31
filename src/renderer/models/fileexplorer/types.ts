@@ -26,7 +26,8 @@ export abstract class FileExplorer extends StateModel {
     public abstract expand(dirPath: string): Promise<void>;
     public abstract collapse(dirPath: string): void;
     public abstract reload(): Promise<void>;
-    public abstract getEntryArray(): Entry[];
+    // public abstract getEntryArray(): Entry[];
+    public abstract get asEntryArray(): Entry[];
     public abstract isExpanded(dirPath: string): boolean;
     public abstract reloadDirectory(dirPath: string): Promise<void>;
 }

@@ -1,12 +1,13 @@
-import { ThemeFileSystemEntry, ThemeInfo } from "common/types";
+import { ThemeInfo } from "common/types";
+import { action, computed, makeObservable, observable } from "mobx";
 import pathe from 'pathe';
 
 // think about file tree
 export class Theme {
-  public path: string;
-  public name: string | null;
-  public version: string | null;
-  public author: string | null;
+  @observable public accessor path: string;
+  @observable public accessor name: string | null;
+  @observable public accessor version: string | null;
+  @observable public accessor author: string | null;
 
   // for the file explorer: for now
   // this the inital state that the FileExplorer compenent wit receive
@@ -35,12 +36,14 @@ export class Theme {
     this.author = info.author;
   }
 
-  public getThemeName() {
+  @computed
+  public get themeName() {
     return this.name
     ? this.name
     : pathe.basename(this.path);
   }
 
+  @action
   public updateFromThemeInfo(info: ThemeInfo) {
     this.path = info.path;
     this.name = info.name;
