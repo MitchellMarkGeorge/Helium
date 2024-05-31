@@ -25,6 +25,14 @@ export class TabManager extends StateModel {
     this.tabs = [];
   }
 
+  public getTabs() {
+    return this.tabs;
+  }
+
+  public getTab(filePath: string) {
+    return this.tabs.find(tab => tab.fileType === filePath) || null;
+  }
+
   public addTab({ tab, setAsActive = true }: AddNewTabOptions) {
     this.tabs.push(tab);
     if (setAsActive) {
@@ -61,15 +69,13 @@ export class TabManager extends StateModel {
     if (isActiveTab) return;
 
     if (selectedIndex >= 0 && selectedIndex < this.tabs.length) {
-      const tab = this.tabs[selectedIndex];
-
       this.activeTabIndex = selectedIndex;
 
-      // in reality this should not be "attached to this mehtod"
-      this.workspace.editor.openFile({
-        path: tab.path,
-        fileType: tab.fileType,
-      });
+      // in reality this should not be "attached" to this mehtod
+      // this.workspace.editor.openFile({
+      //   path: tab.path,
+      //   fileType: tab.fileType,
+      // });
     }
   }
 
@@ -95,9 +101,9 @@ export class TabManager extends StateModel {
     }
   }
 
-  public closeTab(filePath: string): void;
-  public closeTab(tabIndex: number): void;
-  public closeTab(indexOrPath: number | string) {
+  public removeTab(filePath: string): void;
+  public removeTab(tabIndex: number): void;
+  public removeTab(indexOrPath: number | string) {
     // inspired by this
     // https://ant.design/components/tabs
     if (this.activeTabIndex) {
@@ -129,6 +135,10 @@ export class TabManager extends StateModel {
 
       this.tabs = newTabsArray;
     }
+  }
+
+  public removeAll(filePaths: string[]) {
+    // implement later lool
   }
 
   public reset(): void {

@@ -247,10 +247,10 @@ export class TreeFileExplorer extends StateModel implements FileExplorer {
   public async expand(dirPath: string) {
     if (this.fileExplorerTree) {
       // should this be done in the try catch???
-      const delayLoaderTimeout = setTimeout(
-        () => this.workspace.showIsLoading("Expanding Directory"),
-        EXPAND_DIRECTORY_LOADER_DELAY
-      );
+      // const delayLoaderTimeout = setTimeout(
+      //   () => this.workspace.showIsLoading("Expanding Directory"),
+      //   EXPAND_DIRECTORY_LOADER_DELAY
+      // );
       try {
         const node = this.findNode(dirPath, this.fileExplorerTree);
         if (!node || !isDirectoryNode(node)) return;
@@ -279,10 +279,10 @@ export class TreeFileExplorer extends StateModel implements FileExplorer {
           secondaryButtonText: "Close",
         });
       } finally {
-        clearTimeout(delayLoaderTimeout);
-        if (this.workspace.isLoading) {
-          this.workspace.resetLoadingState();
-        }
+        // clearTimeout(delayLoaderTimeout);
+        // if (this.workspace.isLoading) {
+        //   this.workspace.resetLoadingState();
+        // }
       }
     }
   }
@@ -318,6 +318,7 @@ export class TreeFileExplorer extends StateModel implements FileExplorer {
         if (node.entry.isExpanded && node.items && node.items.length > 0) {
           const subTree = this.mapTreeToArray(node);
           result.push(...subTree);
+          // result = result.concat(subTree);
         }
       }
     }

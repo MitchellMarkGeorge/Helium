@@ -7,10 +7,11 @@ import {
   ThemeInfo,
 } from "common/types";
 import {
-  NewFileOptions,
+  NewFileModalOptions,
   LoadingState,
   SideBarItemOption,
-  NewFolderOptions,
+  NewFolderModalOptions,
+  ConnectStoreModalOptions,
 } from "./types";
 import { Notifications } from "../notification/Notifications";
 import { Theme } from "../Theme";
@@ -22,6 +23,7 @@ import { TabManager } from "../tabs/TabManager";
 import { Editor } from "../editor/Editor";
 import { OpenFileOptions } from "../editor/types";
 import { ThemePreview } from "../ThemePreview";
+import { Store } from "../Store";
 
 // NOTE
 // WHEN READING FILES, I NEED A WAY TO SHOW A PROGRESSBAR IF IT TAKES TOO LONG
@@ -38,13 +40,13 @@ export class Workspace {
   public isSidePanelOpen: boolean;
   public readonly notifications: Notifications;
   public theme: Theme | null;
+  public connectedStore: Store | null;
   private loadingState: LoadingState;
   // NOTE: Due to implementation details, ArrayFileExplorer and TreeFileExplorer
   // are not in behavioural parity (see the note on the ArrayFileExplorer.expand() method) method.
   // As of right now, it is better to use the TreeFileExplorer implementation
   // but down the line, it would be great to move to this implementation (after some fixes)
   public fileExplorer: FileExplorer;
-  public tabs: TabManager;
   public editor: Editor;
   public themePreview: ThemePreview;
   private unsavedPaths: Set<string>;
@@ -59,11 +61,12 @@ export class Workspace {
 
     this.notifications = new Notifications(this);
     this.fileExplorer = new TreeFileExplorer(this);
-    this.tabs = new TabManager(this);
+    // this.tabs = new TabManager(this);
     this.editor = new Editor(this);
     this.themePreview = new ThemePreview(this);
 
     this.theme = null;
+    this.connectedStore = null;
     this.unsavedPaths = new Set<string>();
     this.loadingState = DEFAULT_LOADING_STATE;
   }
@@ -140,34 +143,56 @@ export class Workspace {
 
   private showNewFileModal(parentPath?: string) {
     // should validate if path already exists
-    return this.notifications.showPathInputModal<NewFileOptions>({
+    return this.notifications.showPathInputModal<NewFileModalOptions>({
       title: "New File",
-      inputFields: [
-        // make sure to only allow text files
-        {
+      inputFields: {
+        newPathInput: {
           label: "Name",
           for: "file",
           parentPath: parentPath || null,
           placeholder: "Enter file name",
         },
-      ],
+      },
       primaryButtonText: "Create File",
+      secondaryButtonText: "Cancel",
+    });
+  }
+
+  private showConnectStoreModal() {
+    // should validate if path already exists
+    return this.notifications.showInputModal<ConnectStoreModalOptions>({
+      title: "Connect Store",
+      inputFields: {
+        storeNameInput: {
+          label: "Store Name",
+          placeholder: "Enter store name",
+        },
+        storeUrlInput: {
+          label: "Store URL",
+          placeholder: "Enter Shopify store URL",
+        },
+        themeAccessPasswordInput: {
+          label: "Theme Access Passwaord",
+          placeholder: "Enter Theme Access Password",
+        },
+      },
+      primaryButtonText: "Connect Store",
       secondaryButtonText: "Cancel",
     });
   }
 
   private showNewFolderModal(parentPath?: string) {
     // should validate if path already exists
-    return this.notifications.showPathInputModal<NewFolderOptions>({
+    return this.notifications.showPathInputModal<NewFolderModalOptions>({
       title: "New Folder",
-      inputFields: [
-        {
+      inputFields: {
+        newFolderInput: {
           label: "Name",
           for: "directory",
           parentPath: parentPath || null,
           placeholder: "Enter folder name",
         },
-      ],
+      },
       primaryButtonText: "Create Folder",
       secondaryButtonText: "Cancel",
     });
@@ -179,8 +204,17 @@ export class Workspace {
       type: "warning",
       message: `Are you sure you want to delete ${
         isFile ? "file" : "folder"
-      } ${name}`,
+      } ${name}?`,
       primaryButtonText: "Move to Trash",
+      secondaryButtonText: "Cancel",
+    });
+  }
+  private showDisconnectStoreConfirmation() {
+    // should validate if path already exists
+    return this.notifications.showMessageModal({
+      type: "warning",
+      message: `Are you sure you want to disconnect from the current store?`,
+      primaryButtonText: "Disconnect Store",
       secondaryButtonText: "Cancel",
     });
   }
@@ -189,7 +223,8 @@ export class Workspace {
     const modalResponse = await this.showNewFileModal(parentPath);
 
     if (modalResponse.buttonClicked === "primary" && modalResponse.result) {
-      const { fileName, filePath, fileType } = modalResponse.result;
+      const { newFileInput } = modalResponse.result;
+      const { fileName, filePath, fileType } = newFileInput;
       try {
         await window.helium.fs.createFile(filePath);
       } catch {
@@ -206,12 +241,10 @@ export class Workspace {
         await this.fileExplorer.reloadDirectory(parerentDirectory);
       }
 
-      this.tabs.addTab({
-        tab: {
-          path: filePath,
-          fileType,
-          basename: fileName,
-        },
+      this.editor.openFile({
+        path: filePath,
+        fileType,
+        basename: fileName,
       });
     }
   }
@@ -236,10 +269,9 @@ export class Workspace {
         await this.fileExplorer.reloadDirectory(parerentDirectory);
       }
 
-      if (this.tabs.hasTab(filePath)) {
-        this.tabs.closeTab(filePath);
+      if (this.editor.isFileOpen(filePath)) {
+        this.editor.closeFile(filePath);
       }
-      // also delete model in editor (inlcuding if it was a markdown file)
     }
   }
 
@@ -247,7 +279,8 @@ export class Workspace {
     const modalResponse = await this.showNewFolderModal(parentFolderPath);
 
     if (modalResponse.buttonClicked === "primary" && modalResponse.result) {
-      const { folderPath, folderName } = modalResponse.result;
+      const { newFolderInput } = modalResponse.result;
+      const { folderName, folderPath } = newFolderInput;
       try {
         await window.helium.fs.createDirectory(folderPath);
       } catch (error) {
@@ -290,6 +323,12 @@ export class Workspace {
       }
 
       // this should also remove any open editor models or tabs that are in said directory
+      const openFilesPaths = this.editor.getOpenFiles().map((tab) => tab.path);
+      // get all child files of the folder that are curretnly open
+      const childFilePaths = openFilesPaths.filter((path) =>
+        path.startsWith(folderPath)
+      );
+      this.editor.closeAll(childFilePaths);
     }
   }
 
@@ -335,53 +374,35 @@ export class Workspace {
     }
   }
 
-  public openFile(options: OpenFileOptions) {
-    const isImage = options.fileType === FileTypeEnum.IMAGE;
-    if (isBinaryFile(options.fileType) && !isImage) {
-      this.notifications.showMessageModal({
-        type: "error",
-        message: `Unable to open binary file at ${options.path}`,
-        secondaryButtonText: "Close",
-      });
-      return;
-    }
-
-    if (this.tabs.hasTab(options.path)) {
-      this.tabs.selectTab(options.path);
-    } else {
-      const tab = {
-        basename: options.basename || pathe.basename(options.path),
-        fileType: options.fileType,
-        path: options.path,
-      };
-      this.tabs.addTab({ tab });
-      // this.workspace.tabs.selectActiveTab(entry);
-      // the editor will then open the file
-      // reading the content from the operating system
-      // and then saving the model internally
-      // await this.workspace.editor.openFile(entry);
-      // await this.workspace.editor.openFile(entry.path);
-    }
+  public async openFile(options: OpenFileOptions) {
+    return this.editor.openFile(options);
   }
 
   public async saveCurrentFile() {
-    const activeTab = this.tabs.getActiveTab();
-    const currentEditorValue = this.editor.codeEditor.getEditorValue();
-    if (activeTab && this.isFileUnsaved(activeTab.path) && currentEditorValue) {
-      try {
-        await window.helium.fs.writeFile({
-          filePath: activeTab.path,
-          content: currentEditorValue,
-          encoding: "utf8",
-        });
+    const activeTab = this.editor.getActiveTab();
+    if (this.editor.isShowingCodeEditor()) {
+      const currentEditorValue = this.editor.getEditorValue();
+      if (
+        activeTab &&
+        this.isFileUnsaved(activeTab.path) &&
+        currentEditorValue
+      ) {
+        try {
+          await window.helium.fs.writeFile({
+            filePath: activeTab.path,
+            content: currentEditorValue,
+            encoding: "utf8",
+          });
 
-        this.markAsSaved(activeTab.path);
-      } catch {
-        this.notifications.showMessageModal({
-          type: "error",
-          message: "Unable to save current file",
-          secondaryButtonText: "Close",
-        });
+          this.markAsSaved(activeTab.path);
+        } catch {
+          // should this be a notification instead???
+          this.notifications.showMessageModal({
+            type: "error",
+            message: "Unable to save active file.",
+            secondaryButtonText: "Close",
+          });
+        }
       }
     }
   }
@@ -424,16 +445,73 @@ export class Workspace {
     this.selectedSideBarOption = option;
   }
 
+  public async connectStore() {
+    if (!this.hasStoreConnected) {
+      const modalResponse = await this.showConnectStoreModal();
+
+      if (modalResponse.buttonClicked === "primary" && modalResponse.result) {
+
+        const { storeNameInput, storeUrlInput, themeAccessPasswordInput } =
+          modalResponse.result;
+
+        try {
+          await window.helium.shopify.connectStore({
+            storeName: storeNameInput.value,
+            password: themeAccessPasswordInput.value,
+            storeUrl: storeUrlInput.value,
+          });
+        } catch (error) {
+          // unable to connect stoer
+          this.notifications.showMessageModal({
+            type: "error",
+            message: "Unable to connect store",
+            secondaryButtonText: "Close",
+          });
+          return;
+        }
+
+        // or should I be using the event listener???
+        this.connectedStore = new Store({
+          storeName: storeNameInput.value,
+          storeUrl: storeUrlInput.value,
+        });
+        // the previewState will be updated by the event
+      }
+    }
+  }
+
+  public async disconnectStore() {
+    if (this.hasStoreConnected) {
+      const modalResponse = await this.showDisconnectStoreConfirmation();
+      if (modalResponse.buttonClicked === "primary") {
+        try {
+         await window.helium.shopify.disconnectStore()
+        } catch (error) {
+          this.notifications.showMessageModal({
+            type: "error",
+            message: "Unable to disconnect store",
+            secondaryButtonText: "Close",
+          });
+          return;
+        }
+
+        // or should I be using the event listener???
+        this.connectedStore = null;
+        // the previewState will be updated by the event
+      }
+    }
+  }
+
   public get hasStoreConnected() {
-    return false;
+    return this.connectedStore !== null;
   }
 
   public reset() {
     this.fileExplorer.reset();
-    this.tabs.reset();
     this.editor.reset();
     this.notifications.reset();
     this.themePreview.reset();
+    // todo: is an async operation is happening, we need to wait for it to finish
     if (this.isLoading) {
       this.resetLoadingState();
     }

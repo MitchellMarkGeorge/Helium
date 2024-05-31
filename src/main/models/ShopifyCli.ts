@@ -6,21 +6,20 @@ import { safeStorage } from "electron";
 // can use get-port-pleae
 // think about execa
 
-
 const CLI_COMMANDS = {
   START_PREVIEW: "shopify theme dev",
 };
 
-const DEFAULT_PREVIEW_HOST = "127.0.0.1"; 
-const DEFAULT_PREVIEW_PORT = "9292"; 
+const DEFAULT_PREVIEW_HOST = "127.0.0.1";
+const DEFAULT_PREVIEW_PORT = "9292";
 
 export default class ShopifyCli {
   // operates on the context of the current theme in heliumWinow.getCurrentTheme();
   // might rename to previewStatus
-  private currentPreviewState: PreviewState;
+  private previewState: PreviewState;
   // might group this into some kind of PreviewState
   private previewHost: string;
-  private previewPort: string; 
+  private previewPort: string;
   // will just use the native ChildProcess for now
   // need to figure out if I want to use it...
   private previewChildProcess: ChildProcess | null;
@@ -28,7 +27,7 @@ export default class ShopifyCli {
   private hasSentPreviewKillSignal: boolean;
 
   constructor(private readonly heliumWindow: HeliumWindow) {
-    this.currentPreviewState = PreviewState.OFF;
+    this.previewState = PreviewState.UNAVALIBLE;
     this.previewChildProcess = null;
     this.previewHost = DEFAULT_PREVIEW_HOST;
     this.previewPort = DEFAULT_PREVIEW_PORT;
@@ -39,18 +38,35 @@ export default class ShopifyCli {
     return `http://${this.previewHost}:${this.previewPort}`;
   }
 
-  // use a method like `updatePreviewState(state);` instead????
-  private set previewState(newState: PreviewState) {
-    this.currentPreviewState = newState;
-    this.heliumWindow.emitEvent(
-      "on-preview-state-change",
-      this.currentPreviewState
-    );
+  public get isPreviewRunning() {
+    return this.previewState === PreviewState.RUNNING;
   }
 
-  // TODO
-  private get previewState() {
-    return this.currentPreviewState;
+  public setPreviewIsAvalible() {
+    if (
+      !this.isPreviewRunning &&
+      this.previewState === PreviewState.UNAVALIBLE
+    ) {
+      this.updatePreviewState(PreviewState.OFF);
+    }
+  }
+
+  public setPreviewIsUnavalible() {
+    if (
+      !this.isPreviewRunning &&
+      this.previewState !== PreviewState.UNAVALIBLE
+    ) {
+      this.updatePreviewState (PreviewState.UNAVALIBLE);
+    }
+  }
+
+  // use a method like `updatePreviewState(state);` instead????
+  private updatePreviewState(newState: PreviewState) {
+    this.previewState = newState;
+    this.heliumWindow.emitEvent(
+      "on-preview-state-change",
+      this.previewState
+    );
   }
 
   private get themePath() {
@@ -58,7 +74,7 @@ export default class ShopifyCli {
   }
 
   public getPreviewState() {
-    return this.currentPreviewState;
+    return this.previewState;
   }
 
   public async getThemes() {
@@ -70,7 +86,7 @@ export default class ShopifyCli {
   }
 
   /**
-   * problem with this right now is that it might try and send preview state updates 
+   * problem with this right now is that it might try and send preview state updates
    * even if the workspace is not showing (like on inital launch with a given inital state).
    * Simple fix would be to ignore the preview state updates
    */
@@ -79,7 +95,7 @@ export default class ShopifyCli {
     // PREVIEW STATE CHECK AND CONNECTED STORE CHECK WILL BE DONE BY UI
     // asserting values here again for type system and general correctness
     return new Promise<void>((resolve, reject) => {
-      const storeInfo = this.heliumWindow.getConnectedStore(); 
+      const storeInfo = this.heliumWindow.getConnectedStore();
       const currentTheme = this.heliumWindow.getCurrentTheme();
 
       if (!currentTheme) {
@@ -90,7 +106,10 @@ export default class ShopifyCli {
         return reject(new Error("No connected store to use for Theme Preview"));
       }
 
-      if (this.previewChildProcess || this.previewState === PreviewState.RUNNING) {
+      if (
+        this.previewChildProcess ||
+        this.isPreviewRunning
+      ) {
         return reject(new Error("Theme Preview process already running"));
         // should this be using a string instead? error parsing from the main process has been spooky
         // reject('');
@@ -98,10 +117,12 @@ export default class ShopifyCli {
 
       // reset the value
       if (this.hasSentPreviewKillSignal) {
-        this.hasSentPreviewKillSignal = false; 
-      } 
+        this.hasSentPreviewKillSignal = false;
+      }
 
-      const themeAccessPassword = safeStorage.decryptString(Buffer.from(storeInfo.themeAccessPassword));
+      const themeAccessPassword = safeStorage.decryptString(
+        Buffer.from(storeInfo.themeAccessPassword)
+      );
 
       if (options) {
         this.previewHost = options.host;
@@ -116,7 +137,7 @@ export default class ShopifyCli {
         env: {
           // should extend from process.env??
           // I should look an see wht is in this opject
-          ...process.env, 
+          ...process.env,
           SHOPIFY_FLAG_STORE: storeInfo.url,
           SHOPIFY_CLI_THEME_TOKEN: themeAccessPassword,
           SHOPIFY_FLAG_PATH: this.themePath,
@@ -127,7 +148,7 @@ export default class ShopifyCli {
       });
 
       // set the preview state to starting
-      this.previewState = PreviewState.STARTING;
+      this.updatePreviewState(PreviewState.STARTING);
 
       // should I use `once` for events??
       this.previewChildProcess.on("spawn", async () => {
@@ -137,12 +158,12 @@ export default class ShopifyCli {
             resources: [`http-get://${this.previewHost}:${this.previewPort}/`],
           }); // use timeout??
           // once the preview url is avalible set the preview state as running
-          this.currentPreviewState = PreviewState.RUNNING;
+          this.previewState = PreviewState.RUNNING;
           return resolve();
         } catch (error) {
           // if there was an error in waiting for the preview to be avalible,
           // change the preview state to error (might time it out so its not immediate)
-          this.previewState = PreviewState.ERROR;
+          this.updatePreviewState(PreviewState.ERROR);
           // stop/kill the preview process
           await this.stopThemePreview();
           reject(); // reject after the preview process has been shut down
@@ -152,17 +173,17 @@ export default class ShopifyCli {
       // this error event should only handle if there is an error in spawining the process
       this.previewChildProcess.on("error", async (err) => {
         if (this.previewState === PreviewState.STARTING) {
-          // if there was an error spawining the preview proccess 
+          // if there was an error spawining the preview proccess
           console.log(err.message);
           // set the preview sate to error
-          this.previewState = PreviewState.ERROR;
+          this.updatePreviewState(PreviewState.ERROR);
           // set the preview sate to stopping (might time this out)
-          this.previewState = PreviewState.STOPPING;
+          this.updatePreviewState(PreviewState.STOPPING);
           // clean up preview process
           await this.cleanupPreviewProcess();
           // do we know if the process has been killed
           // set preview state to off
-          this.previewState = PreviewState.OFF;
+          this.updatePreviewState(PreviewState.OFF);
           reject(); // should it reject later??? should it reject as soon as everything is cleaned up???
         }
       });
@@ -183,10 +204,10 @@ export default class ShopifyCli {
             !this.hasSentPreviewKillSignal &&
             this.previewState === PreviewState.STOPPING
           ) {
-            this.previewState = PreviewState.ERROR;
+            this.updatePreviewState(PreviewState.ERROR);
             // won't set the state to sporring here since that was the inital state before this error occured
             await this.cleanupPreviewProcess();
-            this.previewState = PreviewState.OFF;
+            this.updatePreviewState(PreviewState.OFF);
             // reject("There was an errror in killing the process"); // should it reject later??? should it reject as soon as everything is cleaned up???
             // reject();
             return reject();
@@ -204,22 +225,22 @@ export default class ShopifyCli {
             // handle any other kind of error
             if (this.previewState !== PreviewState.ERROR) {
               // handles if the status is already in error
-              this.previewState = PreviewState.ERROR;
+              this.updatePreviewState(PreviewState.ERROR);
             }
           }
           // should be in PreviewState.STOPPING
           await this.cleanupPreviewProcess();
           // set preview state to off
-          this.previewState = PreviewState.OFF;
+          this.updatePreviewState(PreviewState.OFF);
 
           if (exitedWithError) {
-            return reject()
+            return reject();
           } else {
             return resolve();
           }
         });
 
-        this.previewState = PreviewState.STOPPING;
+        this.updatePreviewState(PreviewState.STOPPING);
         this.hasSentPreviewKillSignal = this.previewChildProcess?.kill(); // should I try and kill the children
       } else {
         // "Theme Process is not running"

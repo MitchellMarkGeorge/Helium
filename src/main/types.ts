@@ -1,9 +1,8 @@
+import { ConnectStoreOptions } from "common/types";
+
 export interface HeliumWindowOptions {
     themePathOrUrl?: string; // path or Github URL
-    connectedStore?: {
-      storeUrl: string;
-      password: string
-    }; 
+    connectedStore?: ConnectStoreOptions; 
     previewOn?: boolean; // if the window should be started with the preview on
 }
 

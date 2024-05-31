@@ -187,18 +187,35 @@ export class HeliumWindow {
     // in UI make sure preview is not running
     // this is used for new stores
     // will this method be async???
+    if (this.shopifyCli.isPreviewRunning) {
+      throw new Error("Theme Preview is stil running");
+    }
+
     const themeAccessPassword = safeStorage
       .encryptString(options.password)
       .toString();
 
     const store = {
+      name: options.storeName,
       heliumId: utils.generateHeliumId(),
       themeAccessPassword,
       url: options.storeUrl,
     };
 
     this.connectedStore = store;
+    this.shopifyCli.setPreviewIsAvalible();
+    // think about this...
     this.emitEvent("on-store-change", this.connectedStore);
+  }
+
+  public disconnectStore() {
+    if (this.shopifyCli.isPreviewRunning) {
+      throw new Error("Theme Preview is stil running");
+    }
+
+    this.connectedStore = null; 
+    this.shopifyCli.setPreviewIsUnavalible();
+    this.emitEvent("on-store-change", null);
   }
 
   public getWindowState(): HeliumWindowState {

@@ -10,12 +10,16 @@ export class ImageView implements View {
     public getImagePath() {
         return this.imagePath;
     }
+
+    public setImagePath(imagePath: string) {
+        this.imagePath = imagePath;
+    }
     
     public async openFile({ path }: OpenFileOptions) {
         this.imagePath = path;
     }
 
-    cleanup(): void {
+    reset(): void {
         this.imagePath = null;
     }
 }

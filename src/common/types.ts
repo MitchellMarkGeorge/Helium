@@ -29,9 +29,11 @@ export interface StoreInfo {
   // UI does not need passworkd
   themeAccessPassword: string; // encrypted
   url: string;
+  name: string;
 }
 
 export interface ConnectStoreOptions {
+    storeName: string;
     storeUrl: string;
     password: string;
 }

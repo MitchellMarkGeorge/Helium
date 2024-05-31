@@ -4,7 +4,12 @@ import { Workspace } from "../workspace/Workspace";
 import monaco from "monaco-editor";
 import pathe from "pathe";
 import { FileEntry } from "../fileexplorer/types";
-import { MonacoCodeEditor, MonacoTextModel, OpenFileOptions, View } from "./types";
+import {
+  MonacoCodeEditor,
+  MonacoTextModel,
+  OpenFileOptions,
+  View,
+} from "./types";
 import { isTextFile } from "common/utils";
 
 interface CreateEditorModelOptions {
@@ -13,18 +18,15 @@ interface CreateEditorModelOptions {
   text: string;
 }
 
-
 // think about better name for this
 export class CodeEditorView implements View {
-  // could make this a weak map (entry -> model)
-  //   private editorModelMap: Map<string, monaco.editor.ITextModel>;
-  // using a weak map here so that when the file entry is no longer reference,
-  // it is garbage collected automatically
   private editorModelMap: Map<string, MonacoTextModel>;
   // this should be a file object
   // private editorModelMap: WeakMap<ThemeFile, MonacoTextModel>;
   private monacoCodeEditor: MonacoCodeEditor | null;
   private activeModel: MonacoTextModel | null;
+  // if for some reason the CodeEditor is showing and the activeModel is null
+  // it should render an error page
   // private unsavedPaths: Set<string>;
   constructor() {
     this.editorModelMap = new Map();
@@ -40,16 +42,26 @@ export class CodeEditorView implements View {
     return this.activeModel;
   }
 
-  public getEditorValue() {
-    // could throw an error
-   return this.monacoCodeEditor ? this.monacoCodeEditor.getValue() : null; 
+  public setActiveModelFromPath(path: string, fileType: Language) {
+    let model = this.getEditorModel(path);
+    // if (!model) {
+    //   // this should never be the case but just to be safe...
+    //   model = this.createEditorModel({
+    //     path,
+    //     language: fileType,
+    //     text: "",
+    //   });
+    //   this.saveEditorModel(path, model);
+    // }
+    this.activeModel = model;
   }
 
-  public createEditorModel({
-    path,
-    language,
-    text,
-  }: CreateEditorModelOptions) {
+  public getEditorValue() {
+    // could throw an error
+    return this.monacoCodeEditor ? this.monacoCodeEditor.getValue() : null;
+  }
+
+  public createEditorModel({ path, language, text }: CreateEditorModelOptions) {
     const monacoLanguage = this.toMonacoLanguage(language);
     const monacoURI = monaco.Uri.parse(this.getFileURL(path));
     return monaco.editor.createModel(text, monacoLanguage, monacoURI);
@@ -68,10 +80,10 @@ export class CodeEditorView implements View {
   }
 
   public getCursorPosition() {
-   return this.monacoCodeEditor ? this.monacoCodeEditor.getPosition() : null; 
+    return this.monacoCodeEditor ? this.monacoCodeEditor.getPosition() : null;
   }
 
-  public async openFile({ path, fileType}: OpenFileOptions) {
+  public async openFile({ path, fileType }: OpenFileOptions) {
     let model: MonacoTextModel;
     if (isTextFile(fileType)) {
       if (!this.hasEditorModel(path)) {
@@ -92,15 +104,14 @@ export class CodeEditorView implements View {
     }
   }
 
-  //   public deleteEditorModel(path: string) {
-  //     if (this.editorModelMap.has(path)) {
-  //       const model = this.editorModelMap.get(path);
-  //     this.editorModelMap.set(path, model);
-  //       // should I check if it is already disposed?
-  //       model?.dispose();
-  //       this.editorModelMap.delete(path);
-  //     }
-  //   }
+  public deleteEditorModel(filePath: string) {
+    if (this.editorModelMap.has(filePath)) {
+      const model = this.editorModelMap.get(filePath);
+      // should I check if it is already disposed?
+      model?.dispose();
+      this.editorModelMap.delete(filePath); // do this first??
+    }
+  }
 
   // might need to be reworked
   private getFileURL(filePath: string) {
@@ -120,12 +131,12 @@ export class CodeEditorView implements View {
     return encodeURI(`file://${pathName}`).replace(/[?#]/g, encodeURIComponent);
   }
 
-  cleanup(): void {
+  reset(): void {
     // dispose of all models
     for (let model of this.editorModelMap.values()) {
       if (!model.isDisposed) {
         // model.isAttachedToEditor()// should I check if it is attached to an editor???
-        model.dispose()
+        model.dispose();
       }
     }
 
@@ -135,6 +146,8 @@ export class CodeEditorView implements View {
       this.activeModel?.dispose();
     }
     this.activeModel = null;
+
+    this.monacoCodeEditor?.dispose();
 
     this.monacoCodeEditor = null;
   }

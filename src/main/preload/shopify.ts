@@ -15,8 +15,10 @@ export const getShopifyPreloadApi = () => ({
   pullTheme: renderer.invoke<string>("pull-theme"),
   pushTheme: renderer.invoke<string>("push-theme"),
   connectStore: renderer.invoke<ConnectStoreOptions>("connect-store"),
+  disconnectStore: renderer.invoke("disconnect-store"),
   getConnectedStore: renderer.invoke<void, StoreInfo>("get-connected-store"),
   onThemeInfoChange: renderer.listen<ThemeInfo>("on-theme-info-change"),
   onPreviewStateChange: renderer.listen<PreviewState>("on-preview-state-change"),
+  // think about this...
   onStoreChange: renderer.listen<StoreInfo>("on-store-change"),
 });

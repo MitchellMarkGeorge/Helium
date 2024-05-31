@@ -1,4 +1,4 @@
-import { HeliumId, StoreInfo } from "common/types";
+import { FileType, HeliumId, Language, StoreInfo } from "common/types";
 
 export interface ModalState {
   isOpen: boolean;
@@ -52,7 +52,9 @@ export interface InputModalOptions<T> extends ModalOptions {
   modalType: "input";
   title: string;
   // description: string;
-  inputFields: InputModalField[];
+  // inputFields: InputModalField[];
+  // the string is the fieldName
+  inputFields: Record<string, InputModalField>;
   // first button is generally used for cancel
   buttons: [ModalButton, PrimaryModalButton<T>];
   onCloseButtonClick: () => void;
@@ -66,7 +68,8 @@ export interface InputModalField {
 export interface PathInputModalOptions<T> extends ModalOptions {
   modalType: "pathInput"
   title: string;
-  inputFields: PathInputField[];
+  // the string is the fieldName
+  inputFields: Record<string, PathInputField>;
   // first button is used for cancel
   buttons: [ModalButton, PrimaryModalButton<T>];
   onCloseButtonClick: () => void;
@@ -80,7 +83,23 @@ export interface PathInputField extends InputModalField {
 }
 
 export interface ModalResponse<T = void> {
+  // use a boolean instead???
   buttonClicked: "primary" | "secondary" | "close";
   result: T | null;
+}
+
+export interface InputResult {
+  value: string;
+}
+
+export interface FilePathInputResult {
+  fileName: string;
+  fileType: Language; // or FileType 
+  filePath: string
+}
+
+export interface FolderPathInputResult {
+  folderName: string
+  folderPath: string
 }
 

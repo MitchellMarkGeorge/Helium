@@ -28,6 +28,10 @@ export function initShopifyPreloadApi() {
     return heliumWindow.connectStore(options);
   });
 
+  main.handle("disconnect-store", (heliumWindow) => {
+    return heliumWindow.disconnectStore();
+  });
+
   main.handle<string>("get-connected-store", (heliumWindow) => {
     return heliumWindow.getConnectedStore();
   });

@@ -1,4 +1,5 @@
 import { Language } from "common/types";
+import { FilePathInputResult, FolderPathInputResult, InputResult } from "../notification/types";
 
 export const enum SideBarItemOption {
   FILES = "FILES",
@@ -7,15 +8,18 @@ export const enum SideBarItemOption {
   THEME_INFO = "THEME_INFO",
 }
 
-export interface NewFileOptions {
-  fileName: string;
-  fileType: Language;
-  filePath: string;
+export interface NewFileModalOptions {
+  newFileInput: FilePathInputResult
 }
 
-export interface NewFolderOptions {
-  folderPath: string;
-  folderName: string;
+export interface ConnectStoreModalOptions {
+  storeNameInput: InputResult;
+  storeUrlInput: InputResult;
+  themeAccessPasswordInput: InputResult;
+}
+
+export interface NewFolderModalOptions {
+  newFolderInput: FolderPathInputResult
 }
 
 export interface LoadingState {
