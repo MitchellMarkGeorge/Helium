@@ -14,7 +14,7 @@ export class ThemePreview extends StateModel {
     this.previewHost = window.helium.constants.DEFAULT_PREVIEW_HOST;
     this.previewPort = window.helium.constants.DEFAULT_PREVIEW_PORT;
 
-    this.initPreviewStateListener();
+    this.setupPreviewStateListener();
   }
 
   @action
@@ -28,8 +28,9 @@ export class ThemePreview extends StateModel {
     this.previewPort = options.port;
   }
 
-  private initPreviewStateListener() {
+  private setupPreviewStateListener() {
     window.helium.shopify.onPreviewStateChange((newPreviewState) => {
+      // runInAction???
       this.previewState = newPreviewState;
     });
   }

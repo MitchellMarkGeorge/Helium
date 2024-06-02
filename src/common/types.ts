@@ -1,5 +1,5 @@
 import type { getAppPreloadApi } from "main/preload/app";
-import type { constants } from "main/preload/constants";
+import type { constants } from "main/utils/constants";
 import type { getFsPreloadApi } from "main/preload/fs";
 import type { getShopifyPreloadApi } from "main/preload/shopify";
 import type utils from "main/utils/utils";

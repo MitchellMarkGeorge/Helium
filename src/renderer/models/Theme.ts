@@ -42,6 +42,7 @@ export class Theme {
     ? this.name
     : pathe.basename(this.path);
   }
+  
 
   @action
   public updateFromThemeInfo(info: ThemeInfo) {
