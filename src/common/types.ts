@@ -2,7 +2,7 @@ import type { getAppPreloadApi } from "main/preload/app";
 import type { constants } from "main/preload/constants";
 import type { getFsPreloadApi } from "main/preload/fs";
 import type { getShopifyPreloadApi } from "main/preload/shopify";
-import type utils from "main/utils";
+import type utils from "main/utils/utils";
 
 export type HeliumId = `helium-${string}`;
 

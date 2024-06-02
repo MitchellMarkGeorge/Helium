@@ -1,6 +1,6 @@
 import { BrowserWindow, WebContents, app } from "electron";
 import { HeliumWindowManager } from "./HeliumWindowManager";
-import utils from "../utils";
+import utils from "../utils/utils";
 import { HeliumLaunchOptions, HeliumWindowOptions } from "../types";
 import { initAppPreloadApi } from "main/services/app";
 import { initShopifyPreloadApi } from "main/services/shopify";

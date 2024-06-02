@@ -1,5 +1,5 @@
 import { Menu, MenuItemConstructorOptions, app } from "electron";
-import utils from "main/utils";
+import utils from "main/utils/utils";
 import { HeliumApplication } from "../HeliumApplication";
 
 const MENU_SEPERATOR = { type: "separator" } as MenuItemConstructorOptions;
