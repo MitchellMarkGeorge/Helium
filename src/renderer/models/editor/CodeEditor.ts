@@ -27,7 +27,7 @@ export class CodeEditorView implements View {
   // private editorModelMap: WeakMap<ThemeFile, MonacoTextModel>;
   // does this need to be an observable???
   @observable.ref private accessor monacoCodeEditor: MonacoCodeEditor | null;
-  @observable.shallow private accessor activeModel: MonacoTextModel | null;
+  @observable.ref private accessor activeModel: MonacoTextModel | null;
   // if for some reason the CodeEditor is showing and the activeModel is null
   // it should render an error page
   // private unsavedPaths: Set<string>;
@@ -86,7 +86,6 @@ export class CodeEditorView implements View {
     return this.editorModelMap.get(path) || null;
   }
 
-  // computed???
   public getCursorPosition() {
     return this.monacoCodeEditor ? this.monacoCodeEditor.getPosition() : null;
   }

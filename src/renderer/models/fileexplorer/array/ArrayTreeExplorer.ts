@@ -4,7 +4,7 @@ import { Workspace } from "renderer/models/workspace/Workspace";
 import { FileTypeEnum, ThemeFileSystemEntry } from "common/types";
 import { isBinaryFile, isDirectory, isTextFile } from "common/utils";
 import { isDirectoryEntry } from "../utils";
-import { action, computed, observable } from "mobx";
+import { action, computed, flow, observable } from "mobx";
 
 
 const ROOT_DEPTH = 0;
@@ -142,7 +142,7 @@ export class ArrayFileExplorer extends FileExplorer {
   }
 
   @action
-  public async reloadDirectory(dirPath: string) {
+  public reloadDirectory = flow(function* (this: ArrayFileExplorer, dirPath: string) {
     // review this method
     const entryIndex = this.entryArray.findIndex(
       (entry) => entry.path === dirPath
@@ -155,12 +155,12 @@ export class ArrayFileExplorer extends FileExplorer {
       const expandedDirectories = subTree
         .filter((entry) => isDirectoryEntry(entry) && entry.isExpanded)
         .map((entry) => entry.path);
-      const newSubTree = await this.rebuildSubTreeInternal(entry, expandedDirectories);
+      const newSubTree = yield this.rebuildSubTreeInternal(entry, expandedDirectories);
 
       newEntryArray.splice(entryIndex + 1, 0, ...newSubTree);
       this.entryArray = newEntryArray;
     }
-  }
+  });
 
   // the exanded paths should be provided
   private async rebuildSubTreeInternal(
@@ -195,7 +195,7 @@ export class ArrayFileExplorer extends FileExplorer {
   // howerver, since this array version doesn't use a cache, every time a directory is collapes and expanded again,
   // the entire subtree is rebuilt with changes, leaving other parts of the subtree dout of sync
   @action
-  public async expand(dirPath: string) {
+  public expand = flow(function* (this: ArrayFileExplorer, dirPath: string) {
     // recursively build the sub tree based on the expansion state then insert it
     const dirIndex = this.entryArray.findIndex(
       (entry) => entry.path === dirPath
@@ -213,14 +213,14 @@ export class ArrayFileExplorer extends FileExplorer {
       } else {
         // build the subtree (included expanded child trees)
         // subTree = await this.buildSubTree(dirPath, dirEntry.depth);
-        const fileEntries = await window.helium.fs.readDirectory(dirPath);
+        const fileEntries = yield window.helium.fs.readDirectory(dirPath);
         subTree = this.toEntryArray(fileEntries, dirEntry.depth + 1);
       }
       this.expandedDirectories.add(dirPath);
       dirEntry.isExpanded = true;
       this.entryArray = this.insertSubtree(dirIndex + 1, subTree);
     }
-  }
+  });
 
   @computed
   public get asEntryArray(): Entry[] {
@@ -228,13 +228,13 @@ export class ArrayFileExplorer extends FileExplorer {
   }
 
   @action
-  public async reload() {
+  public reload = flow(function* (this: ArrayFileExplorer) {
     if (this.workspace.theme) {
       const { path } = this.workspace.theme;
       this.expandedDirectories.clear();
       this.subTreeCache.clear();
-      const rootFiles = await window.helium.fs.readDirectory(path);
+      const rootFiles = yield window.helium.fs.readDirectory(path);
       this.init(rootFiles);
     }
-  }
+  });
 }

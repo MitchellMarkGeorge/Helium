@@ -11,7 +11,7 @@ import { SideBarItemOption } from "../../workspace/types";
 import { isBinaryFile, isDirectory, isTextFile } from "common/utils";
 import { isDirectoryEntry } from "../utils";
 import pathe from "pathe";
-import { action, computed, observable } from "mobx";
+import { action, computed, flow, observable } from "mobx";
 
 const EXPAND_DIRECTORY_LOADER_DELAY = 3 * 1000; // 3 seconds
 const REBUILD_DIRECTORY_LOADER_DELAY = 3 * 1000; // 3 seconds
@@ -134,7 +134,7 @@ export class TreeFileExplorer extends StateModel implements FileExplorer {
   }
 
   @action
-  public async reload() {
+  public reload = flow(function* (this: TreeFileExplorer) {
     // is this still needed
     // this method pretty much wipes the slate clean
     // in an ideal world, it would still keep all expanded subtrees an only update the expanded trees
@@ -146,7 +146,7 @@ export class TreeFileExplorer extends StateModel implements FileExplorer {
       // return this.rebuildSubTreeNode(this.fileExplorerTree, )
       let rootFiles: ThemeFileSystemEntry[] = [];
       try {
-        rootFiles = await window.helium.fs.readDirectory(path);
+        rootFiles = yield window.helium.fs.readDirectory(path);
       } catch (error) {
         this.workspace.notifications.showMessageModal({
           type: "error",
@@ -156,7 +156,7 @@ export class TreeFileExplorer extends StateModel implements FileExplorer {
       }
       this.init(rootFiles);
     }
-  }
+  });
 
   private getExpandedDirectories(tree: DirectoryNode): string[] {
     let expandedPaths: string[] = [];
@@ -172,13 +172,13 @@ export class TreeFileExplorer extends StateModel implements FileExplorer {
   }
 
   @action
-  public async reloadDirectory(dirPath: string): Promise<void> {
+  public reloadDirectory = flow(function* (this: TreeFileExplorer, dirPath: string) {
     if (this.fileExplorerTree) {
       const node = this.findNode(dirPath, this.fileExplorerTree);
       if (!node || !isDirectoryNode(node) || !node.entry.isExpanded) return;
       try {
         const expandedDirectories = this.getExpandedDirectories(node);
-        const subTree = await this.rebuildSubTreeNode(
+        const subTree = yield this.rebuildSubTreeNode(
           node,
           expandedDirectories
         );
@@ -192,7 +192,7 @@ export class TreeFileExplorer extends StateModel implements FileExplorer {
         });
       }
     }
-  }
+  });
 
   private async rebuildSubTreeNode(
     node: DirectoryNode,
@@ -231,7 +231,7 @@ export class TreeFileExplorer extends StateModel implements FileExplorer {
   }
 
   @action
-  public async expand(dirPath: string) {
+  public expand = flow(function* (this: TreeFileExplorer, dirPath: string) {
     if (this.fileExplorerTree) {
       // should this be done in the try catch???
       // const delayLoaderTimeout = setTimeout(
@@ -251,7 +251,7 @@ export class TreeFileExplorer extends StateModel implements FileExplorer {
           if (this.subTreeCache.has(dirPath)) {
             subTree = this.subTreeCache.get(dirPath) as TreeNode[];
           } else {
-            const fileEntries = await window.helium.fs.readDirectory(dirPath);
+            const fileEntries = yield window.helium.fs.readDirectory(dirPath);
             subTree = this.toSubTree(fileEntries, node.entry.depth + 1);
             // what if it is an empty array???
             this.subTreeCache.set(dirPath, subTree);
@@ -272,7 +272,7 @@ export class TreeFileExplorer extends StateModel implements FileExplorer {
         // }
       }
     }
-  }
+  });
 
   @action
   public collapse(dirPath: string) {

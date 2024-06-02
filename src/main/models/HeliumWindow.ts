@@ -27,7 +27,7 @@ declare const MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY: string;
 const DEFAULT_INITAL_STATE: InitalState = {
   connectedStore: null,
   currentTheme: null,
-  previewState: PreviewState.OFF,
+  previewState: PreviewState.UNAVALIBLE,
   themeFiles: [],
 };
 
@@ -224,6 +224,13 @@ export class HeliumWindow {
       isMaximized: this.browserWindow.isMaximized(),
       isFocused: this.browserWindow.isFocused(),
     };
+  }
+
+  public makeVisible() {
+    if (this.browserWindow.isMinimized()) {
+      this.browserWindow.restore();
+    }
+    this.browserWindow.focus();
   }
 
   public async loadInitalState(): Promise<InitalState> {

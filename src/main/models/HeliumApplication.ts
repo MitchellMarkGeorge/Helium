@@ -8,7 +8,6 @@ import { initFsPreloadApi } from "main/services/fs";
 import { HeliumAppMenu } from "./menus/HeliumAppMenu";
 import { initContextMenuService } from "../services/contextmenu";
 import { HeliumWindow } from "./HeliumWindow";
-import path from "path";
 
 export class HeliumApplication {
   private static instance: HeliumApplication;
@@ -24,8 +23,21 @@ export class HeliumApplication {
     // and for opening recent file
     app.on("open-file", (event, openPath) => {
       event.preventDefault();
+
+      // should probably stop trying to resolve the paths
+      // just need them to be full
+
       // check if `this.hasLaunched`???
-      this.createNewWindow({ themePathOrUrl: path.resolve(openPath) });
+      // check if a window with that folder exists
+
+      // if the path does not exist, it should still load the editor window
+      // and just show an error notification if it unavalible to open it
+      const existingWindow = this.windowManager.getWindowForPath(openPath);
+      if (existingWindow) {
+        existingWindow.makeVisible();
+      } else {
+        this.createNewWindow({ themePathOrUrl: openPath });
+      }
     });
 
     app.on("activate", () => {

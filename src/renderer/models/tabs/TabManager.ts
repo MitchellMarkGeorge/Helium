@@ -14,14 +14,13 @@ interface AddNewTabOptions {
   setAsActive?: boolean;
 }
 
-export class TabManager extends StateModel {
+export class TabManager {
   @observable private accessor tabs: Tab[];
   //   private currentTab // should this be an index or not???
   // better to
   // public activeEntry
   @observable public accessor activeTabIndex: number | null;
-  constructor(workspace: Workspace) {
-    super(workspace);
+  constructor() {
     this.activeTabIndex = null;
     this.tabs = [];
   }
@@ -36,6 +35,7 @@ export class TabManager extends StateModel {
 
   @action
   public addTab({ tab, setAsActive = true }: AddNewTabOptions) {
+    // check if the tab already exists???
     this.tabs.push(tab);
     if (setAsActive) {
       this.selectTab(this.tabs.length - 1);
@@ -68,19 +68,13 @@ export class TabManager extends StateModel {
       typeof indexOrPath === "number"
         ? indexOrPath
         : this.tabs.findIndex((tab) => tab.path === indexOrPath); // should I use findIndex instead
-    const isActiveTab = this.activeTabIndex === selectedIndex;
 
+    if (selectedIndex < 0 || selectedIndex >= this.tabs.length) return
+
+    const isActiveTab = this.activeTabIndex === selectedIndex;
     if (isActiveTab) return;
 
-    if (selectedIndex >= 0 && selectedIndex < this.tabs.length) {
-      this.activeTabIndex = selectedIndex;
-
-      // in reality this should not be "attached" to this mehtod
-      // this.workspace.editor.openFile({
-      //   path: tab.path,
-      //   fileType: tab.fileType,
-      // });
-    }
+    this.activeTabIndex = selectedIndex;
   }
 
   @action
@@ -113,6 +107,7 @@ export class TabManager extends StateModel {
   public removeTab(indexOrPath: number | string) {
     // inspired by this
     // https://ant.design/components/tabs
+    //https://ant.design/components/tabs#tabs-demo-custom-add-trigger
     if (this.activeTabIndex) {
       // handle invalid value
       const tabIndex =
@@ -129,7 +124,6 @@ export class TabManager extends StateModel {
       if (newTabsArray.length === 0) {
         this.tabs = [];
         this.activeTabIndex = null;
-        this.workspace.editor.reset();
         return;
       }
 

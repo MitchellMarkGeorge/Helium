@@ -1,18 +1,15 @@
 import { PreviewState } from "common/types";
 import { StateModel } from "./StateModel";
 import { Workspace } from "./workspace/Workspace";
-import { makeObservable } from "mobx";
+import { action, computed, observable, runInAction } from "mobx";
 
 export class ThemePreview extends StateModel {
     // i could also just read only
-  private previewState: PreviewState;
-  private previewHost: string;
-  private previewPort: string;
+  @observable private accessor previewState: PreviewState;
+  @observable private accessor previewHost: string;
+  @observable private accessor previewPort: string;
   constructor(workspace: Workspace) {
     super(workspace);
-    makeObservable(this, {
-      
-    })
     this.previewState = PreviewState.UNAVALIBLE;
     this.previewHost = window.helium.constants.DEFAULT_PREVIEW_HOST;
     this.previewPort = window.helium.constants.DEFAULT_PREVIEW_PORT;
@@ -20,10 +17,12 @@ export class ThemePreview extends StateModel {
     this.initPreviewStateListener();
   }
 
-  public setPreviewState(previewState: PreviewState) {
+  @action
+  public updatePreviewState(previewState: PreviewState) {
     this.previewState = previewState;
   }
 
+  @action
   public updatePreviewOptions(options: {host: string, port: string}) {
     this.previewHost = options.host;
     this.previewPort = options.port;
@@ -39,15 +38,18 @@ export class ThemePreview extends StateModel {
     return this.previewState;
   }
 
+  @computed
   public get isRunning() {
     return this.previewState === PreviewState.RUNNING;
   }
 
+  @computed
   public get isUnavalible() {
     // only unavalible when there is no connected theme
     return this.previewState === PreviewState.UNAVALIBLE;
   }
 
+  @action
   public async start() {
     if (!this.isRunning) {
       this.workspace.notifications.showNotification({
@@ -62,14 +64,17 @@ export class ThemePreview extends StateModel {
         });
       } catch {
         // error details???
-        this.workspace.notifications.showNotification({
-          type: "error",
-          message: "Error: Unable to start Theme Preview for this theme.",
-        });
+        runInAction(() => {
+          this.workspace.notifications.showNotification({
+            type: "error",
+            message: "Error: Unable to start Theme Preview for this theme.",
+          });
+        })
       }
     }
   }
 
+  @action
   public async stop() {
     if (this.isRunning) {
       this.workspace.notifications.showNotification({
@@ -81,14 +86,17 @@ export class ThemePreview extends StateModel {
         await window.helium.shopify.stopThemePreview();
       } catch {
         // error details???
-        this.workspace.notifications.showNotification({
-          type: "error",
-          message: "Error: Unable to start Theme Preview for this theme.",
-        });
+        runInAction(() => {
+          this.workspace.notifications.showNotification({
+            type: "error",
+            message: "Error: Unable to start Theme Preview for this theme.",
+          });
+        })
       }
     }
   }
 
+  @action
   public reset(): void {
     // depends on whether there is a connected store and if it is running
     if (this.workspace.isStoreConnected) {

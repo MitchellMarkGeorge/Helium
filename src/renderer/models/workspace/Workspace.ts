@@ -19,7 +19,7 @@ import { Editor } from "../editor/Editor";
 import { OpenFileOptions } from "../editor/types";
 import { ThemePreview } from "../ThemePreview";
 import { Store } from "../Store";
-import { action, computed, observable } from "mobx";
+import { action, computed, flow, observable } from "mobx";
 
 // NOTE
 // WHEN READING FILES, I NEED A WAY TO SHOW A PROGRESSBAR IF IT TAKES TOO LONG
@@ -37,7 +37,7 @@ export class Workspace {
   @observable public accessor theme: Theme | null;
   @observable public accessor connectedStore: Store | null;
   @observable private accessor loadingState: LoadingState;
-  @observable private unsavedPaths: Set<string>; // think about decorator
+  @observable private accessor unsavedPaths: Set<string>; // think about decorator
 
   // NOTE: Due to implementation details, ArrayFileExplorer and TreeFileExplorer
   // are not in behavioural parity (see the note on the ArrayFileExplorer.expand() method) method.
@@ -91,7 +91,7 @@ export class Workspace {
 
     if (connectedStore) {
       // preview state is only possible if there is a stoer
-      this.themePreview.setPreviewState(previewState);
+      this.themePreview.updatePreviewState(previewState);
     }
     this.isShowingWorkspace = true;
     window.helium.app.sendWorkspaceIsShowing();
@@ -231,15 +231,15 @@ export class Workspace {
     });
   }
 
-  @action
-  public async createNewFile(parentPath?: string) {
-    const modalResponse = await this.showNewFileModal(parentPath);
+  @action // should it be flow
+  public createNewFile = flow(function* (this: Workspace, parentPath?: string) {
+    const modalResponse = yield this.showNewFileModal(parentPath);
 
     if (modalResponse.buttonClicked === "primary" && modalResponse.result) {
       const { newFileInput } = modalResponse.result;
       const { fileName, filePath, fileType } = newFileInput;
       try {
-        await window.helium.fs.createFile(filePath);
+        yield window.helium.fs.createFile(filePath);
       } catch {
         this.notifications.showMessageModal({
           type: "error",
@@ -251,7 +251,7 @@ export class Workspace {
       const parerentDirectory = pathe.dirname(filePath);
 
       if (this.fileExplorer.isExpanded(parerentDirectory)) {
-        await this.fileExplorer.reloadDirectory(parerentDirectory);
+        yield this.fileExplorer.reloadDirectory(parerentDirectory);
       }
 
       this.editor.openFile({
@@ -260,15 +260,15 @@ export class Workspace {
         basename: fileName,
       });
     }
-  }
+  });
 
   @action
-  public async trashFile(filePath: string, fileName: string) {
-    const modalResponse = await this.showTrashItemConfirmation(fileName, true);
+  public trashFile = flow(function* (this: Workspace, filePath: string, fileName: string) {
+    const modalResponse = yield this.showTrashItemConfirmation(fileName, true);
 
     if (modalResponse.buttonClicked === "primary") {
       try {
-        await window.helium.fs.trashItem(filePath);
+        yield window.helium.fs.trashItem(filePath);
       } catch (error) {
         // await wait(500); // have a small delay between the modal showing and the message modal showing
         this.notifications.showMessageModal({
@@ -280,24 +280,24 @@ export class Workspace {
       }
       const parerentDirectory = pathe.dirname(filePath);
       if (this.fileExplorer.isExpanded(parerentDirectory)) {
-        await this.fileExplorer.reloadDirectory(parerentDirectory);
+        yield this.fileExplorer.reloadDirectory(parerentDirectory);
       }
 
       if (this.editor.isFileOpen(filePath)) {
         this.editor.closeFile(filePath);
       }
     }
-  }
+  });
 
   @action
-  public async createNewFolder(parentFolderPath: string) {
-    const modalResponse = await this.showNewFolderModal(parentFolderPath);
+  public createNewFolder = flow(function* (this: Workspace, parentFolderPath: string) {
+    const modalResponse = yield this.showNewFolderModal(parentFolderPath);
 
     if (modalResponse.buttonClicked === "primary" && modalResponse.result) {
       const { newFolderInput } = modalResponse.result;
       const { folderName, folderPath } = newFolderInput;
       try {
-        await window.helium.fs.createDirectory(folderPath);
+        yield window.helium.fs.createDirectory(folderPath);
       } catch (error) {
         // await wait(500); // have a small delay between the modal showing and the message modal showing
         this.notifications.showMessageModal({
@@ -309,21 +309,21 @@ export class Workspace {
       }
       const parerentDirectory = pathe.dirname(folderPath);
       if (this.fileExplorer.isExpanded(parerentDirectory)) {
-        await this.fileExplorer.reloadDirectory(parerentDirectory);
+        yield this.fileExplorer.reloadDirectory(parerentDirectory);
       }
     }
-  }
+  })
 
   @action
-  public async trashFolder(folderPath: string, folderName: string) {
-    const modalResponse = await this.showTrashItemConfirmation(
+  public trashFolder = flow(function* (this: Workspace, folderPath: string, folderName: string) {
+    const modalResponse = yield this.showTrashItemConfirmation(
       folderName,
       true
     );
 
     if (modalResponse.buttonClicked === "primary") {
       try {
-        await window.helium.fs.trashItem(folderPath);
+        yield window.helium.fs.trashItem(folderPath);
       } catch (error) {
         // await wait(500); // have a small delay between the modal showing and the message modal showing
         this.notifications.showMessageModal({
@@ -335,28 +335,28 @@ export class Workspace {
       }
       const parerentDirectory = pathe.dirname(folderPath);
       if (this.fileExplorer.isExpanded(parerentDirectory)) {
-        await this.fileExplorer.reloadDirectory(parerentDirectory);
+        yield this.fileExplorer.reloadDirectory(parerentDirectory);
       }
 
       // this should also remove any open editor models or tabs that are in said directory
-      const openFilesPaths = this.editor.getOpenFiles().map((tab) => tab.path);
+      const openFilesPaths = this.editor.getOpenFiles();
       // get all child files of the folder that are curretnly open
       const childFilePaths = openFilesPaths.filter((path) =>
         path.startsWith(folderPath)
       );
       this.editor.closeAll(childFilePaths);
     }
-  }
+  });
 
   // will become flow
   @action
-  public async openThemeFromDialog() {
+  public openThemeFromDialog = flow(function*(this: Workspace) {
     // check if there is already a theme open
     // if there is, clear everything
     // this should not fail
     let themePath: string | undefined = undefined;
     try {
-      const paths = await window.helium.app.openFolderDialog();
+      const paths = yield window.helium.app.openFolderDialog();
       themePath = paths[0] || undefined;
     } catch {
       this.notifications.showMessageModal({
@@ -370,7 +370,7 @@ export class Workspace {
       let themeInfo: ThemeInfo | null = null;
       let files: ThemeFileSystemEntry[] = [];
       try {
-        const results = await window.helium.shopify.openTheme(themePath);
+        const results = yield window.helium.shopify.openTheme(themePath);
         themeInfo = results.themeInfo;
         files = results.files;
       } catch (error) {
@@ -389,15 +389,15 @@ export class Workspace {
         this.fileExplorer.init(files);
       }
     }
-  }
+  })
 
   @action
-  public async openFile(options: OpenFileOptions) {
+  public openFile(options: OpenFileOptions) {
     return this.editor.openFile(options);
   }
 
   @action
-  public async saveCurrentFile() {
+  public saveCurrentFile = flow(function* (this: Workspace) {
     const activeTab = this.editor.getActiveTab();
     if (this.editor.isShowingCodeEditor) {
       const currentEditorValue = this.editor.getEditorValue();
@@ -407,7 +407,7 @@ export class Workspace {
         currentEditorValue
       ) {
         try {
-          await window.helium.fs.writeFile({
+          yield window.helium.fs.writeFile({
             filePath: activeTab.path,
             content: currentEditorValue,
             encoding: "utf8",
@@ -424,7 +424,7 @@ export class Workspace {
         }
       }
     }
-  }
+  });
 
   @action
   public markAsUnsaved(path: string) {
@@ -475,9 +475,9 @@ export class Workspace {
   }
 
   @action
-  public async connectStore() {
+  public  connectStore = flow(function*(this: Workspace) {
     if (!this.isStoreConnected) {
-      const modalResponse = await this.showConnectStoreModal();
+      const modalResponse = yield this.showConnectStoreModal();
 
       if (modalResponse.buttonClicked === "primary" && modalResponse.result) {
 
@@ -485,7 +485,7 @@ export class Workspace {
           modalResponse.result;
 
         try {
-          await window.helium.shopify.connectStore({
+          yield window.helium.shopify.connectStore({
             storeName: storeNameInput.value,
             password: themeAccessPasswordInput.value,
             storeUrl: storeUrlInput.value,
@@ -508,15 +508,15 @@ export class Workspace {
         // the previewState will be updated by the event
       }
     }
-  }
+  })
 
   @action
-  public async disconnectStore() {
+  public disconnectStore = flow(function* (this: Workspace) {
     if (this.isStoreConnected) {
-      const modalResponse = await this.showDisconnectStoreConfirmation();
+      const modalResponse = yield this.showDisconnectStoreConfirmation();
       if (modalResponse.buttonClicked === "primary") {
         try {
-         await window.helium.shopify.disconnectStore()
+         yield window.helium.shopify.disconnectStore()
         } catch (error) {
           this.notifications.showMessageModal({
             type: "error",
@@ -531,7 +531,7 @@ export class Workspace {
         // the previewState will be updated by the event
       }
     }
-  }
+  })
 
   @computed
   public get isStoreConnected() {

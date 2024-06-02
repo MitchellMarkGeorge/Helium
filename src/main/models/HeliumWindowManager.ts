@@ -65,6 +65,13 @@ export class HeliumWindowManager {
     );
   }
 
+  public getWindowForPath(themePath: string) {
+    return this.windows.find(window => {
+      const currentTheme = window.getCurrentTheme();
+      return currentTheme?.path === themePath;
+    }) || null;
+  }
+
   public getLastFocusedWindow() {
     return this.lastFocusedWindow;
   }

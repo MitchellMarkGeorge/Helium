@@ -28,12 +28,24 @@ export function getErrorMessage(error: unknown) {
   return String(error);
 }
 
-export function isBinaryFile(fileType: FileType): fileType is BinaryFileType {
-  return fileType === FileTypeEnum.BINARY || fileType === FileTypeEnum.IMAGE;
+export function isBinaryFile(
+  fileType: FileType
+): fileType is BinaryFileType.BINARY {
+  return fileType === FileTypeEnum.BINARY;
+}
+
+export function isImageFile(
+  fileType: FileType
+): fileType is BinaryFileType.IMAGE {
+  return fileType === FileTypeEnum.IMAGE;
 }
 
 export function isTextFile(fileType: FileType): fileType is Language {
-  return !isBinaryFile(fileType) && Object.values(Language).includes(fileType);
+  return (
+    !isBinaryFile(fileType) &&
+    !isImageFile(fileType) &&
+    Object.values(Language).includes(fileType)
+  );
 }
 
 export function isDirectory(
@@ -47,4 +59,3 @@ export function isFile(
 ): themeEntry is ThemeFile {
   return themeEntry.type === "file";
 }
-
