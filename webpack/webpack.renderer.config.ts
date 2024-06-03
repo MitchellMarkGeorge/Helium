@@ -15,6 +15,7 @@ export const rendererConfig: Configuration = {
         test: /\.css$/,
         use: [MiniCssExtractPlugin.loader, { loader: "css-loader" }],
       },
+      // not sure why
       {
         test: /\.module\.s(a|c)ss$/,
         use: [

@@ -42,10 +42,13 @@ export class HeliumWindow {
     // console.log(path.join(__dirname, "../assets", "icons", "helium.png"));
 
     this.browserWindow = new BrowserWindow({
-      title: "Helium IDE",
+      title: constants.DEFAULT_WINOW_TITLE,
       // can seem unnatural
       // center: true,
       // frame: false,
+      titleBarStyle: "hiddenInset",
+      titleBarOverlay: true,
+      // trafficLightPosition: 
       width: 1200,
       height: 900,
       minHeight: 600,
@@ -73,6 +76,7 @@ export class HeliumWindow {
     // wait for the dom to be ready before showing the window
     // think about this
     this.browserWindow.webContents.once("dom-ready", () => {
+      console.log("ready to show");
       this.browserWindow.show();
     });
 

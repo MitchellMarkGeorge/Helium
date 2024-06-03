@@ -1,6 +1,12 @@
 import { wait } from "common/utils";
-import { Workspace } from "./models/workspace/Workspace";
+import { Workspace } from "../models/workspace/Workspace";
 import { action, flow } from "mobx";
+import { createRoot } from "react-dom/client";
+import TitleBar from "../components/TitleBar/TitleBar";
+import HeliumWorkspace from "../components/Workspace/HeliumWorkspace";
+import StatusBar from "../components/StatusBar/StatusBar";
+import { WorkspaceContext } from "renderer/contexts/Workspace";
+import styles from "./HeliumApp.module.scss";
 
 export class HeliumApp {
   private workspace: Workspace;
@@ -18,6 +24,19 @@ export class HeliumApp {
     // there actually is no reason to set up the listerners inside the react components
     // dynamically import components before using them
     // render root component here
+
+    const app = (
+      <WorkspaceContext.Provider value={this.workspace}>
+        <div className={styles.HeliumAppContainer}>
+          <TitleBar />
+          <HeliumWorkspace />
+          <StatusBar />
+        </div>
+      </WorkspaceContext.Provider>
+    );
+
+    const root = createRoot(document.getElementById("app") as HTMLElement);
+    root.render(app);
 
     // load inital state
     // if there was an error, set the default inial state

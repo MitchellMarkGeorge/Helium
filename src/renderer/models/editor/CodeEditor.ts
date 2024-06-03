@@ -69,7 +69,8 @@ export class CodeEditorView implements View {
 
   public createEditorModel({ path, language, text }: CreateEditorModelOptions) {
     const monacoLanguage = this.toMonacoLanguage(language);
-    const monacoURI = monaco.Uri.parse(this.getFileURL(path));
+    const monacoURI = monaco.Uri.file(path);
+    // const monacoURI = monaco.Uri.parse(this.getFileURL(path));
     return monaco.editor.createModel(text, monacoLanguage, monacoURI);
   }
 
