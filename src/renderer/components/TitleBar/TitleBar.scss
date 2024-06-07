@@ -1,0 +1,35 @@
+@use "../../style/variables" as variables;
+@use "../../style/spacing" as spacing;
+@use "../../style/colors" as colors;
+
+.titlebar {
+  display: flex;
+  flex-direction: row;
+  position: relative;
+  height: 44px;
+  align-items: center;
+  padding: 0 16px;
+  border-bottom: 1px solid variables.$border-color;
+  color: colors.$gray-400;
+  user-select: none;
+  -webkit-app-region: drag;
+
+  .titlebar-title {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    user-select: none;
+  }
+
+  .titlebar-icons {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+    font-size: 1rem;
+    // owl selector
+    * + * {
+      margin-left: spacing.$spacing-400;
+    }
+  }
+}

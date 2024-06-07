@@ -6,7 +6,8 @@ import TitleBar from "../components/TitleBar/TitleBar";
 import HeliumWorkspace from "../components/Workspace/HeliumWorkspace";
 import StatusBar from "../components/StatusBar/StatusBar";
 import { WorkspaceContext } from "renderer/contexts/Workspace";
-import styles from "./HeliumApp.module.scss";
+import  "./HeliumApp.scss";
+
 
 export class HeliumApp {
   private workspace: Workspace;
@@ -27,10 +28,10 @@ export class HeliumApp {
 
     const app = (
       <WorkspaceContext.Provider value={this.workspace}>
-        <div className={styles.HeliumAppContainer}>
+        <div className="helium-app-container">
           <TitleBar />
           <HeliumWorkspace />
-          <StatusBar />
+          {/* <StatusBar /> */}
         </div>
       </WorkspaceContext.Provider>
     );

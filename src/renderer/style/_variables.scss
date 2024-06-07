@@ -1,0 +1,6 @@
+// is this needed
+@use "./colors" as colors;
+
+$border-color: colors.$gray-800;
+$accent-color: colors.$green-800;
+$background-color: colors.$gray-900;

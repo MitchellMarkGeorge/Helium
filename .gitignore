@@ -85,6 +85,8 @@ typings/
 # Webpack
 .webpack/
 
+dist/
+
 # Vite
 .vite/
 

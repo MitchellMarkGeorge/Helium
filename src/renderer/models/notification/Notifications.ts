@@ -11,6 +11,7 @@ import {
   ModalResponse,
 } from "./types";
 import { action, computed, observable } from "mobx";
+import { generateHeliumId } from "common/utils";
 
 type ShowMessageModalOptions = Pick<MessageModalOptions, "type" | "message"> & {
   primaryButtonText?: string;
@@ -51,7 +52,7 @@ export class Notifications extends StateModel {
   public showNotification(options: NotificationOptions) {
     enqueueSnackbar({
       message: options.message,
-      key: window.helium.utils.generateHeliumId(),
+      key: generateHeliumId(),
       variant: options.type,
     });
   }

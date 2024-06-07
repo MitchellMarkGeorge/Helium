@@ -6,7 +6,10 @@ import {
   ThemeFileSystemEntry,
   ThemeDirectory,
   ThemeFile,
+  HeliumId,
 } from "./types";
+
+import { v4 as uuid } from "uuid";
 
 export const assertIsDefined = <T>(
   value: T,
@@ -59,3 +62,5 @@ export function isFile(
 ): themeEntry is ThemeFile {
   return themeEntry.type === "file";
 }
+
+export const generateHeliumId = (): HeliumId => `helium-${uuid()}`;

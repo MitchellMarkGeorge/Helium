@@ -1,5 +1,8 @@
 import { HeliumApp } from "./app/HeliumApp";
-import "./global.scss"
+import "./style/global.scss"
+// import "bootstrap-icons/font/bootrap-icons.css";
+// think about this
+import "bootstrap-icons/font/bootstrap-icons.css"
 
 const app = new HeliumApp();
 

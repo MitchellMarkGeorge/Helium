@@ -1,6 +1,13 @@
 // gotten from https://www.joshwcomeau.com/css/custom-css-reset/
 // and https://www.youtube.com/watch?v=2lyDv0wOQuQ
 
+@use './colors';
+@use './shadows';
+@use './spacing';
+@use './typography';
+@use './variables' as variables;
+
+
 *,
 *::before,
 *::after {
@@ -33,13 +40,15 @@ select {
 
 body {
   padding: 0;
+  background-color: variables.$background-color;
   // think about this
   // height: 100vh; // 100%
-  min-height: 100vh;
+  height: 100vh;
   font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
     "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 }
 
 #app {
   isolation: isolate;
+  height: 100%;
 }
