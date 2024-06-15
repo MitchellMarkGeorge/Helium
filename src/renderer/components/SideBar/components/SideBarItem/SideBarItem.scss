@@ -1,0 +1,32 @@
+@use "../../../../style/colors" as colors;
+@use "../../../../style/variables" as variables;
+
+.sidebar-item {
+    width: 2.5rem;
+    height: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.5rem;
+    transition: 200ms linear background-color;
+
+    &:hover {
+        background-color: colors.$gray-800;
+    }
+
+    // think about specitivity
+    // what if other classes use active
+    &.active {
+        background-color: variables.$accent-color;
+
+        // :hover {
+        //     background-color: variables.$accent-color;
+        // }
+    }
+
+    .sidebar-item-icon {
+        color: colors.$gray-300;
+        width: 1rem;
+        height: 1rem;
+    }
+}

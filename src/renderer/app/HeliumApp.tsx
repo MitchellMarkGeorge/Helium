@@ -28,10 +28,10 @@ export class HeliumApp {
 
     const app = (
       <WorkspaceContext.Provider value={this.workspace}>
-        <div className="helium-app-container">
+        <div className="app-container">
           <TitleBar />
           <HeliumWorkspace />
-          {/* <StatusBar /> */}
+          <StatusBar />
         </div>
       </WorkspaceContext.Provider>
     );
@@ -43,19 +43,24 @@ export class HeliumApp {
     // if there was an error, set the default inial state
     // and show an error message
     try {
+      // document.body.style.cursor = "progress";
       const initalState = yield window.helium.app.loadInitalState();
       this.workspace.initFromInitalState(initalState);
     } catch (error) {
+      // document.body.style.cursor = "auto";
       this.workspace.initFromInitalState(
         window.helium.constants.DEFAULT_INITAL_STATE
       );
+      console.log("error");
       yield wait(500);
       this.workspace.notifications.showMessageModal({
         type: "error",
-        message: "There was an error loading the editor", // might use error message,
+        // thik of better error message
+        message: "There was an error loading the inital state", // might use error message,
         secondaryButtonText: "Close",
       });
     }
+    // document.body.style.cursor = "auto";
     // update workspace when done
   });
 

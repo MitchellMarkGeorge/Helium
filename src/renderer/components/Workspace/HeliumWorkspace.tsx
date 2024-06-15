@@ -1,11 +1,15 @@
 import { observer } from "mobx-react-lite"
-import SplashLogo from "../../assets/SplashLogo.svg"
+import Logo from "renderer/components/ui/Logo/Logo"
 import "./HeliumWorkspace.scss";
+import { useWorkspace } from "renderer/hooks/useWorkspace";
+import SideBar from "../SideBar/SideBar";
 
 function HeliumWorkspace() {
+  const workspace = useWorkspace();
+
   return (
     <div className="workspace">
-      <SplashLogo height="150px" width="150px"/>
+      {workspace.isShowingWorkspace ? <SideBar/> : <Logo full size="9rem"/>}
     </div>
   )
 }

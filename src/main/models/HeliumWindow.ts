@@ -44,7 +44,7 @@ export class HeliumWindow {
 
     const TITLEBAR_PADDING = 16;
     const TITLE_BAR_HEGHT = 44;
-    const TRAFFIC_LIGHT_HEIGHT = 15;
+    const TRAFFIC_LIGHT_HEIGHT = 16; //or 15??
 
     this.browserWindow = new BrowserWindow({
       title: constants.DEFAULT_WINOW_TITLE,

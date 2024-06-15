@@ -129,7 +129,7 @@ export class TreeFileExplorer extends StateModel implements FileExplorer {
   public get isFileExplorerVisible() {
     return (
       this.workspace.isSidePanelOpen &&
-      this.workspace.selectedSideBarOption === SideBarItemOption.FILES
+      this.workspace.activeSideBarOption === SideBarItemOption.FILES
     );
   }
 

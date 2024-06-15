@@ -1,11 +1,8 @@
 // gotten from https://www.joshwcomeau.com/css/custom-css-reset/
 // and https://www.youtube.com/watch?v=2lyDv0wOQuQ
 
-@use './colors';
-@use './shadows';
-@use './spacing';
-@use './typography';
 @use './variables' as variables;
+@use './typography';
 
 
 *,

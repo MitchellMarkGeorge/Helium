@@ -31,8 +31,8 @@ const DEFAULT_LOADING_STATE: LoadingState = {
 
 export class Workspace {
   //   public currentFilePath: string | null;
-  @observable private accessor isShowingWorkspace: boolean;
-  @observable public accessor selectedSideBarOption: SideBarItemOption | null;
+  @observable public accessor isShowingWorkspace: boolean;
+  @observable public accessor activeSideBarOption: SideBarItemOption | null;
   @observable public accessor isSidePanelOpen: boolean;
   @observable public accessor theme: Theme | null;
   @observable public accessor connectedStore: Store | null;
@@ -53,7 +53,7 @@ export class Workspace {
     // NEED A CLASS TO TRACK TAB/EDITOR STATUS
     this.isShowingWorkspace = false;
     // this.currentFilePath = null;
-    this.selectedSideBarOption = null;
+    this.activeSideBarOption = null;
     this.isSidePanelOpen = false;
 
     this.notifications = new Notifications(this);
@@ -444,10 +444,10 @@ export class Workspace {
     return this.unsavedPaths.has(path);
   }
 
-  @computed
-  public get shouldShowWorkspace() {
-    return this.isShowingWorkspace;
-  }
+  // @computed
+  // public get shouldShowWorkspace() {
+  //   return this.isShowingWorkspace;
+  // }
 
   @computed
   public get hasTheme() {
@@ -459,10 +459,10 @@ export class Workspace {
     return this.unsavedPaths.size >= 1;
   }
 
-  @action
-  public setShowWorkspace(showWorkspace: boolean) {
-    this.isShowingWorkspace = showWorkspace;
-  }
+  // @action
+  // public setShowWorkspace(showWorkspace: boolean) {
+  //   this.isShowingWorkspace = showWorkspace;
+  // }
 
   @action
   public toggleSidePanel() {
@@ -471,7 +471,7 @@ export class Workspace {
 
   @action
   public selectSideBarOption(option: SideBarItemOption) {
-    this.selectedSideBarOption = option;
+    this.activeSideBarOption = option;
   }
 
   @action
