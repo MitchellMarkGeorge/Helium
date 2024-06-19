@@ -8,14 +8,14 @@ function TitleBar() {
 
   const tilebarClasses = classNames({
     titlebar: true,
-    'workspace-showing': workspace.isShowingWorkspace,
+    'workspace-visible': workspace.isShowingWorkspace,
   });
 
   return (
     <div className={tilebarClasses}>
       {workspace.isShowingWorkspace && (
         <>
-          <div className="titlebar-title text-sm">{workspace.windowTitle}</div>
+          <div className="titlebar-title text-xs">{workspace.windowTitle}</div>
           <div className="titlebar-icons">
             <i className="bi bi-layout-sidebar"></i>
             <i className="bi bi-gear"></i>

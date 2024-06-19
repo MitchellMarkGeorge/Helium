@@ -1,6 +1,3 @@
-@use "../../style/variables" as variables;
-@use "../../style/spacing" as spacing;
-
 .sidebar {
     display: flex;
     align-items: center;
@@ -8,7 +5,7 @@
     height: 100%;
     width: 4.5rem;
     gap: 1rem;
-    padding: spacing.$spacing-200 0;
+    padding: var(--spacing-200) 0;
     // for now
-    border-right: 1px variables.$border-color solid;
+    border-right: 1px var(--border-color) solid;
 }

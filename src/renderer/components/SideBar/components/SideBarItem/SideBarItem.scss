@@ -1,6 +1,3 @@
-@use "../../../../style/colors" as colors;
-@use "../../../../style/variables" as variables;
-
 .sidebar-item {
     width: 2.5rem;
     height: 2.5rem;
@@ -11,13 +8,13 @@
     transition: 200ms linear background-color;
 
     &:hover {
-        background-color: colors.$gray-800;
+        background-color: var(--gray-800);
     }
 
     // think about specitivity
     // what if other classes use active
     &.active {
-        background-color: variables.$accent-color;
+        background-color: var(--primary-color);
 
         // :hover {
         //     background-color: variables.$accent-color;
@@ -25,7 +22,7 @@
     }
 
     .sidebar-item-icon {
-        color: colors.$gray-300;
+        color: var(--gray-300);
         width: 1rem;
         height: 1rem;
     }

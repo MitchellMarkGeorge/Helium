@@ -1,0 +1,18 @@
+.button {
+    @extend .text-sm;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+    height: 2rem;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+}
+
+.button-primary {
+    background-color: var(--primary-color);
+
+    :hover {
+
+    }
+}

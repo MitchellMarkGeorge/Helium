@@ -1,5 +1,5 @@
 import { observer } from "mobx-react-lite"
-import Logo from "renderer/components/ui/Logo/Logo"
+import Logo from "renderer/components/ui/Logo"
 import "./HeliumWorkspace.scss";
 import { useWorkspace } from "renderer/hooks/useWorkspace";
 import SideBar from "../SideBar/SideBar";

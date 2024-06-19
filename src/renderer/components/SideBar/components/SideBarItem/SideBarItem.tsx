@@ -3,6 +3,8 @@ import "./SideBarItem.scss";
 import { observer } from "mobx-react-lite";
 import { Icon } from "react-bootstrap-icons";
 
+// MIGRATE TO CSS VARISBLES
+
 interface Props {
   icon: Icon;
   isActive: boolean;
