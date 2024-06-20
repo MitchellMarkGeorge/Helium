@@ -3,6 +3,7 @@ import Logo from "renderer/components/ui/Logo"
 import "./HeliumWorkspace.scss";
 import { useWorkspace } from "renderer/hooks/useWorkspace";
 import SideBar from "../SideBar/SideBar";
+import Button from "../ui/Button";
 
 function HeliumWorkspace() {
   const workspace = useWorkspace();

@@ -2,6 +2,8 @@ import { observer } from "mobx-react-lite";
 import "./TitleBar.scss";
 import { useWorkspace } from "renderer/hooks/useWorkspace";
 import classNames from "classnames";
+import { LayoutSidebar, Gear } from "react-bootstrap-icons";
+import TitleBarButton from "./components/TitleBarButton/TitleBarButton";
 
 function TitleBar() {
   const workspace = useWorkspace();
@@ -13,12 +15,13 @@ function TitleBar() {
 
   return (
     <div className={tilebarClasses}>
+      <div className="titlebar-drag-region"></div>
       {workspace.isShowingWorkspace && (
         <>
-          <div className="titlebar-title text-xs">{workspace.windowTitle}</div>
-          <div className="titlebar-icons">
-            <i className="bi bi-layout-sidebar"></i>
-            <i className="bi bi-gear"></i>
+          <div className="titlebar-title text-sm">{workspace.windowTitle}</div>
+          <div className="titlebar-icon-container">
+            <TitleBarButton icon={LayoutSidebar}/>
+            <TitleBarButton icon={Gear}/>
           </div>
         </>
       )}

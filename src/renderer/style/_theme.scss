@@ -1,11 +1,17 @@
 // is this needed
+@use 'sass:color';
 
 :root {
-    --font-family: font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
+    --font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
         "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+
     --primary-color: var(--green-800);
+    // this or opacity??
     --primary-hover-color: var(--green-900);
+
     --secondary-color: var(--gray-700);
+    --secondary-hover-color: var(--gray-800);
+
     --border-color: var(--gray-800);
     --background-color: var(--gray-900);
 

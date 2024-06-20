@@ -3,7 +3,7 @@
 
 // think of better name
 @use "./colors";
-@use "./variables";
+@use "./theme";
 @use "./typography";
 @use "./spacing";
 @use "./shadows";
@@ -43,12 +43,17 @@ body {
   background-color: var(--background-color);
   // think about this
   // height: 100vh; // 100%
-  height: 100vh;
   font-family: var(--font-family);
   color: var(--default-text-color);
 }
 
+html, body, #app {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
 #app {
   isolation: isolate;
-  height: 100%;
+  // height: 100%;
 }

@@ -14,9 +14,6 @@ const buttonVariants = cva("button", {
       destructive: "button-destructive",
       disabled: "button-disabled",
     },
-    defaultVariants: {
-      variant: "primary",
-    },
   },
 });
 
@@ -34,9 +31,9 @@ interface Props
 //   variant = "primary",
 // }: Props) {
 const Button = forwardRef<HTMLButtonElement, Props>(
-  ({ className, variant, fullWidth = false, ...props }, ref) => {
+  ({ className, variant = "primary", fullWidth = false, ...props }, ref) => {
     // props.children;
-    const buttonClasses = classNames(buttonVariants({ variant, className }), {
+    const buttonClasses = classNames(buttonVariants({ variant, className }), "text-sm", {
       "button-full-width": fullWidth,
     });
     return (

@@ -1,0 +1,20 @@
+.title-bar-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  // 2px
+  padding: 0.25rem;
+  border-radius: 4px;
+  -webkit-app-region: no-drag;
+  z-index: 2; // think about this
+  //   background-color: red;
+
+  &:hover {
+    cursor: pointer;
+    background-color: var(--gray-800);
+  }
+
+  .title-bar-icon {
+    font-size: 1rem;
+  }
+}
