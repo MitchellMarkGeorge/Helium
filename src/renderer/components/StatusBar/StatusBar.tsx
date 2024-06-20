@@ -9,7 +9,6 @@ function StatusBar() {
   if (!workspace.isShowingWorkspace) {
     return null;
   } else return <div className="statusbar">
-      <Button variant="primary">Hello</Button>
   </div>;
 }
 

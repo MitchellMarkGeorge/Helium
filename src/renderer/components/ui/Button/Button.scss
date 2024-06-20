@@ -7,10 +7,14 @@
   height: 2rem;
   padding: 0.5rem 1rem;
   border-radius: 0.5rem;
-  font-weight: var(--font-weight-medium);
+  // think about this
+  // font-weight: var(--font-weight-medium);
   color: var(--gray-200);
   border: none;
-  transition: 200ms linear background-color;
+  // transition: 200ms linear background-color;
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
 
   &:hover {
     cursor: pointer;

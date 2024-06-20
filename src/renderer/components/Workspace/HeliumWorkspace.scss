@@ -3,4 +3,25 @@
   width: 100%;
   display: flex;
   flex: auto;
+
+  .workspace-resizer {
+    background-clip: padding-box;
+    z-index: 1;
+    background-color: var(--border-color);
+    width: 5px;
+    margin: 0 -2px;
+    border-left: 2px solid transparent;
+    border-right: 2px solid transparent;
+    cursor: col-resize;
+
+    transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 150ms;
+
+    &:hover, &:active {
+      background-color: var(--primary-color);
+      border-left: 2px solid var(--primary-color);
+      border-right: 2px solid var(--primary-color);
+    }
+  }
 }
