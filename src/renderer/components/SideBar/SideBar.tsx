@@ -32,12 +32,17 @@ function SideBar() {
       {sideBarItems.map(({ option, icon }) => (
         <SideBarItem
           icon={icon}
-          isActive={isActive(option)}
+          isActive={workspace.isSidePanelOpen && isActive(option)}
           key={option}
           onClick={action(() => {
             console.log(option);
             if (workspace.activeSideBarOption !== option) {
+              if (!workspace.isSidePanelOpen) {
+                workspace.toggleSidePanel();
+              }
               workspace.selectSideBarOption(option);
+            } else {
+              workspace.toggleSidePanel();
             }
           })}
         />

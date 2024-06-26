@@ -3,7 +3,7 @@ import Logo from "../ui/Logo";
 import { observer } from "mobx-react-lite";
 
 interface Props {
-  view: ViewType;
+  viewType: ViewType;
 }
 function EditorPanel(props: Props) {
   const getView = (view: ViewType) => {
@@ -12,7 +12,7 @@ function EditorPanel(props: Props) {
         return <Logo full size="9rem" />;
     }
   };
-  return getView(props.view);
+  return getView(props.viewType);
 }
 
 export default observer(EditorPanel);

@@ -1,0 +1,22 @@
+.preview-status {
+    height: 100%;
+    width: 2.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--gray-700);
+
+    &.preview-avalible {
+        background-color: var(--primary-color);
+    }
+
+    &.preview-running {
+        background-color: var(--red-800);
+    }
+
+    .preview-status-icon {
+        color: var(--gray-300);
+        width: 0.75rem;
+        height: 0.75rem;
+    }
+}

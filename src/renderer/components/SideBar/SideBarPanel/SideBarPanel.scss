@@ -3,6 +3,7 @@
     width: 100%;
     display: flex;
     flex-direction: row;
+    border-left: 1px var(--border-color) solid;
 
     .sidebar-panel-title {
         display: flex;

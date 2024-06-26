@@ -32,7 +32,7 @@ const DEFAULT_LOADING_STATE: LoadingState = {
 export class Workspace {
   //   public currentFilePath: string | null;
   @observable public accessor isShowingWorkspace: boolean;
-  @observable public accessor activeSideBarOption: SideBarItemOption | null;
+  @observable public accessor activeSideBarOption: SideBarItemOption;
   @observable public accessor isSidePanelOpen: boolean;
   @observable public accessor theme: Theme | null;
   @observable public accessor connectedStore: Store | null;
@@ -53,7 +53,8 @@ export class Workspace {
     // NEED A CLASS TO TRACK TAB/EDITOR STATUS
     this.isShowingWorkspace = false;
     // this.currentFilePath = null;
-    this.activeSideBarOption = null;
+    // default option
+    this.activeSideBarOption = SideBarItemOption.FILES;
     this.isSidePanelOpen = false;
 
     this.notifications = new Notifications(this);
