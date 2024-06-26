@@ -20,4 +20,12 @@
             justify-content: space-between;
         }
     }
+
+    .sidebar-panel-body {
+        height: 100%;
+        width: 100%;
+        // &.file-explorer-panel-body {
+        //     overflow: auto;
+        // }
+    }
 }

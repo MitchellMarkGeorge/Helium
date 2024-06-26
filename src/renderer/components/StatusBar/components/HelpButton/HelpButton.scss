@@ -1,0 +1,16 @@
+.statusbar-help-button-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+
+  &:hover {
+    cursor: pointer;
+  }
+
+  .statusbar-help-button-icon {
+    width: 0.75rem;
+    height: 0.75rem;
+    color: var(--gray-400);
+  }
+}

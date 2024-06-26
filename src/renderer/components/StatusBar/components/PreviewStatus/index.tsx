@@ -1,16 +1,17 @@
 import classNames from "classnames";
 import { observer } from "mobx-react-lite";
 import { BroadcastPin } from "react-bootstrap-icons";
+import "./PreviewStatus.scss"
+import { PreviewState } from "common/types";
 
 interface Props {
-  isPreviewRunning: boolean;
-  isPreviewAvalible: boolean;
+  previewState: PreviewState;
 }
 
-function PreviewStatus({ isPreviewAvalible, isPreviewRunning }: Props) {
+function PreviewStatus({ previewState }: Props) {
   const previewStatusClasses = classNames("preview-status", {
-    "preview-avalible": isPreviewAvalible && !isPreviewRunning,
-    "preview-running": isPreviewAvalible && isPreviewRunning,
+    "preview-avalible": previewState === PreviewState.OFF,
+    "preview-running": previewState === PreviewState.RUNNING,
   });
   return (
     <div className={previewStatusClasses}>

@@ -1,0 +1,12 @@
+.statusbar-store {
+    display: flex;
+    height: 100%;
+    gap: 0.25rem;
+    align-items: center;
+    color: var(--gray-400);
+
+    .statusbar-store-icon {
+        width: 0.75rem;
+        height: 0.75rem;
+    }
+}

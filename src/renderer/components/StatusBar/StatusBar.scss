@@ -2,10 +2,21 @@
 .statusbar {
     display: flex;
     width: 100%;
-    flex-shrink: 0;
     height: 2rem;
+    flex-shrink: 0;
     border-top: 1px var(--border-color) solid;
     align-items: center;
     justify-content: space-between;
-    // padding: 1rem;
+    user-select: none;
+
+    .statusbar-section {
+        display: flex; // inline flex
+        height: 100%;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .editor-info {
+        padding: 0 1rem;
+    }
 }
