@@ -1,0 +1,25 @@
+.store-panel-body {
+  display: flex;
+  flex-direction: column;
+  // do I need these
+  justify-content: center;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 1rem;
+
+  .store-field {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 0.125rem;
+
+    .store-field-label {
+      color: var(--gray-500);
+    }
+
+    .store-field-value {
+      color: var(--gray-300);
+    }
+  }
+}

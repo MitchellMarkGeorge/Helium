@@ -1,7 +1,4 @@
-import {
-  InitalState, ThemeFileSystemEntry,
-  ThemeInfo
-} from "common/types";
+import { InitalState, ThemeFileSystemEntry, ThemeInfo } from "common/types";
 import {
   NewFileModalOptions,
   LoadingState,
@@ -92,6 +89,10 @@ export class Workspace {
 
     if (connectedStore) {
       // preview state is only possible if there is a stoer
+      this.connectedStore = new Store({
+        storeName: connectedStore.name,
+        storeUrl: connectedStore.url,
+      });
       this.themePreview.updatePreviewState(previewState);
     }
     this.isShowingWorkspace = true;
@@ -264,7 +265,11 @@ export class Workspace {
   });
 
   @action
-  public trashFile = flow(function* (this: Workspace, filePath: string, fileName: string) {
+  public trashFile = flow(function* (
+    this: Workspace,
+    filePath: string,
+    fileName: string
+  ) {
     const modalResponse = yield this.showTrashItemConfirmation(fileName, true);
 
     if (modalResponse.buttonClicked === "primary") {
@@ -291,7 +296,10 @@ export class Workspace {
   });
 
   @action
-  public createNewFolder = flow(function* (this: Workspace, parentFolderPath: string) {
+  public createNewFolder = flow(function* (
+    this: Workspace,
+    parentFolderPath: string
+  ) {
     const modalResponse = yield this.showNewFolderModal(parentFolderPath);
 
     if (modalResponse.buttonClicked === "primary" && modalResponse.result) {
@@ -313,10 +321,14 @@ export class Workspace {
         yield this.fileExplorer.reloadDirectory(parerentDirectory);
       }
     }
-  })
+  });
 
   @action
-  public trashFolder = flow(function* (this: Workspace, folderPath: string, folderName: string) {
+  public trashFolder = flow(function* (
+    this: Workspace,
+    folderPath: string,
+    folderName: string
+  ) {
     const modalResponse = yield this.showTrashItemConfirmation(
       folderName,
       true
@@ -351,7 +363,7 @@ export class Workspace {
 
   // will become flow
   @action
-  public openThemeFromDialog = flow(function*(this: Workspace) {
+  public openThemeFromDialog = flow(function* (this: Workspace) {
     // check if there is already a theme open
     // if there is, clear everything
     // this should not fail
@@ -371,6 +383,7 @@ export class Workspace {
       let themeInfo: ThemeInfo | null = null;
       let files: ThemeFileSystemEntry[] = [];
       try {
+        console.log("hello")
         const results = yield window.helium.shopify.openTheme(themePath);
         themeInfo = results.themeInfo;
         files = results.files;
@@ -384,13 +397,15 @@ export class Workspace {
       }
 
       // set values from here
-      if (this.hasTheme && themeInfo) {
-        this.reset();
+      if (themeInfo) {
+        if (this.hasTheme) {
+          this.reset();
+        }
         this.theme = new Theme(themeInfo);
         this.fileExplorer.init(files);
       }
     }
-  })
+  });
 
   @action
   public openFile(options: OpenFileOptions) {
@@ -476,12 +491,11 @@ export class Workspace {
   }
 
   @action
-  public  connectStore = flow(function*(this: Workspace) {
+  public connectStore = flow(function* (this: Workspace) {
     if (!this.isStoreConnected) {
       const modalResponse = yield this.showConnectStoreModal();
 
       if (modalResponse.buttonClicked === "primary" && modalResponse.result) {
-
         const { storeNameInput, storeUrlInput, themeAccessPasswordInput } =
           modalResponse.result;
 
@@ -509,7 +523,7 @@ export class Workspace {
         // the previewState will be updated by the event
       }
     }
-  })
+  });
 
   @action
   public disconnectStore = flow(function* (this: Workspace) {
@@ -517,7 +531,7 @@ export class Workspace {
       const modalResponse = yield this.showDisconnectStoreConfirmation();
       if (modalResponse.buttonClicked === "primary") {
         try {
-         yield window.helium.shopify.disconnectStore()
+          yield window.helium.shopify.disconnectStore();
         } catch (error) {
           this.notifications.showMessageModal({
             type: "error",
@@ -532,7 +546,7 @@ export class Workspace {
         // the previewState will be updated by the event
       }
     }
-  })
+  });
 
   @computed
   public get isStoreConnected() {

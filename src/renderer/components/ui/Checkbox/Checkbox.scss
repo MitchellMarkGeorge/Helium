@@ -1,0 +1,29 @@
+.checkbox {
+    height: 1rem;
+    width: 1rem;
+    flex-shrink: 0;
+    border-radius: 0.375rem; 
+    border: 1px solid var(--border-color);
+    background-color: transparent;
+
+    &[data-state="checked"] {
+        background-color: var(--primary-color);
+        border: 1px solid var(--primary-color);
+    }
+
+    &:focus-visible {
+        outline: none;
+    }
+
+    .checkbox-indicator {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        .checkbox-icon {
+            color: var(--gray-300);
+            height: 1rem;
+            width: 1rem;
+        }
+    }
+}

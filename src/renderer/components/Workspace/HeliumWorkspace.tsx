@@ -10,7 +10,7 @@ import {
   PanelGroup,
   PanelResizeHandle,
 } from "react-resizable-panels";
-import SideBarPanel from "../SideBar/SideBarPanel";
+import SideBarPanel from "../SideBarPanel";
 import EditorPanel from "../EditorPanel";
 import { useEffect, useRef } from "react";
 import { action, autorun } from "mobx";
@@ -48,7 +48,7 @@ function HeliumWorkspace() {
       <Panel
         ref={sideBarPanelRef}
         collapsible
-        minSize={10}
+        minSize={20}
         defaultSize={0}
         order={1}
         // onExpand={}

@@ -4,6 +4,8 @@
   align-items: center;
   justify-content: center;
   white-space: nowrap;
+  overflow: auto;
+  text-overflow: ellipsis;
   height: 2rem;
   padding: 0.5rem 1rem;
   border-radius: 0.5rem;
@@ -15,6 +17,10 @@
   transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 150ms;
+
+  &.full-width {
+    width: 100%;
+  }
 
   &:hover {
     cursor: pointer;
@@ -43,6 +49,11 @@
   }
 }
 
-.button-full-width {
-  width: 100%;
+.button-destructive {
+  background-color: var(--secondary-color);
+
+  &:hover {
+    background-color: var(--secondary-hover-color);
+  }
 }
+

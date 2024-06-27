@@ -33,8 +33,8 @@ interface Props
 const Button = forwardRef<HTMLButtonElement, Props>(
   ({ className, variant = "primary", fullWidth = false, ...props }, ref) => {
     // props.children;
-    const buttonClasses = classNames(buttonVariants({ variant, className }), "text-sm", {
-      "button-full-width": fullWidth,
+    const buttonClasses = classNames(buttonVariants({ variant, className }), "text-xs", {
+      "full-width": fullWidth,
     });
     return (
       <button
