@@ -3,6 +3,7 @@ import { observer } from "mobx-react-lite";
 import Button from "renderer/components/ui/Button";
 import Text from "renderer/components/ui/Text";
 import { useWorkspace } from "renderer/hooks/useWorkspace";
+import FileExplorer from "./components/FileExplorer";
 
 function FileExplorerPanel() {
   const workspace = useWorkspace();
@@ -25,18 +26,18 @@ function FileExplorerPanel() {
         </div>
       );
     }
-    return <Text>Hello</Text>;
+    return (
+      <FileExplorer
+        entries={entryArray}
+      />
+    );
   } else {
     return (
       <div className="empty-panel-body">
         <Text size="xs" className="empty-panel-text">
           No theme opened.
         </Text>
-        <Button
-          variant="primary"
-          fullWidth
-          onClick={openTheme}
-        >
+        <Button variant="primary" fullWidth onClick={openTheme}>
           Open Theme
         </Button>
       </div>
@@ -44,4 +45,4 @@ function FileExplorerPanel() {
   }
 }
 
-export default observer(FileExplorerPanel)
+export default observer(FileExplorerPanel);

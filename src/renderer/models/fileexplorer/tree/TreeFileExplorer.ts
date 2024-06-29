@@ -11,7 +11,7 @@ import { SideBarItemOption } from "../../workspace/types";
 import { isBinaryFile, isDirectory, isTextFile } from "common/utils";
 import { isDirectoryEntry } from "../utils";
 import pathe from "pathe";
-import { action, computed, flow, observable } from "mobx";
+import { action, computed, flow, observable, toJS } from "mobx";
 
 const EXPAND_DIRECTORY_LOADER_DELAY = 3 * 1000; // 3 seconds
 const REBUILD_DIRECTORY_LOADER_DELAY = 3 * 1000; // 3 seconds
@@ -105,10 +105,13 @@ export class TreeFileExplorer extends StateModel implements FileExplorer {
   private findNode(path: string, tree: DirectoryNode): TreeNode | null {
     if (tree.entry.path === path) return tree;
     if (tree.items === null) return null;
+    console.log(toJS(tree.items))
     for (let i = 0; i < tree.items.length; i++) {
       const node = tree.items[i];
       const { entry } = node;
+      console.log(entry.path, path);
       if (entry.path === path) {
+        console.log("found node");
         return node;
       } else if (
         path.startsWith(entry.path) &&
@@ -240,6 +243,8 @@ export class TreeFileExplorer extends StateModel implements FileExplorer {
       // );
       try {
         const node = this.findNode(dirPath, this.fileExplorerTree);
+        console.log(dirPath);
+        console.log(toJS(node));
         if (!node || !isDirectoryNode(node)) return;
         // we do not need to handle expansion of parent direcotries
         // as there is no case where that would be possible (for now)
