@@ -1,8 +1,8 @@
 .sidebar-panel {
   height: 100%;
   width: 100%;
-  display: flex;
-  flex-direction: column;
+  // display: flex;
+  // flex-direction: column;
   border-left: 1px var(--border-color) solid;
 
   .sidebar-panel-title {
@@ -25,7 +25,29 @@
     height: 100%;
     width: 100%;
     padding: 0.5rem 0;
-    overflow: auto;
+    overflow: hidden;
+
+    &:hover,
+    &:active,
+    &:focus {
+      overflow: auto;
+    }
+
+    &::-webkit-scrollbar {
+      width: 0.5rem;
+    }
+
+    &::-webkit-scrollbar-track {
+      box-shadow: inset 0 2px 4px 0 rgb(0 0 0 / 0.05);
+    }
+
+    &::-webkit-scrollbar-thumb {
+      // figure out color
+      background-color: var(--border-color);
+      transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+      transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+      transition-duration: 150ms;
+    }
 
     .empty-panel-body {
       display: flex;

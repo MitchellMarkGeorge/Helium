@@ -49,7 +49,6 @@ export class TreeFileExplorer extends StateModel implements FileExplorer {
     } else return false;
   }
 
-
   @action
   public init(files: ThemeFileSystemEntry[]) {
     if (this.workspace.theme) {
@@ -102,10 +101,16 @@ export class TreeFileExplorer extends StateModel implements FileExplorer {
     }
   }
 
+  private isAncestorDir(parent: string, child: string) {
+    const parentDirs = parent.split(pathe.sep).filter((dir) => dir !== "");
+    const childDirs = child.split(pathe.sep).filter((dir) => dir !== "");
+    return parentDirs.every((dir, i) => childDirs[i] === dir);
+  }
+
   private findNode(path: string, tree: DirectoryNode): TreeNode | null {
     if (tree.entry.path === path) return tree;
     if (tree.items === null) return null;
-    console.log(toJS(tree.items))
+    console.log(toJS(tree.items));
     for (let i = 0; i < tree.items.length; i++) {
       const node = tree.items[i];
       const { entry } = node;
@@ -114,7 +119,8 @@ export class TreeFileExplorer extends StateModel implements FileExplorer {
         console.log("found node");
         return node;
       } else if (
-        path.startsWith(entry.path) &&
+        // path.startsWith(entry.path) &&
+        this.isAncestorDir(entry.path, path) &&
         // make sure this condition is correct
         // checks if the provided path is a subpath of the directory node path
         // eg: if path = "name/test.ts" and node path = "name",
@@ -175,7 +181,10 @@ export class TreeFileExplorer extends StateModel implements FileExplorer {
   }
 
   @action
-  public reloadDirectory = flow(function* (this: TreeFileExplorer, dirPath: string) {
+  public reloadDirectory = flow(function* (
+    this: TreeFileExplorer,
+    dirPath: string
+  ) {
     if (this.fileExplorerTree) {
       const node = this.findNode(dirPath, this.fileExplorerTree);
       if (!node || !isDirectoryNode(node) || !node.entry.isExpanded) return;

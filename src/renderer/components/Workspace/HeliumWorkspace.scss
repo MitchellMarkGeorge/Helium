@@ -1,8 +1,14 @@
 .workspace {
   height: 100%;
   width: 100%;
-  display: flex;
-  flex: auto;
+  // display: flex;
+  flex: 1;
+  overflow: hidden;
+
+  .workspace-panel {
+    height: 100%;
+    // overflow: auto;
+  }
 
   .workspace-resizer {
     background-clip: padding-box;

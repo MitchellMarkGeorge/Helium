@@ -46,6 +46,7 @@ function HeliumWorkspace() {
     <PanelGroup direction="horizontal">
       <SideBar />
       <Panel
+        className="workspace-panel"
         ref={sideBarPanelRef}
         collapsible
         minSize={20}
@@ -66,7 +67,7 @@ function HeliumWorkspace() {
         <SideBarPanel activeSideBarOption={workspace.activeSideBarOption} />
       </Panel>
       <PanelResizeHandle className="workspace-resizer" />
-      <Panel order={2}>
+      <Panel order={2} className="workspace-panel">
         <EditorPanel viewType={workspace.editor.getViewType()} />
       </Panel>
     </PanelGroup>

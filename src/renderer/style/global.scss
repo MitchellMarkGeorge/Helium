@@ -38,8 +38,15 @@ select {
   font: inherit;
 }
 
-body {
+html, body, #app {
+  height: 100%;
+  width: 100%;
+  margin: 0;
   padding: 0;
+  overflow: hidden;
+}
+
+body {
   background-color: var(--background-color);
   // think about this
   // height: 100vh; // 100%
@@ -47,11 +54,6 @@ body {
   color: var(--default-text-color);
 }
 
-html, body, #app {
-  height: 100%;
-  margin: 0;
-  padding: 0;
-}
 
 #app {
   isolation: isolate;

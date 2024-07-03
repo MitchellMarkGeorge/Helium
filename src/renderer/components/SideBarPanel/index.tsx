@@ -1,12 +1,11 @@
 import { observer } from "mobx-react-lite";
 import { SideBarItemOption } from "renderer/models/workspace/types";
 import Text from "renderer/components/ui/Text";
-import "./SideBarPanel.scss";
 import FileExplorerPanel from "./components/FileExplorerPanel";
 import PreviewPanel from "./components/PreviewPanel";
 import StorePanel from "./components/StorePanel";
 import ThemePanel from "./components/ThemePanel";
-import Checkbox from "../ui/Checkbox";
+import "./SideBarPanel.scss";
 
 interface Props {
   activeSideBarOption: SideBarItemOption;

@@ -55,32 +55,32 @@ function FileExplorerItem({ entry }: Props) {
   const getFileIcon = () => {
     switch ((entry as FileEntry).fileType) {
       case FileTypeEnum.LIQUID:
-        return <Water />;
+        return <Water color="#3B82F6" size="1rem"/>;
       case FileTypeEnum.CSS:
-        return <CSS />;
+        return <CSS height="1rem" width="1rem"/>;
       case FileTypeEnum.HTML:
-        return <HTML />;
+        return <HTML height="1rem" width="1rem" />;
       case FileTypeEnum.JSON:
-        return <Braces color="#EAB308" />;
+        return <Braces color="#EAB308" size="1rem" />;
       case FileTypeEnum.MARKDOWN:
-        return <MARKDOWN />;
+        return <MARKDOWN height="1rem" width="1rem" />;
       case FileTypeEnum.LESS:
-        return <LESS />;
+        return <LESS height="1rem" width="1rem"/>;
       case FileTypeEnum.SCSS:
-        return <SASS />;
+        return <SASS height="1rem" width="1rem" />;
       case FileTypeEnum.TYPESCRIPT:
-        return <TS />;
+        return <TS height="1rem" width="1rem"/>;
       case FileTypeEnum.JAVASCRIPT:
-        return <JS />;
+        return <JS height="1rem" width="1rem"/>;
       case FileTypeEnum.YAML:
-        return <YAML />;
+        return <YAML height="1rem" width="1rem"/>;
       case FileTypeEnum.IMAGE:
-        return <FileEarmarkImage />;
+        return <FileEarmarkImage size="1rem"/>;
       case FileTypeEnum.BINARY:
-        return <FileEarmarkBinary />;
+        return <FileEarmarkBinary size="1rem"/>;
       case FileTypeEnum.PLAIN_TEXT:
       default:
-        return <FileEarmark />;
+        return <FileEarmark size="1rem"/>;
     }
   };
 
@@ -88,7 +88,8 @@ function FileExplorerItem({ entry }: Props) {
     <div
       className="file-explorer-item"
     //   style={{ paddingLeft: `${entry.depth * 20}px`, paddingRight: "20px" }}
-      style={{ paddingLeft: `${(entry.depth * 20) / 16}rem`, paddingRight: "1.25rem" }}
+      // style={{ paddingLeft: `${(entry.depth * 20) / 16}rem`, paddingRight: "1.25rem" }}
+      style={{ paddingLeft: `${(entry.depth * 20) / 16}rem` }}
       onClick={action(() => {
         if (isDirectoryEntry(entry)) {
             if (entry.isExpanded) {
@@ -105,7 +106,7 @@ function FileExplorerItem({ entry }: Props) {
     >
       <div className="file-explorer-item-chevron">{getChevron()}</div>
       <div className="file-explorer-item-icon">{getIcon()}</div>
-      <Text size="xs">{entry.basename}</Text>
+      <Text size="xs" className="file-explorer-item-text">{entry.basename}</Text>
     </div>
   );
 }

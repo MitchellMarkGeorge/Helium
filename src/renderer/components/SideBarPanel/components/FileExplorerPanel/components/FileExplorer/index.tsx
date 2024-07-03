@@ -2,7 +2,6 @@ import { observer } from "mobx-react-lite";
 import { Entry } from "renderer/models/fileexplorer/types";
 import "./FileExplorer.scss";
 import FileExplorerItem from "../FileExplorerItem";
-import { OpenFileOptions } from "renderer/models/editor/types";
 
 interface Props {
   entries: Entry[];

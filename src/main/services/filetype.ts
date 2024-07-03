@@ -1,7 +1,7 @@
 import { FileType, FileTypeEnum } from "common/types";
 import isBinaryPath from "is-binary-path";
 import isImage from "is-image";
-import isTextPath from "is-text-path";
+import isTextPath from "./is-text-path";
 import path from "path";
 
 // figure out how to do this
