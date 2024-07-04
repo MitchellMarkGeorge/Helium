@@ -51,6 +51,12 @@ export class ArrayFileExplorer extends FileExplorer {
     this.subTreeCache.clear();
   }
 
+
+  @action
+  public selectEntry(path: string): void {
+    this.selectedEntry = path;
+  }
+
   private toEntryArray(files: ThemeFileSystemEntry[], depth: number) {
     return files.map((entry) => this.toEntry(entry, depth));
   }

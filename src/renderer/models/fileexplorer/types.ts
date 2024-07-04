@@ -23,6 +23,7 @@ export interface DirectoryEntry extends Entry {
 export abstract class FileExplorer extends StateModel {
     public abstract init(files: ThemeFileSystemEntry[]): void;
     public abstract selectedEntry: string | null;
+    public abstract selectEntry(path: string): void;
     public abstract expand(dirPath: string): Promise<void>;
     public abstract collapse(dirPath: string): void;
     public abstract reload(): Promise<void>;

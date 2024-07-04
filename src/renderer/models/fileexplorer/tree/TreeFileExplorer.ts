@@ -70,6 +70,11 @@ export class TreeFileExplorer extends StateModel implements FileExplorer {
     }
   }
 
+  @action
+  public selectEntry(path: string): void {
+    this.selectedEntry = path;
+  }
+
   private toSubTree(files: ThemeFileSystemEntry[], depth: number) {
     return files.map((fileEntry) => this.toTreeNode(fileEntry, depth));
   }
@@ -101,7 +106,10 @@ export class TreeFileExplorer extends StateModel implements FileExplorer {
     }
   }
 
-  private isAncestorDir(parent: string, child: string) {
+  private isAncestorDirectory(parent: string, child: string) {
+    // got from
+    // https://stackoverflow.com/questions/37521893/determine-if-a-path-is-subdirectory-of-another-in-node-js
+    // think about this one
     const parentDirs = parent.split(pathe.sep).filter((dir) => dir !== "");
     const childDirs = child.split(pathe.sep).filter((dir) => dir !== "");
     return parentDirs.every((dir, i) => childDirs[i] === dir);
@@ -116,11 +124,11 @@ export class TreeFileExplorer extends StateModel implements FileExplorer {
       const { entry } = node;
       console.log(entry.path, path);
       if (entry.path === path) {
-        console.log("found node");
+        // console.log("found node");
         return node;
       } else if (
         // path.startsWith(entry.path) &&
-        this.isAncestorDir(entry.path, path) &&
+        this.isAncestorDirectory(entry.path, path) &&
         // make sure this condition is correct
         // checks if the provided path is a subpath of the directory node path
         // eg: if path = "name/test.ts" and node path = "name",
@@ -268,7 +276,7 @@ export class TreeFileExplorer extends StateModel implements FileExplorer {
             const fileEntries = yield window.helium.fs.readDirectory(dirPath);
             subTree = this.toSubTree(fileEntries, node.entry.depth + 1);
             // what if it is an empty array???
-            this.subTreeCache.set(dirPath, subTree);
+            // this.subTreeCache.set(dirPath, subTree);
           }
           node.entry.isExpanded = true;
           node.items = subTree;
@@ -296,6 +304,7 @@ export class TreeFileExplorer extends StateModel implements FileExplorer {
       if (node.entry.isExpanded && node.items !== null) {
         // no reason to cache subtree as if it was expanded, its subtree is already cached
         node.entry.isExpanded = false;
+        this.subTreeCache.set(dirPath, node.items);
         // do I ***really*** need to set this to null?
         // when producing the entry array, I can just skip over it...
         // TODO: explore benefits of it being null

@@ -91,11 +91,13 @@ function FileExplorerItem({ entry }: Props) {
       // style={{ paddingLeft: `${(entry.depth * 20) / 16}rem`, paddingRight: "1.25rem" }}
       style={{ paddingLeft: `${(entry.depth * 20) / 16}rem` }}
       onClick={action(() => {
+        // workspace.fileExplorer.
+        workspace.fileExplorer.selectEntry(entry.path);
         if (isDirectoryEntry(entry)) {
             if (entry.isExpanded) {
                workspace.fileExplorer.collapse(entry.path); 
             } else {
-                console.log("here");
+                // console.log("here");
                 workspace.fileExplorer.expand(entry.path);
             }
         } else if (isFileEntry(entry)) {
