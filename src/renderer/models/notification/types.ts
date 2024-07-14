@@ -54,6 +54,7 @@ export interface InputModalOptions<T> extends ModalOptions {
   // description: string;
   // inputFields: InputModalField[];
   // the string is the fieldName
+  // might still need an array so thay can stay in order...
   inputFields: Record<string, InputModalField>;
   // first button is generally used for cancel
   buttons: [ModalButton, PrimaryModalButton<T>];

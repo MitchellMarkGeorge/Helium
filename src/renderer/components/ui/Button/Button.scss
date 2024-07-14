@@ -50,10 +50,10 @@
 }
 
 .button-destructive {
-  background-color: var(--secondary-color);
+  background-color: var(--destructive-color);
 
   &:hover {
-    background-color: var(--secondary-hover-color);
+    background-color: var(--destructive-hover-color);
   }
 }
 

@@ -1,24 +1,17 @@
-import * as React from "react"
-import * as CheckboxPrimitive from "@radix-ui/react-checkbox"
+import React from 'react'
+import { Checkbox as HeadlessCheckbox } from "@headlessui/react";
 import { Check2 } from "react-bootstrap-icons"
-import "./Checkbox.scss";
 import classNames from "classnames";
+import "./Checkbox.scss";
 
+// confimr this
 const Checkbox = React.forwardRef<
-  React.ElementRef<typeof CheckboxPrimitive.Root>,
-  React.ComponentPropsWithoutRef<typeof CheckboxPrimitive.Root>
+  React.ElementRef<typeof HeadlessCheckbox>,
+  React.ComponentPropsWithoutRef<typeof HeadlessCheckbox>
 >(({ className, ...props }, ref) => (
-  <CheckboxPrimitive.Root
-    ref={ref}
-    className={classNames('checkbox', className)}
-    {...props}
-  >
-    <CheckboxPrimitive.Indicator
-      className="checkbox-indicator"
-    >
-      <Check2 className="checkbox-icon" />
-    </CheckboxPrimitive.Indicator>
-  </CheckboxPrimitive.Root>
+  <HeadlessCheckbox {...props} className={classNames('checkbox', className)} ref={ref}>
+    <Check2 className="checkbox-icon"/>
+  </HeadlessCheckbox>
 ))
 
 export default Checkbox;

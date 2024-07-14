@@ -11,7 +11,7 @@ function FileExplorer({ entries }: Props) {
   return (
     <div className="file-explorer">
       {entries.map((entry) => (
-        <FileExplorerItem entry={entry} key={entry.path} />
+        <FileExplorerItem entry={entry} key={entry.path}/>
       ))}
     </div>
   );

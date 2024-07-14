@@ -19,7 +19,9 @@
     // figure out namaing for text colors
     --default-text-color: var(--gray-400);
 
-    --desctructive-color: var(--red-600);
+    --destructive-color: var(--red-600);
+    --destructive-hover-color: var(--red-700);
+
     --success-color: #16A34A;
     --info-color: var(--blue-500);
     --warning-color: var(--yellow-600);

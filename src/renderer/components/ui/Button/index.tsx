@@ -1,5 +1,6 @@
 import { VariantProps, cva } from "class-variance-authority";
 import { PropsWithChildren, forwardRef } from "react";
+import { Button as HeadlessButton } from "@headlessui/react";
 
 import "./Button.scss";
 import classNames from "classnames";
@@ -17,7 +18,7 @@ const buttonVariants = cva("button", {
   },
 });
 
-interface Props
+interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof buttonVariants> {
   fullWidth?: boolean;
@@ -25,24 +26,19 @@ interface Props
   //   disabled?: boolean;
 }
 
-// function Button({
-//   fullWidth = false,
-//   disabled = false,
-//   variant = "primary",
-// }: Props) {
-const Button = forwardRef<HTMLButtonElement, Props>(
-  ({ className, variant = "primary", fullWidth = false, ...props }, ref) => {
-    // props.children;
-    const buttonClasses = classNames(buttonVariants({ variant, className }), "text-xs", {
-      "full-width": fullWidth,
-    });
-    return (
-      <button
-        className={buttonClasses}
-        ref={ref}
-        {...props}
-      />
+const Button = forwardRef<HTMLButtonElement, ButtonProps>(
+  (
+    { className, variant = "primary", fullWidth = false, disabled, ...props },
+    ref
+  ) => {
+    const buttonClasses = classNames(
+      buttonVariants({ variant: disabled ? "disabled" : variant, className }),
+      "text-xs",
+      {
+        "full-width": fullWidth,
+      }
     );
+    return <HeadlessButton className={buttonClasses} ref={ref} {...props} />;
   }
 );
 

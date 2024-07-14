@@ -54,6 +54,7 @@
   },
   "license": "MIT",
   "dependencies": {
+    "@headlessui/react": "^2.1.2",
     "@radix-ui/react-checkbox": "^1.1.0",
     "bootstrap-icons": "^1.11.3",
     "chokidar": "^3.6.0",

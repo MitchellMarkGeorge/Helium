@@ -49,6 +49,10 @@ export class Notifications extends StateModel {
     return this.modalState.isOpen;
   }
 
+  public getModalState() {
+    return this.modalState;
+  }
+
   public showNotification(options: NotificationOptions) {
     enqueueSnackbar({
       message: options.message,
@@ -84,7 +88,7 @@ export class Notifications extends StateModel {
         modalType: "message",
         type: options.type,
         message: options.message,
-        buttons: options.primaryButtonText
+        buttons: options.type === "warning" && options.primaryButtonText
           ? [
               {
                 text: options.primaryButtonText,

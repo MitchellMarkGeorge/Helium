@@ -13,10 +13,20 @@ function PreviewPanel() {
     workspace.openThemeFromDialog();
   });
 
+  const testModal = action(() => {
+    workspace.notifications.showMessageModal({
+      type: "error",
+      message: "This is a test.",
+      // primaryButtonText: "Accept Warning",
+      secondaryButtonText: "Close"
+    });
+  });
+
   if (workspace.hasTheme) {
     return (
       <div className="preview-panel-body">
         <Button
+          onClick={testModal}
           variant={isPreviewRunning ? "destructive" : "primary"}
           fullWidth
         >

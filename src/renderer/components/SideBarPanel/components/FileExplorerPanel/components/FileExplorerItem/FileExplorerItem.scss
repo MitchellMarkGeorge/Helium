@@ -8,7 +8,7 @@
     user-select: none;
     background-color: transparent;
 
-    &:hover {
+    &:hover, &.selected {
         color: var(--gray-200);
         background-color: var(--gray-800);
         cursor: pointer;

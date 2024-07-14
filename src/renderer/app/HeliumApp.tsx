@@ -7,6 +7,7 @@ import HeliumWorkspace from "../components/Workspace/HeliumWorkspace";
 import StatusBar from "../components/StatusBar/StatusBar";
 import { WorkspaceContext } from "renderer/contexts/Workspace";
 import  "./HeliumApp.scss";
+import Modals from "renderer/components/ui/Modals";
 
 
 export class HeliumApp {
@@ -32,6 +33,7 @@ export class HeliumApp {
           <TitleBar />
           <HeliumWorkspace />
           <StatusBar />
+          <Modals/>
         </div>
       </WorkspaceContext.Provider>
     );
@@ -46,6 +48,12 @@ export class HeliumApp {
       // document.body.style.cursor = "progress";
       const initalState = yield window.helium.app.loadInitalState();
       this.workspace.initFromInitalState(initalState);
+      // yield wait(1000);
+      // this.workspace.notifications.showMessageModal({
+      //   type: "error",
+      //   message: "This is a test.",
+      //   secondaryButtonText: "Close"
+      // });
     } catch (error) {
       // document.body.style.cursor = "auto";
       this.workspace.initFromInitalState(

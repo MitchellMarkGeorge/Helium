@@ -26,9 +26,11 @@ import "./FileExplorerItem.scss";
 import { action, toJS } from "mobx";
 import { OpenFileOptions } from "renderer/models/editor/types";
 import { useWorkspace } from "renderer/hooks/useWorkspace";
+import classNames from "classnames";
 
 interface Props {
   entry: Entry;
+
 //   openFile: (options: OpenFileOptions) => Promise<void>;
 //   expandDirectory: (dirPath: string) => Promise<void>;
 //   collapseDirectory: (dirPath: string) => void;
@@ -36,6 +38,10 @@ interface Props {
 
 function FileExplorerItem({ entry }: Props) {
     const workspace = useWorkspace();
+    const isSelected = workspace.fileExplorer.selectedEntry === entry.path;
+    const fileExplorerItemClassnames = classNames("file-explorer-item", {
+      "selected": isSelected
+    })
   const getChevron = () => {
     if (isDirectoryEntry(entry)) {
       if (entry.isExpanded) return <ChevronDown />;
@@ -75,9 +81,9 @@ function FileExplorerItem({ entry }: Props) {
       case FileTypeEnum.YAML:
         return <YAML height="1rem" width="1rem"/>;
       case FileTypeEnum.IMAGE:
-        return <FileEarmarkImage size="1rem"/>;
+        return <FileEarmarkImage color="#22C55E" size="1rem"/>;
       case FileTypeEnum.BINARY:
-        return <FileEarmarkBinary size="1rem"/>;
+        return <FileEarmarkBinary color="#65A30D" size="1rem"/>;
       case FileTypeEnum.PLAIN_TEXT:
       default:
         return <FileEarmark size="1rem"/>;
@@ -86,7 +92,8 @@ function FileExplorerItem({ entry }: Props) {
 
   return (
     <div
-      className="file-explorer-item"
+      // className="file-explorer-item"
+      className={fileExplorerItemClassnames}
     //   style={{ paddingLeft: `${entry.depth * 20}px`, paddingRight: "20px" }}
       // style={{ paddingLeft: `${(entry.depth * 20) / 16}rem`, paddingRight: "1.25rem" }}
       style={{ paddingLeft: `${(entry.depth * 20) / 16}rem` }}

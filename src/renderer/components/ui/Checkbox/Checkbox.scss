@@ -6,7 +6,7 @@
     border: 1px solid var(--border-color);
     background-color: transparent;
 
-    &[data-state="checked"] {
+    &[data-checked] {
         background-color: var(--primary-color);
         border: 1px solid var(--primary-color);
     }
