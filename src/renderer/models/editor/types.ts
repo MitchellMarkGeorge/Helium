@@ -6,8 +6,7 @@ export type MonacoCodeEditor = monaco.editor.IStandaloneCodeEditor;
 
 export const enum ViewType {
     IMAGE = "IMAGE",
-    CODE = "CODE",
-    DEFAULT = "DEFULT",
+    TEXT = "CODE",
 }
 export interface OpenFileOptions {
     path: string;

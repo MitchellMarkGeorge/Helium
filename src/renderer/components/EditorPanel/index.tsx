@@ -1,18 +1,15 @@
 import { ViewType } from "renderer/models/editor/types";
 import Logo from "../ui/Logo";
 import { observer } from "mobx-react-lite";
+import { useWorkspace } from "renderer/hooks/useWorkspace";
 
-interface Props {
-  viewType: ViewType;
-}
-function EditorPanel(props: Props) {
-  const getView = (view: ViewType) => {
-    switch (view) {
-      default:
-        return <Logo full size="9rem" />;
-    }
-  };
-  return getView(props.viewType);
+function EditorPanel() {
+  const workspace = useWorkspace();
+  if (workspace.editor.hasOpenFiles) {
+    return <div></div>;
+  } else {
+    return <Logo full size="9rem"/>
+  }
 }
 
 export default observer(EditorPanel);

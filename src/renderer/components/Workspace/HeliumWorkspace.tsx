@@ -40,6 +40,7 @@ function HeliumWorkspace() {
     return disposer;
   }, []);
 
+  // for now
   const loadingMarkup = <Logo full size="9rem" />;
 
   const workspaceMarkup = (
@@ -51,6 +52,7 @@ function HeliumWorkspace() {
         collapsible
         minSize={20}
         defaultSize={0}
+        maxSize={50}
         order={1}
         // onExpand={}
         onCollapse={action(() => {
@@ -68,7 +70,7 @@ function HeliumWorkspace() {
       </Panel>
       <PanelResizeHandle className="workspace-resizer" />
       <Panel order={2} className="workspace-panel">
-        <EditorPanel viewType={workspace.editor.getViewType()} />
+        <EditorPanel/>
       </Panel>
     </PanelGroup>
   );

@@ -403,6 +403,9 @@ export class Workspace {
         }
         this.theme = new Theme(themeInfo);
         this.fileExplorer.init(files);
+        if (this.isSidePanelOpen && this.activeSideBarOption !== SideBarItemOption.FILES) {
+          this.selectSideBarOption(SideBarItemOption.FILES);
+        }
       }
     }
   });

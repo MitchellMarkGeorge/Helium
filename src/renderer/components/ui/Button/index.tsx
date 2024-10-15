@@ -38,7 +38,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         "full-width": fullWidth,
       }
     );
-    return <HeadlessButton className={buttonClasses} ref={ref} {...props} />;
+    return <HeadlessButton className={buttonClasses} disabled={disabled} ref={ref} {...props} />;
   }
 );
 

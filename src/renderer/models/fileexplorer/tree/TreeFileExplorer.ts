@@ -16,7 +16,7 @@ import { action, computed, flow, observable, toJS } from "mobx";
 const EXPAND_DIRECTORY_LOADER_DELAY = 3 * 1000; // 3 seconds
 const REBUILD_DIRECTORY_LOADER_DELAY = 3 * 1000; // 3 seconds
 
-export class TreeFileExplorer extends StateModel implements FileExplorer {
+export class TreeFileExplorer extends FileExplorer {
   // inspired by
   //https://github.com/Graviton-Code-Editor/Graviton-App/blob/main/web/src/modules/side_panels/explorer/components/FilesystemExplorer.tsx
   // root tree node
@@ -36,7 +36,7 @@ export class TreeFileExplorer extends StateModel implements FileExplorer {
   public reset(): void {
     this.selectedEntry = null;
     this.fileExplorerTree = null;
-    this.subTreeCache.clear(); // could also react a new one
+    this.subTreeCache.clear(); // could also recreate a new one
     // it shoudl also stop watching all folders
   }
 

@@ -13,16 +13,18 @@ const OPEN_FILE_LOADER_DELAY = 3 * 1000; // 3 seconds
 
 // pretty much the EditorPanel state
 export class Editor extends StateModel {
-  @observable private accessor viewType: ViewType;
   // TODO: figure out how to give access to these objects
   private codeEditor: CodeEditorView;
   private imageViewer: ImageView;
   private tabs: TabManager;
-  private activeFile: string | null;
+  private activeFilePath: string | null;
+  // think about this name
+  private activeViewType: ViewType | null;
   constructor(workspace: Workspace) {
     super(workspace);
-    this.activeFile = null;
-    this.viewType = ViewType.DEFAULT;
+    this.activeFilePath = null;
+    this.activeViewType = null
+    // this.viewType = ViewType.DEFAULT;
     this.tabs = new TabManager();
     this.codeEditor = new CodeEditorView();
     this.imageViewer = new ImageView();
@@ -31,7 +33,8 @@ export class Editor extends StateModel {
 
   @action
   public reset(): void {
-    this.viewType = ViewType.DEFAULT;
+    this.activeFilePath = null;
+    this.activeViewType = null;
     this.tabs.reset();
     this.codeEditor.reset();
     this.imageViewer.reset();
@@ -39,23 +42,23 @@ export class Editor extends StateModel {
 
   @action
   public updateViewType(newViewType: ViewType) {
-    if (this.viewType !== newViewType) {
-      this.viewType = newViewType;
+    if (this.activeViewType !== newViewType) {
+      this.activeViewType = newViewType;
     }
   }
 
   @computed
   public get isShowingCodeEditor() {
-    return this.viewType === ViewType.CODE;
+    return this.activeViewType === ViewType.TEXT;
   }
 
   @computed
   public get isShowingImagePreview() {
-    return this.viewType === ViewType.IMAGE;
+    return this.activeViewType === ViewType.IMAGE;
   }
 
-  public getViewType() {
-    return this.viewType;
+  public getActiveViewType() {
+    return this.activeViewType;
   }
 
   public getActiveTab() {
@@ -69,6 +72,11 @@ export class Editor extends StateModel {
 
   public getOpenFiles() {
     return this.tabs.getTabs().map((tab) => tab.path);
+  }
+
+  @computed
+  public get hasOpenFiles() {
+    return this.tabs.getTabs().length !== 0;
   }
 
   @action
@@ -100,15 +108,12 @@ export class Editor extends StateModel {
             newActiveTab.fileType as Language 
           );
           // this.viewType = ViewType.CODE;
-          this.updateViewType(ViewType.CODE);
+          this.updateViewType(ViewType.TEXT);
         }
       } else {
         // if there is no active tab (meaning there are no tabs to show/all files have been closed)
-        // return to the defualt viewType
         // and reset all views
-        this.viewType = ViewType.DEFAULT;
-        this.codeEditor.reset();
-        this.imageViewer.reset();
+        this.reset();
       }
       // clean up closed file
       if (isTextFile(closedTab.fileType)) {
@@ -155,7 +160,7 @@ export class Editor extends StateModel {
           options.fileType as Language // since it already open, we know
         );
         // this.viewType = ViewType.CODE;
-        this.updateViewType(ViewType.CODE);
+        this.updateViewType(ViewType.TEXT);
       }
     }
   }
@@ -182,7 +187,7 @@ export class Editor extends StateModel {
     }
     const { fileType } = options;
 
-    if (isBinaryFile(options.fileType)) {
+    if (isBinaryFile(fileType)) {
       this.workspace.notifications.showMessageModal({
         type: "error",
         message: `Unable to open binary file (${options.basename})`,
@@ -197,7 +202,7 @@ export class Editor extends StateModel {
         yield this.imageViewer.openFile(options);
         // this.viewType = ViewType.IMAGE;
         this.updateViewType(ViewType.IMAGE);
-        this.activeFile = options.path;
+        this.activeFilePath = options.path;
         // IMPORTANT: only create the tab when it is opened successfully
         this.createNewTab(options, true);
       } else if (isTextFile(fileType)) {
@@ -205,8 +210,8 @@ export class Editor extends StateModel {
         // should show loader if this takes some time
         yield this.codeEditor.openFile(options);
         // this.viewType = ViewType.CODE;
-        this.updateViewType(ViewType.CODE);
-        this.activeFile = options.path;
+        this.updateViewType(ViewType.TEXT);
+        this.activeFilePath = options.path;
         // IMPORTANT: only create the tab when it is opened successfully
         this.createNewTab(options, true);
       } else {
@@ -243,10 +248,5 @@ export class Editor extends StateModel {
 
     // add the tab and then set as active it
     this.tabs.addTab({ tab, setAsActive });
-  }
-
-  @action
-  public resetViewType() {
-    this.viewType = ViewType.DEFAULT;
   }
 }

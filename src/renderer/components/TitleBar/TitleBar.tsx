@@ -5,12 +5,13 @@ import classNames from "classnames";
 import { LayoutSidebar, Gear, LayoutSidebarInset } from "react-bootstrap-icons";
 import TitleBarButton from "./components/TitleBarButton/TitleBarButton";
 import { action } from "mobx";
+import Text from "renderer/components/ui/Text"
 
 function TitleBar() {
   const workspace = useWorkspace();
 
   const tilebarClasses = classNames({
-    titlebar: true,
+    'titlebar': true,
     "workspace-visible": workspace.isShowingWorkspace,
   });
 
@@ -19,7 +20,7 @@ function TitleBar() {
       <div className="titlebar-drag-region"></div>
       {workspace.isShowingWorkspace && (
         <>
-          <div className="titlebar-title text-sm">{workspace.windowTitle}</div>
+          <Text size="sm" className="titlebar-title">{workspace.windowTitle}</Text>
           <div className="titlebar-icon-container">
             <TitleBarButton
               icon={

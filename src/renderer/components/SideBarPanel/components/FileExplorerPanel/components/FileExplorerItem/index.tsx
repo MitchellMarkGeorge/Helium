@@ -39,9 +39,11 @@ interface Props {
 function FileExplorerItem({ entry }: Props) {
     const workspace = useWorkspace();
     const isSelected = workspace.fileExplorer.selectedEntry === entry.path;
+
     const fileExplorerItemClassnames = classNames("file-explorer-item", {
       "selected": isSelected
-    })
+    });
+
   const getChevron = () => {
     if (isDirectoryEntry(entry)) {
       if (entry.isExpanded) return <ChevronDown />;

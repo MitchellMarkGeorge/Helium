@@ -47,6 +47,7 @@ export class HeliumApp {
     try {
       // document.body.style.cursor = "progress";
       const initalState = yield window.helium.app.loadInitalState();
+      // throw new Error();
       this.workspace.initFromInitalState(initalState);
       // yield wait(1000);
       // this.workspace.notifications.showMessageModal({
@@ -64,7 +65,7 @@ export class HeliumApp {
       this.workspace.notifications.showMessageModal({
         type: "error",
         // thik of better error message
-        message: "There was an error loading the inital state", // might use error message,
+        message: "There was an error loading the inital state.", // might use error message,
         secondaryButtonText: "Close",
       });
     }
