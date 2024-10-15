@@ -1,12 +1,8 @@
-import { FileType, FileTypeEnum, Language, ThemeFile } from "common/types";
 import { isBinaryFile, isImageFile, isTextFile } from "common/utils";
 import { StateModel } from "../StateModel";
 import { Workspace } from "../workspace/Workspace";
-import { EditorFile, ViewType } from "./types";
-import { ModelManager } from "./ModelManager";
-import { ImageView } from "./ImageView";
-import { TabManager } from "./TabManager";
-import pathe from "pathe";
+import { EditorFile } from "./types";
+import { MonacoManager } from "./MonacoManager";
 import { action, computed, flow, observable } from "mobx";
 
 const OPEN_FILE_LOADER_DELAY = 3 * 1000; // 3 seconds
@@ -64,7 +60,6 @@ export class Editor extends StateModel {
   public closeFile(filePath: string) {
     if (this.isFileOpen(filePath)) {
       // get the file to be closed
-      // is this needed
       const closedFile = this.openFiles.find((file) => file.path === filePath);
 
       if (closedFile) {
@@ -91,8 +86,6 @@ export class Editor extends StateModel {
           const newCurrentFileIndex = index === this.openFiles.length ? index - 1 : index; 
           this.currentFile = this.openFiles[newCurrentFileIndex];
         }
-
-
       }
     }
   }
@@ -102,12 +95,8 @@ export class Editor extends StateModel {
     // will implement later lol
   }
 
-  /**
-   * Selects an already open file
-   * @param options
-   */
   @action
-  public async selectFile(filePath: string) {
+  public selectFile(filePath: string) {
     if (!this.isFileOpen(filePath)) {
       this.workspace.notifications.showMessageModal({
         type: "error",

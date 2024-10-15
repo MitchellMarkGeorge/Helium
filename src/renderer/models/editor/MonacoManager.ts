@@ -19,7 +19,7 @@ interface CreateEditorModelOptions {
 }
 
 // think about better name for this
-export class ModelManager {
+export class MonacoManager {
   // think about this
   @observable.shallow private accessor editorModelMap: Map<string, MonacoTextModel>;
   // this should be a file object
