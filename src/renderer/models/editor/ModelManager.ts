@@ -7,8 +7,7 @@ import { FileEntry } from "../fileexplorer/types";
 import {
   MonacoCodeEditor,
   MonacoTextModel,
-  OpenFileOptions,
-  View,
+  EditorFile,
 } from "./types";
 import { isTextFile } from "common/utils";
 import { action, observable } from "mobx";
@@ -20,45 +19,23 @@ interface CreateEditorModelOptions {
 }
 
 // think about better name for this
-export class ModelManager implements View {
+export class ModelManager {
   // think about this
   @observable.shallow private accessor editorModelMap: Map<string, MonacoTextModel>;
   // this should be a file object
   // private editorModelMap: WeakMap<ThemeFile, MonacoTextModel>;
   // does this need to be an observable???
   @observable.ref private accessor monacoCodeEditor: MonacoCodeEditor | null;
-  @observable.ref private accessor activeModel: MonacoTextModel | null;
-  // if for some reason the CodeEditor is showing and the activeModel is null
   // it should render an error page
   // private unsavedPaths: Set<string>;
   constructor() {
     this.editorModelMap = new Map();
     this.monacoCodeEditor = null;
-    this.activeModel = null; // or should I use a default model???
   }
 
   @action
   public setMonacoCodeEditor(instace: MonacoCodeEditor) {
     this.monacoCodeEditor = instace;
-  }
-
-  public getActiveModel() {
-    return this.activeModel;
-  }
-
-  @action
-  public setActiveModelFromPath(path: string, fileType: Language) {
-    let model = this.getEditorModel(path);
-    // if (!model) {
-    //   // this should never be the case but just to be safe...
-    //   model = this.createEditorModel({
-    //     path,
-    //     language: fileType,
-    //     text: "",
-    //   });
-    //   this.saveEditorModel(path, model);
-    // }
-    this.activeModel = model;
   }
 
   // computed???
@@ -92,29 +69,26 @@ export class ModelManager implements View {
   }
 
   @action
-  public async openFile({ path, fileType }: OpenFileOptions) {
-    let model: MonacoTextModel;
+  // should it still be named openFile 
+  public async createModelFromFile({ path, fileType }: EditorFile) {
     if (isTextFile(fileType)) {
       if (!this.hasEditorModel(path)) {
         const fileContent = await window.helium.fs.readFile({
           filePath: path,
           encoding: "utf8",
         });
-        model = this.createEditorModel({
+        const model = this.createEditorModel({
           path,
           language: fileType,
           text: fileContent,
         });
         this.saveEditorModel(path, model);
-      } else {
-        model = this.getEditorModel(path) as MonacoTextModel;
-      }
-      this.activeModel = model;
+      } 
     }
   }
 
   @action
-  public deleteEditorModel(filePath: string) {
+  public disposeEditorModel(filePath: string) {
     if (this.editorModelMap.has(filePath)) {
       const model = this.editorModelMap.get(filePath);
       // should I check if it is already disposed?
@@ -152,11 +126,6 @@ export class ModelManager implements View {
     }
 
     this.editorModelMap.clear();
-
-    if (!this.activeModel?.isDisposed) {
-      this.activeModel?.dispose();
-    }
-    this.activeModel = null;
 
     this.monacoCodeEditor?.dispose();
 

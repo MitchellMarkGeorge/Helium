@@ -1,5 +1,5 @@
 import { action, observable } from "mobx";
-import { OpenFileOptions, View } from "./types";
+import { FileOptions, View } from "./types";
 
 export class ImageView implements View {
     // should it have a default value of null???
@@ -18,7 +18,7 @@ export class ImageView implements View {
     }
     
     @action
-    public async openFile({ path }: OpenFileOptions) {
+    public async createModelFromFile({ path }: FileOptions) {
         this.imagePath = path;
     }
 

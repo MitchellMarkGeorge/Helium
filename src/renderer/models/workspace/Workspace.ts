@@ -13,7 +13,7 @@ import pathe from "pathe";
 import { TreeFileExplorer } from "../fileexplorer/tree/TreeFileExplorer";
 import { FileExplorer } from "../fileexplorer/types";
 import { Editor } from "../editor/Editor";
-import { OpenFileOptions } from "../editor/types";
+import { FileOptions } from "../editor/types";
 import { ThemePreview } from "../ThemePreview";
 import { Store } from "../Store";
 import { action, computed, flow, observable } from "mobx";
@@ -411,7 +411,7 @@ export class Workspace {
   });
 
   @action
-  public openFile(options: OpenFileOptions) {
+  public openFile(options: FileOptions) {
     return this.editor.openFile(options);
   }
 

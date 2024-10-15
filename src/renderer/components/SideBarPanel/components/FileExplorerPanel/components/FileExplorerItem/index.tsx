@@ -24,7 +24,7 @@ import TS from "./icons/ts.svg";
 import YAML from "./icons/yaml.svg";
 import "./FileExplorerItem.scss";
 import { action, toJS } from "mobx";
-import { OpenFileOptions } from "renderer/models/editor/types";
+import { FileOptions } from "renderer/models/editor/types";
 import { useWorkspace } from "renderer/hooks/useWorkspace";
 import classNames from "classnames";
 

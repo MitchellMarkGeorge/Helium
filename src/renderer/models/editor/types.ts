@@ -8,11 +8,6 @@ export const enum ViewType {
     IMAGE = "IMAGE",
     TEXT = "CODE",
 }
-export interface OpenFileOptions {
-    path: string;
-    fileType: FileType
-    basename?: string;
-}
 
 export interface EditorFile {
     path: string;
@@ -21,11 +16,6 @@ export interface EditorFile {
 }
 
 // rename this
-export interface View {
-    openFile(options: OpenFileOptions): Promise<void>;
-    reset(): void;
-}
-
 export const enum FileStatus {
     SAVED = "SAVED",
     UNSAVED = "UNSAVED"
