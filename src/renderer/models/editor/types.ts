@@ -14,6 +14,12 @@ export interface OpenFileOptions {
     basename?: string;
 }
 
+export interface EditorFile {
+    path: string;
+    fileType: FileType
+    basename?: string;
+}
+
 // rename this
 export interface View {
     openFile(options: OpenFileOptions): Promise<void>;

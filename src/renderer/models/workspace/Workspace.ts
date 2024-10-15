@@ -352,7 +352,7 @@ export class Workspace {
       }
 
       // this should also remove any open editor models or tabs that are in said directory
-      const openFilesPaths = this.editor.getOpenFiles();
+      const openFilesPaths = this.editor.getOpenFilePaths();
       // get all child files of the folder that are curretnly open
       const childFilePaths = openFilesPaths.filter((path) =>
         path.startsWith(folderPath)
@@ -417,22 +417,22 @@ export class Workspace {
 
   @action
   public saveCurrentFile = flow(function* (this: Workspace) {
-    const activeTab = this.editor.getActiveTab();
+    const currentFile = this.editor.getCurrentFile();
     if (this.editor.isShowingCodeEditor) {
       const currentEditorValue = this.editor.getEditorValue();
       if (
-        activeTab &&
-        this.isFileUnsaved(activeTab.path) &&
+        currentFile &&
+        this.isFileUnsaved(currentFile.path) &&
         currentEditorValue
       ) {
         try {
           yield window.helium.fs.writeFile({
-            filePath: activeTab.path,
+            filePath: currentFile.path,
             content: currentEditorValue,
             encoding: "utf8",
           });
 
-          this.markAsSaved(activeTab.path);
+          this.markAsSaved(currentFile.path);
         } catch {
           // should this be a notification instead???
           this.notifications.showMessageModal({

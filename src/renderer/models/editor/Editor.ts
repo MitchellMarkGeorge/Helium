@@ -2,10 +2,10 @@ import { FileType, FileTypeEnum, Language, ThemeFile } from "common/types";
 import { isBinaryFile, isImageFile, isTextFile } from "common/utils";
 import { StateModel } from "../StateModel";
 import { Workspace } from "../workspace/Workspace";
-import { OpenFileOptions, ViewType } from "./types";
+import { EditorFile, OpenFileOptions, ViewType } from "./types";
 import { CodeEditorView } from "./CodeEditor";
 import { ImageView } from "./ImageView";
-import { TabManager } from "../tabs/TabManager";
+import { TabManager } from "./TabManager";
 import pathe from "pathe";
 import { action, computed, flow, observable } from "mobx";
 
@@ -14,55 +14,61 @@ const OPEN_FILE_LOADER_DELAY = 3 * 1000; // 3 seconds
 // pretty much the EditorPanel state
 export class Editor extends StateModel {
   // TODO: figure out how to give access to these objects
-  private codeEditor: CodeEditorView;
-  private imageViewer: ImageView;
+  private monacoModelManager: CodeEditorView;
+  // private imageViewer: ImageView;
   private tabs: TabManager;
-  private activeFilePath: string | null;
+  // private activeFilePath: string | null;
   // think about this name
-  private activeViewType: ViewType | null;
+  // private activeViewType: ViewType | null;
+
+  @observable.deep private currentFile: EditorFile | null;
+
   constructor(workspace: Workspace) {
     super(workspace);
-    this.activeFilePath = null;
-    this.activeViewType = null
+    this.currentFile = null;
+    // this.activeFilePath = null;
+    // this.activeViewType = null
     // this.viewType = ViewType.DEFAULT;
     this.tabs = new TabManager();
-    this.codeEditor = new CodeEditorView();
-    this.imageViewer = new ImageView();
+    // modelmanager
+    this.monacoModelManager = new CodeEditorView();
+    // this is not needed
+    // this.imageViewer = new ImageView();
     //
   }
 
   @action
   public reset(): void {
-    this.activeFilePath = null;
-    this.activeViewType = null;
+    this.currentFile = null;
     this.tabs.reset();
-    this.codeEditor.reset();
-    this.imageViewer.reset();
+    this.monacoModelManager.reset();
   }
 
-  @action
-  public updateViewType(newViewType: ViewType) {
-    if (this.activeViewType !== newViewType) {
-      this.activeViewType = newViewType;
-    }
-  }
+  // @action
+  // public updateViewType(newViewType: ViewType) {
+  //   if (this.activeViewType !== newViewType) {
+  //     this.activeViewType = newViewType;
+  //   }
+  // }
 
   @computed
   public get isShowingCodeEditor() {
-    return this.activeViewType === ViewType.TEXT;
+    return this.currentFile ? isTextFile(this.currentFile.fileType) : false;
   }
 
   @computed
   public get isShowingImagePreview() {
-    return this.activeViewType === ViewType.IMAGE;
+    return this.currentFile ? isImageFile(this.currentFile.fileType) : false;
   }
 
-  public getActiveViewType() {
-    return this.activeViewType;
-  }
+  // public getActiveViewType() {
+  //   return this.activeViewType;
+  // }
 
-  public getActiveTab() {
-    return this.tabs.activeTab;
+  public getCurrentFile() {
+    return this.currentFile;
+    // return this.tabs.activeTab;
+
   }
 
   public isFileOpen(filePath: string) {
@@ -70,7 +76,7 @@ export class Editor extends StateModel {
     return this.tabs.hasTab(filePath);
   }
 
-  public getOpenFiles() {
+  public getOpenFilePaths() {
     return this.tabs.getTabs().map((tab) => tab.path);
   }
 
@@ -103,7 +109,7 @@ export class Editor extends StateModel {
           // this.viewType = ViewType.IMAGE;
           this.updateViewType(ViewType.IMAGE);
         } else {
-          this.codeEditor.setActiveModelFromPath(
+          this.monacoModelManager.setActiveModelFromPath(
             newActiveTab.path,
             newActiveTab.fileType as Language 
           );
@@ -118,7 +124,7 @@ export class Editor extends StateModel {
       // clean up closed file
       if (isTextFile(closedTab.fileType)) {
         // I should do the clean up in after the new file is being shown
-        this.codeEditor.deleteEditorModel(filePath);
+        this.monacoModelManager.deleteEditorModel(filePath);
       } else {
         // was image file
         this.imageViewer.reset();
@@ -155,7 +161,7 @@ export class Editor extends StateModel {
         // this.viewType = ViewType.IMAGE;
         this.updateViewType(ViewType.IMAGE);
       } else {
-        this.codeEditor.setActiveModelFromPath(
+        this.monacoModelManager.setActiveModelFromPath(
           options.path,
           options.fileType as Language // since it already open, we know
         );
@@ -168,7 +174,7 @@ export class Editor extends StateModel {
   // computed???
   public getEditorValue() {
     if (this.isShowingCodeEditor) {
-      return this.codeEditor.getEditorValue();
+      return this.monacoModelManager.getEditorValue();
     } else return null;
   }
 
@@ -208,7 +214,7 @@ export class Editor extends StateModel {
       } else if (isTextFile(fileType)) {
         // or path
         // should show loader if this takes some time
-        yield this.codeEditor.openFile(options);
+        yield this.monacoModelManager.openFile(options);
         // this.viewType = ViewType.CODE;
         this.updateViewType(ViewType.TEXT);
         this.activeFilePath = options.path;

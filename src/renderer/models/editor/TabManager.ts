@@ -3,22 +3,24 @@ import { StateModel } from "../StateModel";
 import { FileEntry } from "../fileexplorer/types";
 import { Workspace } from "../workspace/Workspace";
 import { action, computed, observable } from "mobx";
+import { EditorFile } from "./types";
 
-type Tab = Omit<FileEntry, "depth" | "type">;
+// type Tab = Omit<FileEntry, "depth" | "type">;
 
 // FILE ENTRIES SHOULD HAVE NOTHING TO DO WITH FILE ENTRIES
 // FILE ENTRY SHOULD ONLY BE FOR THE FILE EXPLORER
 
 interface AddNewTabOptions {
-  tab: Tab;
+  tab: EditorFile;
   setAsActive?: boolean;
 }
 
 export class TabManager {
-  @observable private accessor tabs: Tab[];
+  @observable private accessor tabs: EditorFile[];
   //   private currentTab // should this be an index or not???
   // better to
   // public activeEntry
+  // should this instead point to the active tab?
   @observable public accessor activeTabIndex: number | null;
   constructor() {
     this.activeTabIndex = null;
