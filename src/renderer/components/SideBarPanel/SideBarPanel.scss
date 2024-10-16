@@ -8,6 +8,7 @@
   .sidebar-panel-title {
     display: flex;
     align-items: center;
+    flex-shrink: 0;
     // ali
     height: 2.5rem;
     width: 100%;

@@ -5,10 +5,7 @@ import { Workspace } from "../workspace/Workspace";
 import { action, computed, observable } from "mobx";
 import { EditorFile } from "./types";
 
-// type Tab = Omit<FileEntry, "depth" | "type">;
-
-// FILE ENTRIES SHOULD HAVE NOTHING TO DO WITH FILE ENTRIES
-// FILE ENTRY SHOULD ONLY BE FOR THE FILE EXPLORER
+// leaving this here for reference for now
 
 interface AddNewTabOptions {
   tab: EditorFile;

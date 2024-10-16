@@ -9,10 +9,10 @@ const OPEN_FILE_LOADER_DELAY = 3 * 1000; // 3 seconds
 
 // pretty much the EditorPanel state
 export class Editor extends StateModel {
-  private monacoModelManager: MonacoManager;
   @observable private accessor openFiles: EditorFile[];
   @observable public accessor activeFileIndex: number | null;
-  @observable.deep private currentFile: EditorFile | null;
+  @observable.deep private accessor currentFile: EditorFile | null;
+  private monacoModelManager: MonacoManager;
 
   constructor(workspace: Workspace) {
     super(workspace);
@@ -54,6 +54,10 @@ export class Editor extends StateModel {
 
   public isCurrentFile(filePath: string) {
     return this.currentFile?.path === filePath;
+  }
+
+  public getCurrentFile() {
+    return this.currentFile;
   }
 
   @action

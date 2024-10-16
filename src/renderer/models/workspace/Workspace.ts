@@ -13,10 +13,10 @@ import pathe from "pathe";
 import { TreeFileExplorer } from "../fileexplorer/tree/TreeFileExplorer";
 import { FileExplorer } from "../fileexplorer/types";
 import { Editor } from "../editor/Editor";
-import { FileOptions } from "../editor/types";
 import { ThemePreview } from "../ThemePreview";
 import { Store } from "../Store";
 import { action, computed, flow, observable } from "mobx";
+import { EditorFile } from "../editor/types";
 
 // NOTE
 // WHEN READING FILES, I NEED A WAY TO SHOW A PROGRESSBAR IF IT TAKES TOO LONG
@@ -411,8 +411,8 @@ export class Workspace {
   });
 
   @action
-  public openFile(options: FileOptions) {
-    return this.editor.openFile(options);
+  public openFile(file: EditorFile) {
+    return this.editor.openFile(file);
   }
 
   @action
