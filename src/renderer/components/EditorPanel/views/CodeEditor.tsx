@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react"
+import { useEffect, useRef } from "react";
 import monaco from "monaco-editor";
 import "./CodeEditor.scss";
 
@@ -16,9 +16,7 @@ export default function CodeEditor() {
         language: "javascript",
       });
     }
-  }, [])
+  }, []);
 
-  return (
-    <div className="CodeEditor" ref={containerElement}/>
-  )
+  return <div className="CodeEditor" ref={containerElement} />;
 }
