@@ -26,10 +26,9 @@ export class Editor extends StateModel {
     this.monacoModelManager = new MonacoManager();
     monaco.editor.defineTheme('helium-default', {
       base: "vs-dark",
-      inherit: true,
+      inherit: theme.inherit,
       rules: theme.rules,
       colors: theme.colors,
-      encodedTokensColors: []
     })
 
   }

@@ -9,7 +9,8 @@ import { WorkspaceContext } from "renderer/contexts/Workspace";
 import  "./HeliumApp.scss";
 import Modals from "renderer/components/ui/Modals";
 import { createHighlighter } from "shiki";
-import { textmateThemeToMonacoTheme } from "@shikijs/monaco";
+import { shikiToMonaco, textmateThemeToMonacoTheme } from "@shikijs/monaco";
+import monaco from "monaco-editor";
 
 
 export class HeliumApp {
@@ -29,10 +30,12 @@ export class HeliumApp {
     // dynamically import components before using them
     // render root component here
 
-    // const highlighter = yield createHighlighter({
-    //   themes: ["one-dark-pro"],
-    //   langs: ["javascript", "typescript", "json", "json5", "jsonc", "yaml", "liquid", "html", "css", "less", "sass", "scss"]
-    // });
+    const highlighter = yield createHighlighter({
+      themes: ["one-dark-pro"],
+      langs: ["javascript", "typescript", "json", "json5", "jsonc", "yaml", "liquid", "html", "css", "less", "sass", "scss"]
+    });
+
+    shikiToMonaco(highlighter, monaco)
     // const themeIds = highlighter.getLoadedThemes()
     // for (const themeId of themeIds) {
     //   const tmTheme = highlighter.getTheme(themeId)
