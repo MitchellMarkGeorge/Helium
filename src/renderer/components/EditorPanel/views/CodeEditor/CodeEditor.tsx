@@ -12,7 +12,7 @@ export default function CodeEditor() {
         automaticLayout: true,
         value: "CodeEditor",
         fontSize: 14,
-        theme: "vs-dark",
+        theme: "helium-default",
         language: "javascript",
       });
     }

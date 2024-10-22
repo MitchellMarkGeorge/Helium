@@ -4,7 +4,7 @@ import { useWorkspace } from "renderer/hooks/useWorkspace";
 
 import "./EditorPanel.scss";
 import TabBar from "./components/TabBar";
-import CodeEditor from "./views/CodeEditor";
+import CodeEditor from "./views/CodeEditor/CodeEditor";
 
 function EditorPanel() {
   // const workspace = useWorkspace();

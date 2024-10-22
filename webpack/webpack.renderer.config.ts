@@ -14,7 +14,6 @@ interface Configuration extends webpack.Configuration {
   devServer?: DevServerConfiguration;
 }
 
-
 const rendererConfig: Configuration = {
   // devtool: "source-map",
   target: ["web", "electron-renderer"],
@@ -73,12 +72,14 @@ const rendererConfig: Configuration = {
 
       {
         test: /\.svg$/,
-        use: [{
-          loader: "@svgr/webpack",
-          options: {
-            typescript: true,
-          }
-        }],
+        use: [
+          {
+            loader: "@svgr/webpack",
+            options: {
+              typescript: true,
+            },
+          },
+        ],
       },
       {
         test: /\.ttf$/,
@@ -111,7 +112,20 @@ const rendererConfig: Configuration = {
     // ...plugins,
     // cant use if not using
     // new MiniCssExtractPlugin({ filename: "./css/[name].css" }),
-    new MonacoEditorWebpackPlugin(),
+    new MonacoEditorWebpackPlugin({
+      languages: [
+        "css",
+        "javascript",
+        "json",
+        "yaml",
+        "markdown",
+        "html",
+        "less",
+        "liquid",
+        "scss",
+        "typescript",
+      ],
+    }),
     new HtmlWebpackPlugin({
       template: path.join(webpackPaths.srcRenderer, "index.html"),
       filename: path.join(webpackPaths.distRenderer, "index.html"), // might not be needed

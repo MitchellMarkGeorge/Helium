@@ -8,6 +8,8 @@ import StatusBar from "../components/StatusBar/StatusBar";
 import { WorkspaceContext } from "renderer/contexts/Workspace";
 import  "./HeliumApp.scss";
 import Modals from "renderer/components/ui/Modals";
+import { createHighlighter } from "shiki";
+import { textmateThemeToMonacoTheme } from "@shikijs/monaco";
 
 
 export class HeliumApp {
@@ -26,6 +28,18 @@ export class HeliumApp {
     // there actually is no reason to set up the listerners inside the react components
     // dynamically import components before using them
     // render root component here
+
+    // const highlighter = yield createHighlighter({
+    //   themes: ["one-dark-pro"],
+    //   langs: ["javascript", "typescript", "json", "json5", "jsonc", "yaml", "liquid", "html", "css", "less", "sass", "scss"]
+    // });
+    // const themeIds = highlighter.getLoadedThemes()
+    // for (const themeId of themeIds) {
+    //   const tmTheme = highlighter.getTheme(themeId)
+    //   const monacoTheme = textmateThemeToMonacoTheme(tmTheme)
+    //   console.log(monacoTheme);
+    // }
+
 
     const app = (
       <WorkspaceContext.Provider value={this.workspace}>
