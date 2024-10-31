@@ -6,12 +6,13 @@ import TitleBar from "../components/TitleBar/TitleBar";
 import HeliumWorkspace from "../components/Workspace/HeliumWorkspace";
 import StatusBar from "../components/StatusBar/StatusBar";
 import { WorkspaceContext } from "renderer/contexts/Workspace";
-import  "./HeliumApp.scss";
+import "./HeliumApp.scss";
 import Modals from "renderer/components/ui/Modals";
-import { createHighlighter } from "shiki";
-import { shikiToMonaco, textmateThemeToMonacoTheme } from "@shikijs/monaco";
+import { createHighlighter, ThemeInput } from "shiki";
+import { shikiToMonaco } from "@shikijs/monaco";
 import monaco from "monaco-editor";
 
+import theme from "./theme.json";
 
 export class HeliumApp {
   private workspace: Workspace;
@@ -31,11 +32,24 @@ export class HeliumApp {
     // render root component here
 
     const highlighter = yield createHighlighter({
-      themes: ["one-dark-pro"],
-      langs: ["javascript", "typescript", "json", "json5", "jsonc", "yaml", "liquid", "html", "css", "less", "sass", "scss"]
+      themes: [theme as unknown as ThemeInput],
+      langs: [
+        "javascript",
+        "typescript",
+        "json",
+        "json5",
+        "jsonc",
+        "yaml",
+        "liquid",
+        "html",
+        "css",
+        "less",
+        "sass",
+        "scss",
+      ],
     });
 
-    shikiToMonaco(highlighter, monaco)
+    shikiToMonaco(highlighter, monaco);
     // const themeIds = highlighter.getLoadedThemes()
     // for (const themeId of themeIds) {
     //   const tmTheme = highlighter.getTheme(themeId)
@@ -43,14 +57,13 @@ export class HeliumApp {
     //   console.log(monacoTheme);
     // }
 
-
     const app = (
       <WorkspaceContext.Provider value={this.workspace}>
         <div className="app-container">
           <TitleBar />
           <HeliumWorkspace />
           <StatusBar />
-          <Modals/>
+          <Modals />
         </div>
       </WorkspaceContext.Provider>
     );

@@ -1,10 +1,12 @@
 import { useEffect, useRef } from "react";
 import monaco from "monaco-editor";
 import "./CodeEditor.scss";
+import { useWorkspace } from "renderer/hooks/useWorkspace";
 
 export default function CodeEditor() {
   const containerElement = useRef<HTMLDivElement | null>(null);
   const editor = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
+  const workspace = useWorkspace();
 
   const liquid = `{{ 'quick-order-list.css' | asset_url | stylesheet_tag }}
 
@@ -29,10 +31,10 @@ export default function CodeEditor() {
         value: liquid,
         fontSize: 14,
         theme: "helium-default",
-        // theme: "one-dark-pro",
         language: "liquid",
         // language: "javascript",
       });
+      // editor.current.
     }
   }, []);
 

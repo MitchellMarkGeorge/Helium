@@ -116,6 +116,7 @@ function FileExplorerItem({ entry }: Props) {
     >
       <div className="file-explorer-item-chevron">{getChevron()}</div>
       <div className="file-explorer-item-icon">{getIcon()}</div>
+      {/*  should this be sm?       */}
       <Text size="xs" className="file-explorer-item-text">{entry.basename}</Text>
     </div>
   );

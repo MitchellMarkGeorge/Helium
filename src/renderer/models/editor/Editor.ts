@@ -6,7 +6,7 @@ import { MonacoManager } from "./MonacoManager";
 import { action, computed, flow, observable } from "mobx";
 import monaco from "monaco-editor";
 
-import theme from "./theme.json";
+// import theme from "./theme.json";
 // import test from "./test.json";
 
 const OPEN_FILE_LOADER_DELAY = 3 * 1000; // 3 seconds
@@ -24,12 +24,12 @@ export class Editor extends StateModel {
     this.activeFileIndex = null;
     this.currentFile = null;
     this.monacoModelManager = new MonacoManager();
-    monaco.editor.defineTheme('helium-default', {
-      base: "vs-dark",
-      inherit: theme.inherit,
-      rules: theme.rules,
-      colors: theme.colors,
-    })
+    // monaco.editor.defineTheme('helium-default', {
+    //   base: "vs-dark",
+    //   inherit: theme.inherit,
+    //   rules: theme.rules,
+    //   colors: theme.colors,
+    // })
 
   }
 
