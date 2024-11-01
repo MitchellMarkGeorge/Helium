@@ -29,7 +29,7 @@ export default function CodeEditor() {
       editor.current = monaco.editor.create(containerElement.current, {
         automaticLayout: true,
         value: liquid,
-        fontSize: 14,
+        fontSize: 12,
         theme: "helium-default",
         language: "liquid",
         // language: "javascript",

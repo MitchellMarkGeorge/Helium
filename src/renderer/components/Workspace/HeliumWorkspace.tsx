@@ -14,6 +14,7 @@ import SideBarPanel from "../SideBarPanel";
 import EditorPanel from "../EditorPanel";
 import { useEffect, useRef } from "react";
 import { action, autorun } from "mobx";
+import classNames from "classnames";
 
 // should this be in state
 // this makes sure that the first time it is expanded that it does not use the minSize
@@ -27,13 +28,16 @@ function HeliumWorkspace() {
 
   useEffect(() => {
     const disposer = autorun(() => {
-      console.log('in auto run');
+      console.log("in auto run");
       console.log(sideBarPanelRef.current?.isCollapsed());
       if (workspace.isSidePanelOpen && sideBarPanelRef.current?.isCollapsed()) {
         console.log("will expand");
         sideBarPanelRef.current.expand(!hasBeenExpanded ? 25 : undefined);
         hasBeenExpanded = true;
-      } else if (!workspace.isSidePanelOpen && sideBarPanelRef.current?.isExpanded()) {
+      } else if (
+        !workspace.isSidePanelOpen &&
+        sideBarPanelRef.current?.isExpanded()
+      ) {
         sideBarPanelRef.current.collapse();
       }
     });
@@ -43,36 +47,42 @@ function HeliumWorkspace() {
   // for now
   const loadingMarkup = <Logo full size="9rem" />;
 
+  const workspaceContainerClasses = classNames('workspace-container', {
+    'sidebar-expanded': workspace.isSidePanelOpen
+  })
+
   const workspaceMarkup = (
-    <PanelGroup direction="horizontal">
+    <div className={workspaceContainerClasses}>
       <SideBar />
-      <Panel
-        className="workspace-panel"
-        ref={sideBarPanelRef}
-        collapsible
-        minSize={20}
-        defaultSize={0}
-        maxSize={50}
-        order={1}
-        // onExpand={}
-        onCollapse={action(() => {
-          if (workspace.isSidePanelOpen) {
-            workspace.isSidePanelOpen = false;
-          }
-        })}
-        onExpand={action(() => {
-          if (!workspace.isSidePanelOpen) {
-            workspace.isSidePanelOpen = true;
-          }
-        })}
-      >
-        <SideBarPanel activeSideBarOption={workspace.activeSideBarOption} />
-      </Panel>
-      <PanelResizeHandle className="workspace-resizer" />
-      <Panel order={2} className="workspace-panel">
-        <EditorPanel/>
-      </Panel>
-    </PanelGroup>
+      <PanelGroup direction="horizontal">
+        <Panel
+          className="workspace-panel"
+          ref={sideBarPanelRef}
+          collapsible
+          minSize={20}
+          defaultSize={0}
+          maxSize={50}
+          order={1}
+          // onExpand={}
+          onCollapse={action(() => {
+            if (workspace.isSidePanelOpen) {
+              workspace.isSidePanelOpen = false;
+            }
+          })}
+          onExpand={action(() => {
+            if (!workspace.isSidePanelOpen) {
+              workspace.isSidePanelOpen = true;
+            }
+          })}
+        >
+          <SideBarPanel activeSideBarOption={workspace.activeSideBarOption} />
+        </Panel>
+        <PanelResizeHandle className="workspace-resizer" />
+        <Panel order={2} className="workspace-panel">
+          <EditorPanel />
+        </Panel>
+      </PanelGroup>
+    </div>
   );
 
   return (

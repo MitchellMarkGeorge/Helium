@@ -3,7 +3,7 @@
   width: 100%;
   display: flex;
   flex-direction: column;
-  border-left: 1px var(--border-color) solid;
+  gap: 1px;
 
   .sidebar-panel-title {
     display: flex;
@@ -14,8 +14,9 @@
     width: 100%;
     // do I need top/bottom padding
     padding: 0 var(--spacing-400);
-    border-bottom: 1px solid var(--border-color);
+    // border-bottom: 1px solid var(--border-color);
     color: var(--gray-300);
+    background-color: var(--background-color);
 
     &.file-explorer-panel-title {
       justify-content: space-between;
@@ -28,6 +29,7 @@
     // flex: auto;
     padding: 0.5rem 0;
     overflow: hidden;
+    background-color: var(--background-color);
 
     &:hover,
     &:active,
