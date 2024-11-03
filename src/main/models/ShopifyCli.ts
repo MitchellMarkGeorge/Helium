@@ -3,6 +3,7 @@ import { HeliumWindow } from "./HeliumWindow";
 import { ChildProcess, spawn } from "child_process";
 import waitOn from "wait-on";
 import { safeStorage } from "electron";
+import commandExists from "command-exists";
 // can use get-port-pleae
 // think about execa
 
@@ -27,11 +28,36 @@ export default class ShopifyCli {
   private hasSentPreviewKillSignal: boolean;
 
   constructor(private readonly heliumWindow: HeliumWindow) {
-    this.previewState = PreviewState.UNAVALIBLE;
+    this.previewState = this.checkCliAvailibility();
+    // this.previewState = PreviewState.UNAVALIBLE;
     this.previewChildProcess = null;
     this.previewHost = DEFAULT_PREVIEW_HOST;
     this.previewPort = DEFAULT_PREVIEW_PORT;
     this.hasSentPreviewKillSignal = false;
+  }
+
+  // private async checkCliAvailibility() {
+  //   let cliAvailible = false;
+  //   try {
+  //     await commandExists('shopify')
+  //     cliAvailible = true;
+  //   } catch (error) {
+  //     cliAvailible = false  
+  //   }
+    
+  //   if (cliAvailible) {
+  //     this.previewState = PreviewState.OFF;
+  //   } else {
+  //     this.previewState = PreviewState.UNAVALIBLE;
+  //   }
+  // }
+
+  private checkCliAvailibility() {
+    // using the sync version for now so I can call it in the constructor
+    let cliAvailible = commandExists.sync('shopify')
+    console.log("CLI Availible", cliAvailible);
+
+    return cliAvailible ? PreviewState.OFF : PreviewState.UNAVALIBLE
   }
 
   private get localPreviewLink() {

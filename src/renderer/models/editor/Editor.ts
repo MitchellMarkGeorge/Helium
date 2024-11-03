@@ -1,10 +1,10 @@
 import { isBinaryFile, isImageFile, isTextFile } from "common/utils";
 import { StateModel } from "../StateModel";
 import { Workspace } from "../workspace/Workspace";
-import { EditorFile } from "./types";
+import { CursorPosition, EditorFile, MonacoCodeEditor } from "./types";
 import { MonacoManager } from "./MonacoManager";
 import { action, computed, flow, observable } from "mobx";
-import monaco from "monaco-editor";
+import { editor } from "monaco-editor";
 
 // import theme from "./theme.json";
 // import test from "./test.json";
@@ -16,6 +16,7 @@ export class Editor extends StateModel {
   @observable private accessor openFiles: EditorFile[];
   @observable public accessor activeFileIndex: number | null;
   @observable.deep private accessor currentFile: EditorFile | null;
+  @observable.deep private accessor cursorPosition: CursorPosition | null;
   private monacoModelManager: MonacoManager;
 
   constructor(workspace: Workspace) {
@@ -23,6 +24,7 @@ export class Editor extends StateModel {
     this.openFiles = [];
     this.activeFileIndex = null;
     this.currentFile = null;
+    this.cursorPosition = null;
     this.monacoModelManager = new MonacoManager();
     // monaco.editor.defineTheme('helium-default', {
     //   base: "vs-dark",
@@ -31,6 +33,14 @@ export class Editor extends StateModel {
     //   colors: theme.colors,
     // })
 
+  }
+
+  public getCursorPosition() {
+    return this.cursorPosition;
+  }
+
+  public updateCurorPosition(position: CursorPosition) {
+    this.cursorPosition = position;
   }
 
   @action
@@ -50,8 +60,25 @@ export class Editor extends StateModel {
     return this.currentFile ? isImageFile(this.currentFile.fileType) : false;
   }
 
+  @computed
+  public get currentEditorModel() {
+    if (this.currentFile) {
+      return this.monacoModelManager.getEditorModel(this.currentFile.path);
+    } else return null;
+  }
+
+  public setMonacoEditor(editor: MonacoCodeEditor) {
+    this.monacoModelManager.setMonacoCodeEditor(editor);
+  }
+
   public isFileOpen(filePath: string) {
     return this.openFiles.some((file) => file.path === filePath);
+  }
+
+  public getSavedViewState() {
+    if (this.currentFile) {
+      return this.monacoModelManager.getViewState(this.currentFile.path);
+    } return null
   }
 
   public getOpenFilePaths() {
@@ -69,6 +96,15 @@ export class Editor extends StateModel {
 
   public getCurrentFile() {
     return this.currentFile;
+  }
+
+
+  public getEditorModel(filePath: string) {
+    return this.monacoModelManager.getEditorModel(filePath);
+  }
+
+  public getOpenFiles() {
+    return this.openFiles;
   }
 
   @action
@@ -99,7 +135,9 @@ export class Editor extends StateModel {
         // if it was the current file that was closed, change the current file
         if (isCurrentFile) {
           const newCurrentFileIndex = index === this.openFiles.length ? index - 1 : index; 
-          this.currentFile = this.openFiles[newCurrentFileIndex];
+          const newFile = this.openFiles[newCurrentFileIndex];
+          this.currentFile = newFile;
+          // this.restoreCurrentFileViewState(newFile.path);
         }
       }
     }
@@ -113,6 +151,7 @@ export class Editor extends StateModel {
   @action
   public selectFile(filePath: string) {
     if (!this.isFileOpen(filePath)) {
+      console.log("here!")
       this.workspace.notifications.showMessageModal({
         type: "error",
         message: `${filePath} is not open`,
@@ -122,10 +161,23 @@ export class Editor extends StateModel {
     }
     
     if (!this.isCurrentFile(filePath)) {
+      // save the current view state of the file before the model changes
+      this.saveCurrentFileViewState();
       const selectedFile = this.openFiles.find(file => file.path === filePath);
       if (selectedFile) {
         this.currentFile = selectedFile;
       } 
+    }
+  }
+
+  private saveCurrentFileViewState() {
+    const editor = this.monacoModelManager.getMonacoCodeEditor();
+    if (this.currentFile && editor) {
+      const currentViewState = editor.saveViewState();
+      if (currentViewState) {
+        console.log("save current view state", currentViewState);
+        this.monacoModelManager.updateViewState(this.currentFile.path, currentViewState);
+      }
     }
   }
 
@@ -142,11 +194,14 @@ export class Editor extends StateModel {
   @action
   public openFile = flow(function* (this: Editor, file: EditorFile) {
     if (this.isFileOpen(file.path)) {
-      this.workspace.notifications.showMessageModal({
-        type: "error",
-        message: `File is already open`,
-        secondaryButtonText: "Close",
-      });
+      // this.workspace.notifications.showMessageModal({
+      //   type: "error",
+      //   message: `File is already open`,
+      //   secondaryButtonText: "Close",
+      // });
+      if (!this.isCurrentFile(file.path)) {
+        this.selectFile(file.path);
+      }
       return;
     }
     const { fileType } = file;

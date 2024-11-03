@@ -15,6 +15,7 @@
   "devDependencies": {
     "@eslint/js": "^9.1.1",
     "@svgr/webpack": "^8.1.0",
+    "@types/command-exists": "^1.2.3",
     "@types/fs-extra": "^11.0.4",
     "@types/mime": "^3.0.1",
     "@types/node": "^20.12.7",
@@ -61,6 +62,7 @@
     "chokidar": "^3.6.0",
     "class-variance-authority": "^0.7.0",
     "classnames": "^2.5.1",
+    "command-exists": "^1.2.9",
     "electron-is-dev": "^3.0.1",
     "electron-squirrel-startup": "^1.0.0",
     "fs-extra": "^11.2.0",

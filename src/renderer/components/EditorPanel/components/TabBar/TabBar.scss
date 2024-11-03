@@ -4,5 +4,11 @@
     height: 2.5rem;
     flex-shrink: 0;
     background-color: var(--background-color);
+    overflow: auto;
+    scrollbar-width: none;
     // border-bottom: 1px var(--border-color) solid;
+
+    &::-webkit-scrollbar {
+        display: none;
+    }
 }

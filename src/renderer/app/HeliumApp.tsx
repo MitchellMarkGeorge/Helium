@@ -77,6 +77,7 @@ export class HeliumApp {
     try {
       // document.body.style.cursor = "progress";
       const initalState = yield window.helium.app.loadInitalState();
+      console.log(initalState);
       // throw new Error();
       this.workspace.initFromInitalState(initalState);
       // yield wait(1000);

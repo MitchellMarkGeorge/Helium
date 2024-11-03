@@ -2,41 +2,66 @@ import { useEffect, useRef } from "react";
 import monaco from "monaco-editor";
 import "./CodeEditor.scss";
 import { useWorkspace } from "renderer/hooks/useWorkspace";
+import { XCircleFill } from "react-bootstrap-icons";
+import Text from "renderer/components/ui/Text";
+import { autorun } from "mobx";
 
 export default function CodeEditor() {
   const containerElement = useRef<HTMLDivElement | null>(null);
   const editor = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
   const workspace = useWorkspace();
 
-  const liquid = `{{ 'quick-order-list.css' | asset_url | stylesheet_tag }}
+  const currentFile = workspace.editor.getCurrentFile();
+  // const currentEditorModel = workspace.editor.currentEditorModel;
 
-<script src="{{ 'quick-order-list.js' | asset_url }}" defer="defer"></script>
-
-{% render 'quick-order-list', product: product, show_image: true, show_sku: true, is_modal: true %}
-
-{% schema %}
-{
-  "name": "t:sections.quick-order-list.name",
-  "limit": 1,
-  "enabled_on": {
-    "templates": ["product"]
+  if (!currentFile || !workspace.editor.currentEditorModel) {
+    return (
+      <div className="code-editor-error">
+        <div className="code-editor-error-container">
+          <XCircleFill size="5rem" color="#DC2626" />
+          <Text>Unable to open the code editor.</Text>
+        </div>
+      </div>
+    );
   }
-}
-{% endschema %}`
 
   useEffect(() => {
     if (containerElement.current) {
       editor.current = monaco.editor.create(containerElement.current, {
         automaticLayout: true,
-        value: liquid,
         fontSize: 12,
         theme: "helium-default",
-        language: "liquid",
-        // language: "javascript",
+        padding: {
+          top: 10,
+        },
       });
-      // editor.current.
+
+      editor.current.onDidChangeCursorPosition((event) => {
+        workspace.editor.updateCurorPosition({
+          line: event.position.lineNumber,
+          column: event.position.column,
+        });
+      });
+
+      workspace.editor.setMonacoEditor(editor.current);
     }
   }, []);
 
-  return <div className="CodeEditor" ref={containerElement} />;
+  useEffect(() => {
+    autorun(() => {
+      // whenever the current editor model changes, update monaco code editor
+      // and view state
+      if (editor.current && workspace.editor.currentEditorModel) {
+        console.log("changed model");
+        editor.current.setModel(workspace.editor.currentEditorModel);
+        const viewState = workspace.editor.getSavedViewState();
+        if (viewState) {
+          editor.current.restoreViewState(viewState);
+        }
+        editor.current.focus();
+      }
+    });
+  }, []);
+
+  return <div className="code-editor" ref={containerElement} />;
 }

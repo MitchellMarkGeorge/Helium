@@ -271,6 +271,7 @@ export class HeliumWindow {
           await wait(remainingWaitTime);
         }
       }
+      console.log('getting preview state', this.shopifyCli.getPreviewState())
       return {
         currentTheme: this.currentTheme,
         themeFiles: files,

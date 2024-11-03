@@ -87,13 +87,14 @@ export class Workspace {
       this.fileExplorer.init(themeFiles);
     }
 
+    this.themePreview.updatePreviewState(previewState);
+
     if (connectedStore) {
       // preview state is only possible if there is a stoer
       this.connectedStore = new Store({
         storeName: connectedStore.name,
         storeUrl: connectedStore.url,
       });
-      this.themePreview.updatePreviewState(previewState);
     }
     this.isShowingWorkspace = true;
     window.helium.app.sendWorkspaceIsShowing();
@@ -143,6 +144,10 @@ export class Workspace {
     // dependednt on current theme name
     // add an effect that whenever the windowTitle changes, set it at the electron level
     if (this.theme) {
+      const currentFile = this.editor.getCurrentFile()
+      if (this.editor.hasOpenFiles && currentFile?.basename) {
+        return `${currentFile.basename} - ${this.theme.themeName}`;
+      }
       return this.theme.themeName;
     } else {
       return window.helium.constants.DEFAULT_WINOW_TITLE;

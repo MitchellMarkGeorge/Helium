@@ -8,6 +8,7 @@ import {
   MonacoCodeEditor,
   MonacoTextModel,
   EditorFile,
+  MonacoViewState,
 } from "./types";
 import { isTextFile } from "common/utils";
 import { action, observable } from "mobx";
@@ -22,6 +23,7 @@ interface CreateEditorModelOptions {
 export class MonacoManager {
   // think about this
   @observable.shallow private accessor editorModelMap: Map<string, MonacoTextModel>;
+  @observable.shallow private accessor editorViewState: Map<string, MonacoViewState>;
   // this should be a file object
   // private editorModelMap: WeakMap<ThemeFile, MonacoTextModel>;
   // does this need to be an observable???
@@ -30,12 +32,17 @@ export class MonacoManager {
   // private unsavedPaths: Set<string>;
   constructor() {
     this.editorModelMap = new Map();
+    this.editorViewState = new Map();
     this.monacoCodeEditor = null;
   }
 
   @action
   public setMonacoCodeEditor(instace: MonacoCodeEditor) {
     this.monacoCodeEditor = instace;
+  }
+
+  public getMonacoCodeEditor() {
+    return this.monacoCodeEditor;
   }
 
   // computed???
@@ -53,6 +60,14 @@ export class MonacoManager {
 
   public hasEditorModel(path: string) {
     return this.editorModelMap.has(path);
+  }
+
+  public getViewState(filePath: string) {
+    return this.editorViewState.get(filePath) || null;
+  }
+
+  public updateViewState(filePath: string, viewState: MonacoViewState) {
+    return this.editorViewState.set(filePath, viewState);
   }
 
   @action
@@ -77,6 +92,7 @@ export class MonacoManager {
           filePath: path,
           encoding: "utf8",
         });
+        console.log(fileContent);
         const model = this.createEditorModel({
           path,
           language: fileType,

@@ -6,6 +6,10 @@
     justify-content: center;
     background-color: var(--gray-700);
 
+    &:hover {
+        cursor: pointer;
+    }
+
     &.preview-avalible {
         background-color: var(--primary-color);
     }

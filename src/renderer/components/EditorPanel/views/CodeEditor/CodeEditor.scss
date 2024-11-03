@@ -1,6 +1,22 @@
-.CodeEditor {
+.code-editor-error {
     height: 100%;
     width: 100%;
-    padding-top: 0.5rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--background-color);
+
+    .code-editor-error-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        gap: 1rem;
+        flex-direction: column;
+    }
+}
+.code-editor {
+    height: 100%;
+    width: 100%;
     background-color: var(--background-color);
 }
