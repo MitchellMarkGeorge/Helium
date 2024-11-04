@@ -8,13 +8,17 @@ import { EditorFile } from "renderer/models/editor/types";
 import { useWorkspace } from "renderer/hooks/useWorkspace";
 import { useEffect, useRef } from "react";
 import Text from "renderer/components/ui/Text";
+import pathe from "pathe";
+import { action } from "mobx";
+import { observer } from "mobx-react-lite";
+import { editor } from "monaco-editor";
 
 interface Props {
   file: EditorFile;
   isSelected: boolean;
 }
 
-export default function Tab({ file, isSelected }: Props) {
+function Tab({ file, isSelected }: Props) {
   const ref = useRef<HTMLDivElement>(null);
   const workspace = useWorkspace();
   const fileIcon = useFileIcon(file.fileType);
@@ -41,15 +45,19 @@ export default function Tab({ file, isSelected }: Props) {
     >
       {fileIcon}
       <Text size="xs" className="tab-title">
-        {file.basename}
+        {file.basename || pathe.basename(file.path)}
       </Text>
       <IconButton
         icon={XLg}
-        onClick={(e) => {
+        onClick={action((e) => {
           e.stopPropagation();
-          workspace.editor.closeFile(file.path);
-        }}
+          // file.hasTab = false
+          workspace.editor.closeTab(file.path);
+          // workspace.editor.closeFile(file.path);
+        })}
       />
     </div>
   );
 }
+
+export default observer(Tab);

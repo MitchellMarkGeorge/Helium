@@ -118,11 +118,11 @@ export class TreeFileExplorer extends FileExplorer {
   private findNode(path: string, tree: DirectoryNode): TreeNode | null {
     if (tree.entry.path === path) return tree;
     if (tree.items === null) return null;
-    console.log(toJS(tree.items));
+    // console.log(toJS(tree.items));
     for (let i = 0; i < tree.items.length; i++) {
       const node = tree.items[i];
       const { entry } = node;
-      console.log(entry.path, path);
+      // console.log(entry.path, path);
       if (entry.path === path) {
         // console.log("found node");
         return node;

@@ -49,6 +49,7 @@ export default function CodeEditor() {
 
   useEffect(() => {
     autorun(() => {
+      // should only be called when the the currentEditorModel changes
       // whenever the current editor model changes, update monaco code editor
       // and view state
       if (editor.current && workspace.editor.currentEditorModel) {
@@ -59,6 +60,14 @@ export default function CodeEditor() {
           editor.current.restoreViewState(viewState);
         }
         editor.current.focus();
+        // get cursor position and set it
+        const position = editor.current.getPosition();
+        if (position) {
+          workspace.editor.updateCurorPosition({
+            line: position.lineNumber,
+            column: position.column,
+          });
+        }
       }
     });
   }, []);

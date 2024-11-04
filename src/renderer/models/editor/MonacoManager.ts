@@ -79,10 +79,6 @@ export class MonacoManager {
     return this.editorModelMap.get(path) || null;
   }
 
-  public getCursorPosition() {
-    return this.monacoCodeEditor ? this.monacoCodeEditor.getPosition() : null;
-  }
-
   @action
   // should it still be named openFile 
   public async createModelFromFile({ path, fileType }: EditorFile) {
@@ -92,7 +88,6 @@ export class MonacoManager {
           filePath: path,
           encoding: "utf8",
         });
-        console.log(fileContent);
         const model = this.createEditorModel({
           path,
           language: fileType,
@@ -110,6 +105,10 @@ export class MonacoManager {
       // should I check if it is already disposed?
       model?.dispose();
       this.editorModelMap.delete(filePath); // do this first??
+    }
+
+    if (this.editorViewState.has(filePath)) {
+      this.editorViewState.delete(filePath);
     }
   }
 

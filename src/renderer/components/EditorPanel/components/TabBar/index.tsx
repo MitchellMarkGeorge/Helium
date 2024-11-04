@@ -5,14 +5,14 @@ import { observer } from "mobx-react-lite";
 import { useWorkspace } from "renderer/hooks/useWorkspace";
 
 interface Props {
-  openFiles: EditorFile[];
+  tabs: EditorFile[];
 }
 
-function TabBar({ openFiles }: Props) {
+function TabBar({ tabs }: Props) {
   const workspace = useWorkspace();
   return (
     <div className="tab-bar">
-      {openFiles.map((file) => (
+      {tabs.map((file) => (
         // <Tab entry={file} isSelected={file.path === selectedFilePath} key={file.path} />
         <Tab
           file={file}

@@ -11,7 +11,7 @@ import { Theme } from "../Theme";
 import { getErrorMessage } from "common/utils";
 import pathe from "pathe";
 import { TreeFileExplorer } from "../fileexplorer/tree/TreeFileExplorer";
-import { FileExplorer } from "../fileexplorer/types";
+import { FileEntry, FileExplorer } from "../fileexplorer/types";
 import { Editor } from "../editor/Editor";
 import { ThemePreview } from "../ThemePreview";
 import { Store } from "../Store";

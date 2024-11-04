@@ -10,11 +10,11 @@ import { EditorFile } from "renderer/models/editor/types";
 function EditorPanel() {
   const workspace = useWorkspace();
   const currentFile = workspace.editor.getCurrentFile();
-  if (workspace.editor.hasOpenFiles) {
+  if (workspace.editor.hasTabs) {
     return (
       <div className="editor-panel">
         <TabBar
-          openFiles={workspace.editor.getOpenFiles()}
+          tabs={workspace.editor.tabs}
         />
         <CodeEditor />
       </div>

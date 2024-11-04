@@ -17,6 +17,7 @@ export interface CursorPosition {
 }
 
 export interface EditorFile {
+    hasTab?: boolean;
     path: string;
     fileType: FileType
     basename?: string;
