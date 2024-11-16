@@ -1,2 +1,82 @@
 .file-explorer-panel {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  // gap: 1px;
+  flex-direction: column;
+
+  .file-explorer-section {
+    // flex: 1;
+    // height: 100%;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--background-color);
+    border-bottom: 1px solid var(--border-color);
+    overflow: hidden;
+    // &.section-open {
+    //     border-bottom: 1px solid var(--border-color);
+    // }
+
+    // &:has(button[data-open]) {
+    //   // flex: 1;
+    //   flex: 0 1 auto;
+    // }
+
+    &[data-open] {
+      // flex: 1;
+      flex: 0 1 auto;
+    }
+
+    // &.full:has(button[data-open]){
+    //   // flex: 1 1 auto;
+    //   flex: 1;
+    // }
+
+    &.full[data-open] {
+      // flex: 1 1 auto;
+      flex: 1;
+    }
+
+    // should the bottom border be removed
+    &[data-open]:last-child {
+      border-bottom: none;
+    }
+
+    .file-explorer-section-trigger {
+      background-color: var(--background-color);
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 1rem;
+      width: 100%;
+      height: 2rem;
+      border: none;
+      flex-shrink: 0;
+      // should have bottom shaddow
+      //   border-bottom: 1px solid var(--border-color);
+
+      &:hover {
+        cursor: pointer;
+      }
+    }
+
+    .file-explorer-section-title {
+      font-weight: var(--font-weight-semibold);
+      color: var(--gray-500);
+      text-transform: uppercase;
+    }
+
+    .file-explorer-section-icon {
+      color: var(--gray-500);
+      height: 0.75rem;
+      width: 0.75rem;
+    }
+
+    .file-explorer-section-panel {
+      overflow: hidden;
+      padding-bottom: 0.5rem;
+    }
+  }
 }

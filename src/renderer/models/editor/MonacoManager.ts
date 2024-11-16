@@ -24,6 +24,7 @@ export class MonacoManager {
   // think about this
   @observable.shallow private accessor editorModelMap: Map<string, MonacoTextModel>;
   @observable.shallow private accessor editorViewState: Map<string, MonacoViewState>;
+  @observable.shallow private accessor editorVersionId: Map<string, number>;
   // this should be a file object
   // private editorModelMap: WeakMap<ThemeFile, MonacoTextModel>;
   // does this need to be an observable???
@@ -33,6 +34,7 @@ export class MonacoManager {
   constructor() {
     this.editorModelMap = new Map();
     this.editorViewState = new Map();
+    this.editorVersionId = new Map();
     this.monacoCodeEditor = null;
   }
 
@@ -75,8 +77,17 @@ export class MonacoManager {
     this.editorModelMap.set(path, model);
   }
 
+  @action
+  public updateEditorModelVersionId(path: string, versionId: number) {
+    this.editorVersionId.set(path, versionId);
+  }
+
   public getEditorModel(path: string) {
     return this.editorModelMap.get(path) || null;
+  }
+
+  public getVersionId(path: string) {
+    return this.editorVersionId.get(path) || null;
   }
 
   @action
@@ -94,6 +105,7 @@ export class MonacoManager {
           text: fileContent,
         });
         this.saveEditorModel(path, model);
+        this.updateEditorModelVersionId(path, model.getAlternativeVersionId());
       } 
     }
   }

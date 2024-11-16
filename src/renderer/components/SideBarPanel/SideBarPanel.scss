@@ -31,13 +31,17 @@
     overflow: hidden;
     background-color: var(--background-color);
 
-    &:hover,
-    &:active,
-    &:focus {
-      overflow: auto;
-      scrollbar-width: thin;
-      scrollbar-color: var(--border-color) transparent;
+    &:has(.file-explorer-panel) {
+      padding: 0;
     }
+
+    // &:hover,
+    // &:active,
+    // &:focus {
+    //   overflow: auto;
+    //   scrollbar-width: thin;
+    //   scrollbar-color: var(--border-color) transparent;
+    // }
 
     // &::-webkit-scrollbar {
     //   width: 0.5rem;
@@ -62,7 +66,7 @@
       justify-content: center;
       align-items: center;
       gap: 0.5rem;
-      padding: 0.5rem 1rem;
+      padding: 0.5rem 0.5rem 1rem;
 
       .empty-panel-text {
         color: var(--gray-500);

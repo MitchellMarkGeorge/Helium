@@ -90,7 +90,7 @@ export class HeliumWindow {
     this.browserWindow.loadURL(HELIUM_WEB_ENTRY);
 
     if (isDev) {
-      this.browserWindow.webContents.openDevTools();
+      this.browserWindow.webContents.openDevTools({ mode: "detach"});
     }
   }
 

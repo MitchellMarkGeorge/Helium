@@ -265,6 +265,7 @@ export class Workspace {
         path: filePath,
         fileType,
         basename: fileName,
+        hasTab: true
       });
     }
   });
@@ -415,10 +416,11 @@ export class Workspace {
     }
   });
 
-  @action
-  public openFile(file: EditorFile) {
-    return this.editor.openFile(file);
-  }
+  // just use workspace.editor.openFile() instead
+  // @action
+  // public openFile(file: EditorFile) {
+  //   return this.editor.openFile(file);
+  // }
 
   @action
   public saveCurrentFile = flow(function* (this: Workspace) {

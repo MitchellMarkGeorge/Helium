@@ -21,6 +21,7 @@ export interface EditorFile {
     path: string;
     fileType: FileType
     basename?: string;
+    isUnsaved?: boolean;
 }
 
 // rename this

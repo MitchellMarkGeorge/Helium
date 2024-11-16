@@ -9,6 +9,8 @@ import { autorun } from "mobx";
 export default function CodeEditor() {
   const containerElement = useRef<HTMLDivElement | null>(null);
   const editor = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
+  const textChangeEventRef = useRef<monaco.IDisposable | null>(null);
+  const cursorPositionChangeEvenRef = useRef<monaco.IDisposable | null>(null);
   const workspace = useWorkspace();
 
   const currentFile = workspace.editor.getCurrentFile();
@@ -36,14 +38,38 @@ export default function CodeEditor() {
         },
       });
 
-      editor.current.onDidChangeCursorPosition((event) => {
-        workspace.editor.updateCurorPosition({
-          line: event.position.lineNumber,
-          column: event.position.column,
+      // split these up into seperate effects
+      cursorPositionChangeEvenRef.current =
+        editor.current.onDidChangeCursorPosition((event) => {
+          workspace.editor.updateCurorPosition({
+            line: event.position.lineNumber,
+            column: event.position.column,
+          });
         });
-      });
+
+      textChangeEventRef.current = editor.current.onDidChangeModelContent(
+        () => {
+          if (editor.current) {
+            const savedViewId = workspace.editor.getCurrentFileVersionId();
+            const currentModel = editor.current.getModel();
+            if (savedViewId && currentModel) {
+              const currentViewId = currentModel.getAlternativeVersionId();
+              if (savedViewId !== currentViewId) {
+                console.log("dirty");
+                workspace.editor.markAsUnsaved(currentFile);
+              }
+            }
+          }
+        }
+      );
 
       workspace.editor.setMonacoEditor(editor.current);
+      // return () => {
+      //   console.log("dispose")
+      //   editor.current?.dispose(); // think about this
+      //   cursorPositionChangeEvenRef.current?.dispose();
+      //   textChangeEventRef.current?.dispose();
+      // };
     }
   }, []);
 

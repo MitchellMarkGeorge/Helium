@@ -3,7 +3,7 @@ import { StateModel } from "../StateModel";
 import { Workspace } from "../workspace/Workspace";
 import { CursorPosition, EditorFile, MonacoCodeEditor } from "./types";
 import { MonacoManager } from "./MonacoManager";
-import { action, computed, flow, observable } from "mobx";
+import { action, computed, flow, observable, toJS } from "mobx";
 import { FileEntry } from "../fileexplorer/types";
 
 const OPEN_FILE_LOADER_DELAY = 3 * 1000; // 3 seconds
@@ -56,6 +56,12 @@ export class Editor extends StateModel {
     if (this.currentFile) {
       return this.monacoModelManager.getEditorModel(this.currentFile.path);
     } else return null;
+  }
+
+  public getCurrentFileVersionId() {
+    if (this.currentFile) {
+      return this.monacoModelManager.getVersionId(this.currentFile.path);
+    }
   }
 
   public setMonacoEditor(editor: MonacoCodeEditor) {
@@ -134,6 +140,7 @@ export class Editor extends StateModel {
 
         // if there are no open files left, reset everything
         if (this.openFiles.length === 0) {
+          this.cursorPosition = null;
           this.reset();
           return;
         }
@@ -174,8 +181,9 @@ export class Editor extends StateModel {
 
         // if there are no open files left, reset everything
         if (this.tabs.length === 0) {
-          this.reset();
-          return;
+          this.cursorPosition = null;
+        //   this.reset();
+        //   return;
         }
 
         // if it was the current file that was closed, change the current file
@@ -191,6 +199,14 @@ export class Editor extends StateModel {
   @action
   public closeAll(files: string[]) {
     // will implement later lol
+  }
+
+  @action
+  public markAsUnsaved(file: EditorFile) {
+    // will implement later lol
+    if (!file.isUnsaved) {
+      file.isUnsaved = true;
+    }
   }
 
   @action
@@ -244,6 +260,13 @@ export class Editor extends StateModel {
   @action
   public openFile = flow(function* (this: Editor, file: EditorFile) {
     if (this.isFileOpen(file.path)) {
+      if (!file.hasTab) {
+        // if file is open but has no tab,
+        // open as a file
+        file.hasTab = true;
+        this.currentFile = file;
+        return;
+      }
       // this.workspace.notifications.showMessageModal({
       //   type: "error",
       //   message: `File is already open`,
@@ -270,6 +293,7 @@ export class Editor extends StateModel {
         // creates model from file and saves it
         yield this.monacoModelManager.createModelFromFile(file);
       } catch (error) {
+        console.log(error);
         this.workspace.notifications.showMessageModal({
           type: "error",
           message: `Unable to open file ${file.path}`,
@@ -287,7 +311,9 @@ export class Editor extends StateModel {
       return;
     }
 
-    file.hasTab = true;
+    // file.hasTab = true;
+
+    // console.log(toJS(file));
 
     this.openFiles.push(file);
 
