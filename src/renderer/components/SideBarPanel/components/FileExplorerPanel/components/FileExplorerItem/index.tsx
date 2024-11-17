@@ -52,7 +52,7 @@ function FileExplorerItem({ entry }: Props) {
     hasTab: boolean = true
   ): EditorFile => {
     const { path, fileType, basename } = entry;
-    return { path, fileType, basename, hasTab };
+    return { path, fileType, basename, hasTab, isUnsaved: false };
   };
 
   const getIcon = () => {
@@ -91,7 +91,9 @@ function FileExplorerItem({ entry }: Props) {
           //   basename: entry.basename,
           //   hasTab: true,
           // });
-          workspace.editor.openFile(entryToEditorFile(entry));
+          const editorFile = entryToEditorFile(entry);
+          console.log(editorFile);
+          workspace.editor.openFile(editorFile);
         }
       })}
     >

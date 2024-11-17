@@ -7,7 +7,7 @@ import { InitalState } from "common/types";
 export const getAppPreloadApi = () => ({
   // these ones don't need to return promises...
   closeWindow: renderer.invoke("close-window"),
-  setTitle: renderer.invoke<string>("set-title"),
+  setWindowTitle: renderer.invoke<string>("set-window-title"),
   minimizeWindow: renderer.invoke("minimize-window"),
   maximizeWindow: renderer.invoke("maximize-window"),
   getWindowState: renderer.invoke<void, HeliumWindowState>("get-window-state"),

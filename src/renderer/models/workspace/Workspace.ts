@@ -15,7 +15,7 @@ import { FileEntry, FileExplorer } from "../fileexplorer/types";
 import { Editor } from "../editor/Editor";
 import { ThemePreview } from "../ThemePreview";
 import { Store } from "../Store";
-import { action, computed, flow, observable } from "mobx";
+import { action, autorun, computed, flow, observable } from "mobx";
 import { EditorFile } from "../editor/types";
 
 // NOTE
@@ -66,6 +66,9 @@ export class Workspace {
     this.unsavedPaths = new Set<string>();
     // this.unsavedPaths = observable.set<string>();
     this.loadingState = DEFAULT_LOADING_STATE;
+
+    this.updateAppWindowTitle();
+
   }
 
   // set values using loadInitalState()
@@ -99,6 +102,13 @@ export class Workspace {
     this.isShowingWorkspace = true;
     window.helium.app.sendWorkspaceIsShowing();
     // window.helium.app.sendReadyToShowWorkspace();
+  }
+
+  private updateAppWindowTitle() {
+    autorun(() => {
+      const title = this.windowTitle;
+      window.helium.app.setWindowTitle(title);
+    })
   }
 
   // shows loading indicator in status bar and if it is already loading,

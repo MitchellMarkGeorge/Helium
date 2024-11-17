@@ -4,9 +4,10 @@ import "./CodeEditor.scss";
 import { useWorkspace } from "renderer/hooks/useWorkspace";
 import { XCircleFill } from "react-bootstrap-icons";
 import Text from "renderer/components/ui/Text";
-import { autorun } from "mobx";
+import { autorun, toJS } from "mobx";
+import { observer } from "mobx-react-lite";
 
-export default function CodeEditor() {
+function CodeEditor() {
   const containerElement = useRef<HTMLDivElement | null>(null);
   const editor = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
   const textChangeEventRef = useRef<monaco.IDisposable | null>(null);
@@ -14,6 +15,7 @@ export default function CodeEditor() {
   const workspace = useWorkspace();
 
   const currentFile = workspace.editor.getCurrentFile();
+  console.log("This is the current file", toJS(currentFile)?.path);
   // const currentEditorModel = workspace.editor.currentEditorModel;
 
   if (!currentFile || !workspace.editor.currentEditorModel) {
@@ -39,6 +41,21 @@ export default function CodeEditor() {
       });
 
       // split these up into seperate effects
+
+      workspace.editor.setMonacoEditor(editor.current);
+
+      return () => {
+        console.log("dispose");
+        editor.current?.dispose(); // think about this
+        cursorPositionChangeEvenRef.current?.dispose();
+        textChangeEventRef.current?.dispose();
+      };
+    }
+  }, []);
+
+  useEffect(() => {
+    cursorPositionChangeEvenRef.current?.dispose();
+    if (editor.current) {
       cursorPositionChangeEvenRef.current =
         editor.current.onDidChangeCursorPosition((event) => {
           workspace.editor.updateCurorPosition({
@@ -46,32 +63,39 @@ export default function CodeEditor() {
             column: event.position.column,
           });
         });
+    }
+  }, []);
 
+  // because of the use of the `currentFile` object, should this use a reaction instead (eg. autorun)?
+  // the value of the `currentFile` object is not up to date
+  useEffect(() => {
+    textChangeEventRef.current?.dispose();
+    if (editor.current) {
       textChangeEventRef.current = editor.current.onDidChangeModelContent(
         () => {
           if (editor.current) {
             const savedViewId = workspace.editor.getCurrentFileVersionId();
             const currentModel = editor.current.getModel();
+            console.log(currentModel);
+            console.log(toJS(currentFile));
             if (savedViewId && currentModel) {
               const currentViewId = currentModel.getAlternativeVersionId();
               if (savedViewId !== currentViewId) {
                 console.log("dirty");
-                workspace.editor.markAsUnsaved(currentFile);
+                workspace.editor.markAsUnsaved(currentFile.path);
+              // } else {
+              //   console.log('clean');
+              // }
+              } else {
+                console.log('clean');
+                workspace.editor.markAsClean(currentFile.path);
               }
             }
           }
         }
       );
-
-      workspace.editor.setMonacoEditor(editor.current);
-      // return () => {
-      //   console.log("dispose")
-      //   editor.current?.dispose(); // think about this
-      //   cursorPositionChangeEvenRef.current?.dispose();
-      //   textChangeEventRef.current?.dispose();
-      // };
     }
-  }, []);
+  }, [currentFile]);
 
   useEffect(() => {
     autorun(() => {
@@ -100,3 +124,5 @@ export default function CodeEditor() {
 
   return <div className="code-editor" ref={containerElement} />;
 }
+
+export default observer(CodeEditor);

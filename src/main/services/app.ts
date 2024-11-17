@@ -4,7 +4,7 @@ import main from "./ipc/main";
 // handleAppEvents???K
 
 export function initAppPreloadApi() {
-  main.handle<string>("set-title", (heliumWindow, title) => {
+  main.handle<string>("set-window-title", (heliumWindow, title) => {
     heliumWindow.browserWindow.setTitle(title);
   });
 

@@ -1,16 +1,15 @@
-import { Icon } from "react-bootstrap-icons"
+import { Icon } from "react-bootstrap-icons";
 
 import "./IconButton.scss";
 
-interface Props {
-    icon: Icon;
-    onClick: React.MouseEventHandler<HTMLDivElement>;
+interface Props extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  icon: Icon;
 }
-export default function IconButton({icon: Icon, onClick}: Props) {
+export default function IconButton({ icon: Icon, ...rest }: Props) {
   // I should use a button here instead of a div
   return (
-    <div className="icon-button-wrapper" onClick={onClick}>
-        <Icon size="0.75rem" className="icon-button-icon"/>
-    </div>
-  )
+    <button className="icon-button" {...rest}>
+      <Icon className="icon-button-icon" />
+    </button>
+  );
 }

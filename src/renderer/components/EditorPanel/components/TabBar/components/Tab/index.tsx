@@ -1,17 +1,18 @@
 import { FileEntry } from "renderer/models/fileexplorer/types";
 import { useFileIcon } from "renderer/hooks/useFileIcon";
-import { XLg } from "react-bootstrap-icons";
+import { CircleFill, Dot, XLg } from "react-bootstrap-icons";
 import IconButton from "renderer/components/ui/IconButton/IconButton";
 import classNames from "classnames";
 import "./Tab.scss";
 import { EditorFile } from "renderer/models/editor/types";
 import { useWorkspace } from "renderer/hooks/useWorkspace";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Text from "renderer/components/ui/Text";
 import pathe from "pathe";
 import { action } from "mobx";
 import { observer } from "mobx-react-lite";
 import { editor } from "monaco-editor";
+import UnsavedDot from "renderer/components/ui/UnsavedIcon";
 
 interface Props {
   file: EditorFile;
@@ -25,6 +26,8 @@ function Tab({ file, isSelected }: Props) {
   const tabClasses = classNames("tab", {
     selected: isSelected,
   });
+
+  const [buttonHoverActive, setButtonHoverActive] = useState(false);
 
   useEffect(() => {
     // if the item becomes selected, scroll to it
@@ -47,15 +50,24 @@ function Tab({ file, isSelected }: Props) {
       <Text size="xs" className="tab-title">
         {file.basename || pathe.basename(file.path)}
       </Text>
-      <IconButton
-        icon={XLg}
-        onClick={action((e) => {
-          e.stopPropagation();
-          // file.hasTab = false
-          workspace.editor.closeTab(file.path);
-          // workspace.editor.closeFile(file.path);
-        })}
-      />
+      {file.isUnsaved && !buttonHoverActive ? (
+        <UnsavedDot onMouseEnter={() => setButtonHoverActive(true)} />
+      ) : (
+        <IconButton
+          icon={XLg}
+          onMouseLeave={() => {
+            if (buttonHoverActive) {
+              setButtonHoverActive(false);
+            }
+          }}
+          onClick={action((e) => {
+            e.stopPropagation();
+            // file.hasTab = false
+            workspace.editor.closeTab(file.path);
+            // workspace.editor.closeFile(file.path);
+          })}
+        />
+      )}
     </div>
   );
 }

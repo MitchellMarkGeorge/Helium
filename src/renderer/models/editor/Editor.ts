@@ -202,10 +202,18 @@ export class Editor extends StateModel {
   }
 
   @action
-  public markAsUnsaved(file: EditorFile) {
-    // will implement later lol
-    if (!file.isUnsaved) {
+  public markAsUnsaved(filePath: string) {
+    const file = this.openFiles.find(file => file.path === filePath);
+    if (file && !file.isUnsaved) {
       file.isUnsaved = true;
+    }
+  }
+
+  @action
+  public markAsClean(filePath: string) {
+    const file = this.openFiles.find(file => file.path === filePath);
+    if (file && file.isUnsaved) {
+      file.isUnsaved = false;
     }
   }
 
