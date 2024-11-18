@@ -27,7 +27,8 @@ function HeliumWorkspace() {
   const sideBarPanelRef = useRef<ImperativePanelHandle>(null);
 
   useEffect(() => {
-    const disposer = autorun(() => {
+    // const disposer = autorun(() => {
+    return autorun(() => {
       console.log("in auto run");
       console.log(sideBarPanelRef.current?.isCollapsed());
       if (workspace.isSidePanelOpen && sideBarPanelRef.current?.isCollapsed()) {
@@ -41,7 +42,7 @@ function HeliumWorkspace() {
         sideBarPanelRef.current.collapse();
       }
     });
-    return disposer;
+    // return disposer;
   }, []);
 
   // for now

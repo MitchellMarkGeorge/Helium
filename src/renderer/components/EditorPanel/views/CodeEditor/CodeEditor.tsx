@@ -14,11 +14,12 @@ function CodeEditor() {
   const cursorPositionChangeEvenRef = useRef<monaco.IDisposable | null>(null);
   const workspace = useWorkspace();
 
-  const currentFile = workspace.editor.getCurrentFile();
-  console.log("This is the current file", toJS(currentFile)?.path);
+  // const currentFile = workspace.editor.getCurrentFile();
+  // console.log("This is the current file", toJS(currentFile)?.path);
   // const currentEditorModel = workspace.editor.currentEditorModel;
 
-  if (!currentFile || !workspace.editor.currentEditorModel) {
+  // if (!currentFile || !workspace.editor.currentEditorModel) {
+  if (!workspace.editor.hasCurrentFile || !workspace.editor.currentEditorModel) {
     return (
       <div className="code-editor-error">
         <div className="code-editor-error-container">
@@ -69,36 +70,40 @@ function CodeEditor() {
   // because of the use of the `currentFile` object, should this use a reaction instead (eg. autorun)?
   // the value of the `currentFile` object is not up to date
   useEffect(() => {
-    textChangeEventRef.current?.dispose();
-    if (editor.current) {
-      textChangeEventRef.current = editor.current.onDidChangeModelContent(
-        () => {
-          if (editor.current) {
-            const savedViewId = workspace.editor.getCurrentFileVersionId();
-            const currentModel = editor.current.getModel();
-            console.log(currentModel);
-            console.log(toJS(currentFile));
-            if (savedViewId && currentModel) {
-              const currentViewId = currentModel.getAlternativeVersionId();
-              if (savedViewId !== currentViewId) {
-                console.log("dirty");
-                workspace.editor.markAsUnsaved(currentFile.path);
-              // } else {
-              //   console.log('clean');
-              // }
-              } else {
-                console.log('clean');
-                workspace.editor.markAsClean(currentFile.path);
+    return autorun(() => {
+      textChangeEventRef.current?.dispose();
+      const currentFile = workspace.editor.getCurrentFile();
+      if (editor.current && currentFile) {
+        textChangeEventRef.current = editor.current.onDidChangeModelContent(
+          () => {
+            if (editor.current) {
+              const savedViewId = workspace.editor.getCurrentFileVersionId();
+              const currentModel = editor.current.getModel();
+              const { path } = currentFile; 
+              console.log(currentModel);
+              console.log(toJS(currentFile));
+              if (savedViewId && currentModel) {
+                const currentViewId = currentModel.getAlternativeVersionId();
+                if (savedViewId !== currentViewId) {
+                  console.log("dirty");
+                  workspace.editor.markAsUnsaved(path);
+                  // } else {
+                  //   console.log('clean');
+                  // }
+                } else {
+                  console.log("clean");
+                  workspace.editor.markAsClean(path);
+                }
               }
             }
           }
-        }
-      );
-    }
-  }, [currentFile]);
+        );
+      }
+    });
+  }, []);
 
   useEffect(() => {
-    autorun(() => {
+    return autorun(() => {
       // should only be called when the the currentEditorModel changes
       // whenever the current editor model changes, update monaco code editor
       // and view state

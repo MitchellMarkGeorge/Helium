@@ -9,6 +9,7 @@ import { useMemo } from "react";
 
 function SideBar() {
   const workspace = useWorkspace();
+  const numOfUnsavedFiles = workspace.editor.unsavedFiles.length;
 
   // mainly used for order
   const sideBarItems = useMemo(
@@ -26,12 +27,16 @@ function SideBar() {
     return workspace.activeSideBarOption === sideBarOption;
   };
 
-
   return (
     <div className="sidebar">
       {sideBarItems.map(({ option, icon }) => (
         <SideBarItem
           icon={icon}
+          badgeCount={
+            option === SideBarItemOption.FILES && numOfUnsavedFiles
+              ? numOfUnsavedFiles
+              : undefined
+          }
           isActive={workspace.isSidePanelOpen && isActive(option)}
           key={option}
           onClick={action(() => {

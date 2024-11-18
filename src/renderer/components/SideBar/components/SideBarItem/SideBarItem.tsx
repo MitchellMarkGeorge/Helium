@@ -2,26 +2,37 @@ import classNames from "classnames";
 import "./SideBarItem.scss";
 import { observer } from "mobx-react-lite";
 import { Icon } from "react-bootstrap-icons";
-
-// MIGRATE TO CSS VARISBLES
+import Text from "renderer/components/ui/Text";
 
 interface Props {
   icon: Icon;
+  badgeCount?: number;
   isActive: boolean;
   onClick: () => void;
 }
 
-function SideBarItem(props: Props) {
-  const sideBarItemClasses = classNames({
-    "sidebar-item": true,
-    active: props.isActive,
+function SideBarItem({ isActive, badgeCount, icon: Icon, onClick }: Props) {
+  const hasBadgeCount = badgeCount !== undefined;
+  const sideBarItemClasses = classNames("sidebar-item", {
+    active: isActive,
   });
 
-  const Icon = props.icon;
+  const icon = <Icon className="sidebar-item-icon" />;
+
+  const iconMarkup = hasBadgeCount ? (
+    <div className="badge-container">
+      {icon}
+      <Text size="xs" className="badge">
+        {badgeCount}
+      </Text>
+    </div>
+  ) : (
+    icon
+  );
 
   return (
-    <div className={sideBarItemClasses} onClick={props.onClick}>
-      <Icon className="sidebar-item-icon" />
+    <div className={sideBarItemClasses} onClick={onClick}>
+      {iconMarkup}
     </div>
   );
 }

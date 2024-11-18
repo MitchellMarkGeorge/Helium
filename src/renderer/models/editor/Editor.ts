@@ -58,6 +58,11 @@ export class Editor extends StateModel {
     } else return null;
   }
 
+  @computed
+  public get hasCurrentFile() {
+    return Boolean(this.currentFile);
+  }
+
   public getCurrentFileVersionId() {
     if (this.currentFile) {
       return this.monacoModelManager.getVersionId(this.currentFile.path);
@@ -90,6 +95,11 @@ export class Editor extends StateModel {
   @computed
   public get hasOpenFiles() {
     return this.openFiles.length !== 0;
+  }
+
+  @computed
+  public get unsavedFiles() {
+    return this.openFiles.filter(file => file.isUnsaved);
   }
 
   @computed
