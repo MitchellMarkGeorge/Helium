@@ -9,6 +9,10 @@
     justify-content: space-between;
     user-select: none;
 
+    .cli-unavailable {
+        color: var(--gray-500);
+    }
+
     .statusbar-section {
         display: flex; // inline flex
         height: 100%;

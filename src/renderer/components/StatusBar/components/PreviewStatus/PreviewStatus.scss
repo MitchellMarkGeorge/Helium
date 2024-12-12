@@ -1,21 +1,38 @@
 .preview-status {
+    border: none;
+    outline: none;
     height: 100%;
     width: 2.75rem;
     display: flex;
     align-items: center;
     justify-content: center;
     background-color: var(--gray-700);
+    transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 150ms;
 
     &:hover {
+        background-color: var(--gray-800);
+    }
+
+    &:not(:disabled):hover {
         cursor: pointer;
     }
 
     &.preview-avalible {
         background-color: var(--primary-color);
+
+        &:hover {
+            background-color: var(--primary-hover-color);
+        }
     }
 
     &.preview-running {
-        background-color: var(--red-800);
+        background-color: var(--destructive-color);
+
+        &:hover {
+            background-color: var(--destructive-hover-color);
+        }
     }
 
     .preview-status-icon {

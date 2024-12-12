@@ -215,7 +215,8 @@ export class HeliumWindow {
     }
 
     this.connectedStore = null;
-    this.shopifyCli.setPreviewIsUnavalible();
+    // might have to rename this
+    // this.shopifyCli.setPreviewIsAvalible();
     this.emitEvent("on-store-change", null);
   }
 

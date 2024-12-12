@@ -1,4 +1,5 @@
-import { FileType, HeliumId, Language, StoreInfo } from "common/types";
+import { HeliumId, Language, StoreInfo } from "common/types";
+import type { HTMLInputTypeAttribute } from "react";
 
 export interface ModalState {
   isOpen: boolean;
@@ -65,8 +66,8 @@ export interface InputModalOptions<T> extends ModalOptions {
 export interface InputModalField {
   label: string;
   key: string;
+  type?: HTMLInputTypeAttribute;
   required?: boolean;
-  isPassword?: boolean
   placeholder: string;
 }
 
@@ -90,7 +91,7 @@ export interface PathInputField extends InputModalField {
 export interface ModalResponse<T = void> {
   // use a boolean instead???
   buttonClicked: "primary" | "secondary" | "close";
-  result: T | null;
+  data: T | null;
 }
 
 export interface InputResult {

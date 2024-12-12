@@ -1,0 +1,48 @@
+.input {
+  background-color: transparent;
+  border: 1px solid var(--gray-700);
+  width: 100%;
+  padding: 0.5rem;
+  font-size: 0.75rem;
+  line-height: 1rem;
+  color: var(--gray-300);
+  border-radius: 0.5rem;
+  outline: none;
+
+  &::placeholder {
+    color: var(--gray-500);
+  }
+
+  &[data-disabled] {
+    color: var(--gray-700);
+    &::placeholder {
+      color: var(--gray-700);
+    }
+  }
+
+  &:focus {
+    border-color: var(--primary-color);
+  }
+
+  // https://css-tricks.com/snippets/css/form-validation-styling-on-input-focus/
+  &:not(:focus):not(:placeholder-shown):invalid {
+    border-color: var(--destructive-color);
+  }
+
+  &::-webkit-outer-spin-button,
+  &::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+}
+
+.input-label {
+  user-select: none;
+  color: var(--gray-500);
+}
+
+.input-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}

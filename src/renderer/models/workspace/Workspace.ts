@@ -17,6 +17,7 @@ import { ThemePreview } from "../ThemePreview";
 import { Store } from "../Store";
 import { action, autorun, computed, flow, observable } from "mobx";
 import { EditorFile } from "../editor/types";
+import { ModalResponse } from "../notification/types";
 
 // NOTE
 // WHEN READING FILES, I NEED A WAY TO SHOW A PROGRESSBAR IF IT TAKES TOO LONG
@@ -68,7 +69,6 @@ export class Workspace {
     this.loadingState = DEFAULT_LOADING_STATE;
 
     this.updateAppWindowTitle();
-
   }
 
   // set values using loadInitalState()
@@ -108,7 +108,7 @@ export class Workspace {
     autorun(() => {
       const title = this.windowTitle;
       window.helium.app.setWindowTitle(title);
-    })
+    });
   }
 
   // shows loading indicator in status bar and if it is already loading,
@@ -154,7 +154,7 @@ export class Workspace {
     // dependednt on current theme name
     // add an effect that whenever the windowTitle changes, set it at the electron level
     if (this.theme) {
-      const currentFile = this.editor.getCurrentFile()
+      const currentFile = this.editor.getCurrentFile();
       if (this.editor.hasOpenFiles && currentFile?.basename) {
         return `${currentFile.basename} - ${this.theme.themeName}`;
       }
@@ -170,7 +170,7 @@ export class Workspace {
     return this.notifications.showPathInputModal<NewFileModalOptions>({
       title: "New File",
       inputFields: [
-         {
+        {
           key: "newPathInput",
           label: "Name",
           for: "file",
@@ -189,20 +189,22 @@ export class Workspace {
     return this.notifications.showInputModal<ConnectStoreModalOptions>({
       title: "Connect Store",
       inputFields: [
-         {
-          key: "storeNameInput",
+        {
+          key: "storeName",
           label: "Store Name",
-          placeholder: "Enter store name",
+          placeholder: "Name",
         },
-         {
-          key: "storeUrlInput",
+        {
+          key: "storeUrl",
           label: "Store URL",
-          placeholder: "Enter Shopify store URL",
+          placeholder: "URL",
+          type: "url",
         },
-         {
-          key: "themeAccessPasswordInput",
+        {
+          key: "themeAccessPassword",
           label: "Theme Access Passwaord",
-          placeholder: "Enter Theme Access Password",
+          placeholder: "Password",
+          type: "password",
         },
       ],
       primaryButtonText: "Connect",
@@ -216,8 +218,8 @@ export class Workspace {
     return this.notifications.showPathInputModal<NewFolderModalOptions>({
       title: "New Folder",
       inputFields: [
-         {
-          key: 'newFolderInput',
+        {
+          key: "newFolderInput",
           label: "Name",
           for: "directory",
           parentPath: parentPath || null,
@@ -244,10 +246,10 @@ export class Workspace {
 
   @action
   private showDisconnectStoreConfirmation() {
-    // should validate if path already exists
+    // should I show the store name?
     return this.notifications.showMessageModal({
       type: "warning",
-      message: `Are you sure you want to disconnect from the current store?`,
+      message: `Are you sure you want to disconnect this current store?`,
       primaryButtonText: "Disconnect Store",
       secondaryButtonText: "Cancel",
     });
@@ -280,7 +282,7 @@ export class Workspace {
         path: filePath,
         fileType,
         basename: fileName,
-        hasTab: true
+        hasTab: true,
       });
     }
   });
@@ -404,7 +406,7 @@ export class Workspace {
       let themeInfo: ThemeInfo | null = null;
       let files: ThemeFileSystemEntry[] = [];
       try {
-        console.log("hello")
+        console.log("hello");
         const results = yield window.helium.shopify.openTheme(themePath);
         themeInfo = results.themeInfo;
         files = results.files;
@@ -424,7 +426,10 @@ export class Workspace {
         }
         this.theme = new Theme(themeInfo);
         this.fileExplorer.init(files);
-        if (this.isSidePanelOpen && this.activeSideBarOption !== SideBarItemOption.FILES) {
+        if (
+          this.isSidePanelOpen &&
+          this.activeSideBarOption !== SideBarItemOption.FILES
+        ) {
           this.selectSideBarOption(SideBarItemOption.FILES);
         }
       }
@@ -518,17 +523,18 @@ export class Workspace {
   @action
   public connectStore = flow(function* (this: Workspace) {
     if (!this.isStoreConnected) {
-      const modalResponse = yield this.showConnectStoreModal();
+      const modalResponse: ModalResponse<ConnectStoreModalOptions> =
+        yield this.showConnectStoreModal();
+      console.log(modalResponse);
 
-      if (modalResponse.buttonClicked === "primary" && modalResponse.result) {
-        const { storeNameInput, storeUrlInput, themeAccessPasswordInput } =
-          modalResponse.result;
+      if (modalResponse.buttonClicked === "primary" && modalResponse.data) {
+        const { storeName, storeUrl, themeAccessPassword } = modalResponse.data;
 
         try {
           yield window.helium.shopify.connectStore({
-            storeName: storeNameInput.value,
-            password: themeAccessPasswordInput.value,
-            storeUrl: storeUrlInput.value,
+            storeName: storeName,
+            password: themeAccessPassword,
+            storeUrl: storeUrl,
           });
         } catch (error) {
           // unable to connect stoer
@@ -542,8 +548,8 @@ export class Workspace {
 
         // or should I be using the event listener???
         this.connectedStore = new Store({
-          storeName: storeNameInput.value,
-          storeUrl: storeUrlInput.value,
+          storeName: storeName,
+          storeUrl: storeUrl,
         });
         // the previewState will be updated by the event
       }
@@ -552,6 +558,7 @@ export class Workspace {
 
   @action
   public disconnectStore = flow(function* (this: Workspace) {
+    // shouldnt be able to disconnect a store if preview is running
     if (this.isStoreConnected) {
       const modalResponse = yield this.showDisconnectStoreConfirmation();
       if (modalResponse.buttonClicked === "primary") {

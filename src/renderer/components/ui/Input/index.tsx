@@ -1,15 +1,22 @@
-import React, { forwardRef } from 'react'
-import { Input as HeadlessInput } from "@headlessui/react"
+import { Field, Input as HeadlessInput, Label } from "@headlessui/react";
 import "./Input.scss";
-import classNames from 'classnames';
 
-interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {};
-
-const Input = forwardRef<HTMLInputElement, InputProps>(({ className, type, ...props}, ref) => {
-    return (
-        <HeadlessInput type={type} className={classNames("input", className)} {...props} ref={ref}/>
-    )
-});
-
-export default Input;
-
+interface Props extends React.InputHTMLAttributes<HTMLInputElement> {
+  label?: string;
+}
+export default function Input({ label, id, ...inputProps }: Props) {
+  const inputMarkup = (
+    <HeadlessInput type="text" className="input" {...inputProps} />
+  );
+  const hasLabel = Boolean(label);
+  return hasLabel ? (
+    <Field className="input-field">
+      <Label className="input-label text-xs" htmlFor={id}>
+        {label}
+      </Label>
+      {inputMarkup}
+    </Field>
+  ) : (
+    inputMarkup
+  );
+}

@@ -93,19 +93,19 @@ export class Notifications extends StateModel {
               {
                 text: options.primaryButtonText,
                 onClick: () =>
-                  resolve({ buttonClicked: "primary", result: null }),
+                  resolve({ buttonClicked: "primary", data: null }),
               },
               {
                 text: options.secondaryButtonText,
                 onClick: () =>
-                  resolve({ buttonClicked: "secondary", result: null }),
+                  resolve({ buttonClicked: "secondary", data: null }),
               },
             ]
           : {
               text: options.secondaryButtonText,
 
               onClick: () =>
-                resolve({ buttonClicked: "secondary", result: null }),
+                resolve({ buttonClicked: "secondary", data: null }),
             },
       });
     });
@@ -121,16 +121,16 @@ export class Notifications extends StateModel {
         title: options.title,
         inputFields: options.inputFields,
         onCloseButtonClick: () =>
-          resolve({ buttonClicked: "close", result: null }),
+          resolve({ buttonClicked: "close", data: null }),
         buttons: [
           {
             text: options.secondaryButtonText,
             onClick: () =>
-              resolve({ buttonClicked: "secondary", result: null }),
+              resolve({ buttonClicked: "secondary", data: null }),
           },
           {
             text: options.primaryButtonText,
-            onClick: (result) => resolve({ buttonClicked: "primary", result }),
+            onClick: (data) => resolve({ buttonClicked: "primary", data }),
           },
         ],
       });
@@ -147,16 +147,16 @@ export class Notifications extends StateModel {
         title: options.title,
         inputFields: options.inputFields,
         onCloseButtonClick: () =>
-          resolve({ buttonClicked: "close", result: null }),
+          resolve({ buttonClicked: "close", data: null }),
         buttons: [
           {
             text: options.secondaryButtonText,
             onClick: () =>
-              resolve({ buttonClicked: "secondary", result: null }),
+              resolve({ buttonClicked: "secondary", data: null }),
           },
           {
             text: options.primaryButtonText,
-            onClick: (result) => resolve({ buttonClicked: "primary", result }),
+            onClick: (data) => resolve({ buttonClicked: "primary", data }),
           },
         ],
       });

@@ -28,6 +28,8 @@ export default class ShopifyCli {
   private hasSentPreviewKillSignal: boolean;
 
   constructor(private readonly heliumWindow: HeliumWindow) {
+    // PREVIEW IS ONLY UNAVASLIBLE IF THE CLI IS NOT PRESENT
+    // THE PREVIEW IS SAID TO BE "AVALIBLE" IF CLI IS PRESENT (PreviewState.OFF - might rename this)
     this.previewState = this.checkCliAvailibility();
     // this.previewState = PreviewState.UNAVALIBLE;
     this.previewChildProcess = null;
@@ -82,7 +84,7 @@ export default class ShopifyCli {
       !this.isPreviewRunning &&
       this.previewState !== PreviewState.UNAVALIBLE
     ) {
-      this.updatePreviewState (PreviewState.UNAVALIBLE);
+      this.updatePreviewState(PreviewState.UNAVALIBLE);
     }
   }
 

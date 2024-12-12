@@ -114,14 +114,14 @@ export class HeliumApp {
     this.setupOnThemeInfoChange();
   }
 
-  @action
-  private onBeforeUnload = flow(function* (this: HeliumApp, e: BeforeUnloadEvent)  {
+  private onBeforeUnload = async (e: BeforeUnloadEvent) =>  {
     // can be moved to workspace
     console.log("before unload");
+    console.log(this.workspace);
     if (this.workspace.editor.hasUnsavedFiles) {
       e.preventDefault();
       e.returnValue = true;
-      const response = yield this.workspace.notifications.showMessageModal({
+      const response = await this.workspace.notifications.showMessageModal({
         type: "warning",
         message:
           "You have some unsaved files. Are you sure you want to close this window?",
@@ -138,7 +138,7 @@ export class HeliumApp {
         this.workspace.notifications.closeModal();
       }
     }
-  });
+  };
 
   // this should be moved the Theme model
   private setupOnThemeInfoChange() {

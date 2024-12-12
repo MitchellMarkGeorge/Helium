@@ -4,15 +4,18 @@ import { Workspace } from "./workspace/Workspace";
 import { action, computed, observable, runInAction } from "mobx";
 
 export class ThemePreview extends StateModel {
-    // i could also just read only
+  // i could also just read only
   @observable private accessor previewState: PreviewState;
   @observable private accessor previewHost: string;
   @observable private accessor previewPort: string;
+
+  @observable public accessor useDefaultSettings: boolean;
   constructor(workspace: Workspace) {
     super(workspace);
     this.previewState = PreviewState.UNAVALIBLE;
     this.previewHost = window.helium.constants.DEFAULT_PREVIEW_HOST;
     this.previewPort = window.helium.constants.DEFAULT_PREVIEW_PORT;
+    this.useDefaultSettings = true;
 
     this.setupPreviewStateListener();
   }
@@ -23,16 +26,36 @@ export class ThemePreview extends StateModel {
   }
 
   @action
-  public updatePreviewOptions(options: {host: string, port: string}) {
+  public updatePreviewOptions(options: { host: string; port: string }) {
     this.previewHost = options.host;
     this.previewPort = options.port;
   }
 
+  @action
+  public updatePreviewHost(host: string) {
+    this.previewHost = host;
+  }
+
+  @action
+  public updatePreviewPort(port: string) {
+    this.previewPort = port;
+  }
+
+  @computed
+  public get previewOptions() {
+    return {
+      host: this.previewHost,
+      port: this.previewPort,
+    };
+  }
+
   private setupPreviewStateListener() {
-    window.helium.shopify.onPreviewStateChange((newPreviewState) => {
-      // runInAction???
-      this.previewState = newPreviewState;
-    });
+    window.helium.shopify.onPreviewStateChange(
+      action((newPreviewState) => {
+        // runInAction???
+        this.previewState = newPreviewState;
+      })
+    );
   }
 
   public getPreviewState() {
@@ -59,9 +82,18 @@ export class ThemePreview extends StateModel {
       });
       try {
         // should time out after a while (10-15 seconds)
+
+        const host = this.useDefaultSettings
+          ? window.helium.constants.DEFAULT_PREVIEW_HOST
+          : this.previewHost;
+
+        const port = this.useDefaultSettings
+          ? window.helium.constants.DEFAULT_PREVIEW_PORT
+          : this.previewPort;
+
         await window.helium.shopify.startThemePreview({
-            host: this.previewHost,
-            port: this.previewPort,
+          host,
+          port,
         });
       } catch {
         // error details???
@@ -70,7 +102,7 @@ export class ThemePreview extends StateModel {
             type: "error",
             message: "Error: Unable to start Theme Preview for this theme.",
           });
-        })
+        });
       }
     }
   }
@@ -92,7 +124,7 @@ export class ThemePreview extends StateModel {
             type: "error",
             message: "Error: Unable to start Theme Preview for this theme.",
           });
-        })
+        });
       }
     }
   }

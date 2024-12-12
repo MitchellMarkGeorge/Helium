@@ -9,32 +9,19 @@ function StorePanel() {
   const workspace = useWorkspace();
 
   const showConnectStoreModal = action(() => {
-    workspace.notifications.showInputModal({
-      title: "Connect Store",
-      inputFields: [
-        { key: "devUrl", label: "Shopify Dev URL", placeholder: "URL" },
-        {
-          key: "themeAccessPasword",
-          label: "Theme Access Password",
-          placeholder: "password",
-          isPassword: true,
-        },
-      ],
-      primaryButtonText: 'Connect',
-      secondaryButtonText: 'Cancel',
-    });
+    workspace.connectStore();
   });
 
   if (workspace.isStoreConnected) {
     return (
       <div className="store-panel-body">
         <div className="store-field">
-          <div className="store-field-label text-xs">Connected Store URL</div>
+          <label className="store-field-label text-xs">Connected Store URL</label>
           <div className="store-field-value text-xs">
             {workspace.connectedStore?.storeUrl}
           </div>
         </div>
-        <Button variant="destructive" fullWidth>
+        <Button variant="destructive" fullWidth onClick={() => workspace.disconnectStore()}>
           Disconnect Store
         </Button>
       </div>
