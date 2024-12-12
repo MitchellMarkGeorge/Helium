@@ -41,7 +41,7 @@ export interface ModalButton {
 }
 
 
-export interface PrimaryModalButton<T = void> {
+export interface PrimaryModalButton<T = Record<string, string>> {
   text: string;
   onClick: (inputs: T) => void;
 }
@@ -55,7 +55,8 @@ export interface InputModalOptions<T> extends ModalOptions {
   // inputFields: InputModalField[];
   // the string is the fieldName
   // might still need an array so thay can stay in order...
-  inputFields: Record<string, InputModalField>;
+  // inputFields: Record<string, InputModalField>;
+  inputFields: InputModalField[];
   // first button is generally used for cancel
   buttons: [ModalButton, PrimaryModalButton<T>];
   onCloseButtonClick: () => void;
@@ -63,6 +64,9 @@ export interface InputModalOptions<T> extends ModalOptions {
 
 export interface InputModalField {
   label: string;
+  key: string;
+  required?: boolean;
+  isPassword?: boolean
   placeholder: string;
 }
 
@@ -70,7 +74,7 @@ export interface PathInputModalOptions<T> extends ModalOptions {
   modalType: "pathInput"
   title: string;
   // the string is the fieldName
-  inputFields: Record<string, PathInputField>;
+  inputFields:  PathInputField[]
   // first button is used for cancel
   buttons: [ModalButton, PrimaryModalButton<T>];
   onCloseButtonClick: () => void;

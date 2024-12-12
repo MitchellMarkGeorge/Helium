@@ -32,7 +32,7 @@ const MessageModal = ({ options }: Props) => {
   const getIcon = (type: NotificationType) => {
     switch (type) {
       case "success":
-        return <CheckCircleFill color="#16A34A" size="2.25rem"/>;
+        return <CheckCircleFill color="#16A34A" size="2.25rem" />;
       case "error":
         return <XCircleFill color="#DC2626" size="2.25rem" />;
       case "info":
@@ -46,7 +46,8 @@ const MessageModal = ({ options }: Props) => {
     // think about this
     // only watning message modals should show multiple buttons
     if (options.type === "warning" && Array.isArray(options.buttons)) {
-      const [primaryButton, secondaryButton] = options.buttons as [
+      // for now
+      const [primaryButton, secondaryButton] = options.buttons as unknown as [
         PrimaryModalButton<void>,
         ModalButton
       ];
@@ -85,7 +86,11 @@ const MessageModal = ({ options }: Props) => {
   };
 
   return (
-    <Dialog open={workspace.notifications.isModalOpen} onClose={closeModal} className="modal">
+    <Dialog
+      open={workspace.notifications.isModalOpen}
+      onClose={closeModal}
+      className="modal"
+    >
       <ModalContainer>
         <DialogPanel className="message-modal">
           {getIcon(options.type)}

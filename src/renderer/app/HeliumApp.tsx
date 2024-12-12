@@ -96,7 +96,7 @@ export class HeliumApp {
       this.workspace.notifications.showMessageModal({
         type: "error",
         // thik of better error message
-        message: "There was an error loading the inital state.", // might use error message,
+        message: "There was an error loading the window", // might use error message,
         secondaryButtonText: "Close",
       });
     }
@@ -105,8 +105,40 @@ export class HeliumApp {
   });
 
   private setupListeners() {
+    // can be moved to workspace
+    window.addEventListener("beforeunload", this.onBeforeUnload);
+    window.helium.app.on('save-file', action(() => {
+      console.log('save file');
+      this.workspace.editor.saveCurrentFile();
+    }));
     this.setupOnThemeInfoChange();
   }
+
+  @action
+  private onBeforeUnload = flow(function* (this: HeliumApp, e: BeforeUnloadEvent)  {
+    // can be moved to workspace
+    console.log("before unload");
+    if (this.workspace.editor.hasUnsavedFiles) {
+      e.preventDefault();
+      e.returnValue = true;
+      const response = yield this.workspace.notifications.showMessageModal({
+        type: "warning",
+        message:
+          "You have some unsaved files. Are you sure you want to close this window?",
+        primaryButtonText: "Close",
+        secondaryButtonText: "Cancel",
+      });
+
+      if (response.buttonClicked === "primary") {
+        console.log("hellow");
+        // workspace clenup
+        window.removeEventListener("beforeunload", this.onBeforeUnload);
+        window.helium.app.closeWindow();
+      } else {
+        this.workspace.notifications.closeModal();
+      }
+    }
+  });
 
   // this should be moved the Theme model
   private setupOnThemeInfoChange() {

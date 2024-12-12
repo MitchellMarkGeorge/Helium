@@ -98,8 +98,13 @@ export class Editor extends StateModel {
   }
 
   @computed
+  public get hasUnsavedFiles() {
+    return this.unsavedFiles.length !== 0;
+  }
+
+  @computed
   public get unsavedFiles() {
-    return this.openFiles.filter(file => file.isUnsaved);
+    return this.openFiles.filter((file) => file.isUnsaved);
   }
 
   @computed
@@ -133,6 +138,46 @@ export class Editor extends StateModel {
   // public closeTab(file)
 
   @action
+  public saveFile = flow(function* (this: Editor, filePath: string) {
+    const file = this.openFiles.find((file) => file.path === filePath);
+    if (file && file.isUnsaved) {
+      const model = this.monacoModelManager.getEditorModel(filePath);
+      if (model) {
+        const modelValue = model.getValue();
+
+        try {
+          yield window.helium.fs.writeFile({
+            content: modelValue,
+            encoding: "utf8",
+            filePath,
+          });
+        } catch (error) {
+          console.log(error);
+          this.workspace.notifications.showMessageModal({
+            type: "error",
+            message: `Unable to save file (${file.basename})`,
+            secondaryButtonText: "Close",
+          });
+          return;
+        }
+
+        file.isUnsaved = false;
+        const newVersionId = model.getAlternativeVersionId();
+        this.monacoModelManager.updateEditorModelVersionId(
+          filePath,
+          newVersionId
+        );
+      }
+    }
+  });
+
+  @action saveCurrentFile() {
+    if (this.currentFile) {
+      return this.saveFile(this.currentFile.path);
+    }
+  }
+
+  @action
   public closeFile(filePath: string) {
     if (this.isFileOpen(filePath)) {
       // get the file to be closed
@@ -150,6 +195,10 @@ export class Editor extends StateModel {
 
         // if there are no open files left, reset everything
         if (this.openFiles.length === 0) {
+          // delete model if aplicable
+          if (isTextFile(closedFile.fileType)) {
+            this.monacoModelManager.disposeEditorModel(filePath);
+          }
           this.cursorPosition = null;
           this.reset();
           return;
@@ -182,9 +231,7 @@ export class Editor extends StateModel {
       if (closedTab) {
         // check if it is the current file we are closeing
         const isCurrentFile = this.isCurrentFile(filePath);
-        const index = tabs.findIndex(
-          (file) => file.path === filePath
-        );
+        const index = tabs.findIndex((file) => file.path === filePath);
 
         // remove the tab
         closedTab.hasTab = false;
@@ -192,13 +239,14 @@ export class Editor extends StateModel {
         // if there are no open files left, reset everything
         if (this.tabs.length === 0) {
           this.cursorPosition = null;
-        //   this.reset();
-        //   return;
+          //   this.reset();
+          //   return;
         }
 
         // if it was the current file that was closed, change the current file
         if (isCurrentFile) {
-          const newCurrentFileIndex = index === this.tabs.length ? index - 1 : index;
+          const newCurrentFileIndex =
+            index === this.tabs.length ? index - 1 : index;
           const newFile = this.tabs[newCurrentFileIndex];
           this.currentFile = newFile;
         }
@@ -213,7 +261,7 @@ export class Editor extends StateModel {
 
   @action
   public markAsUnsaved(filePath: string) {
-    const file = this.openFiles.find(file => file.path === filePath);
+    const file = this.openFiles.find((file) => file.path === filePath);
     if (file && !file.isUnsaved) {
       file.isUnsaved = true;
     }
@@ -221,7 +269,7 @@ export class Editor extends StateModel {
 
   @action
   public markAsClean(filePath: string) {
-    const file = this.openFiles.find(file => file.path === filePath);
+    const file = this.openFiles.find((file) => file.path === filePath);
     if (file && file.isUnsaved) {
       file.isUnsaved = false;
     }

@@ -13,20 +13,22 @@ function PreviewPanel() {
     workspace.openThemeFromDialog();
   });
 
-  const testModal = action(() => {
-    workspace.notifications.showMessageModal({
-      type: "error",
-      message: "This is a test.",
-      // primaryButtonText: "Accept Warning",
-      secondaryButtonText: "Close"
-    });
-  });
-
   if (workspace.hasTheme) {
+    if (!workspace.isStoreConnected) {
+      return (
+        <div className="empty-panel-body">
+          <Text size="xs" className="empty-panel-text">
+            No store connected.
+          </Text>
+          <Button variant="primary" fullWidth>
+            Connect Store
+          </Button>
+        </div>
+      );
+    }
     return (
       <div className="preview-panel-body">
         <Button
-          onClick={testModal}
           variant={isPreviewRunning ? "destructive" : "primary"}
           fullWidth
         >
@@ -40,11 +42,7 @@ function PreviewPanel() {
         <Text size="xs" className="empty-panel-text">
           No theme opened.
         </Text>
-        <Button
-          variant="primary"
-          fullWidth
-          onClick={openTheme}
-        >
+        <Button variant="primary" fullWidth onClick={openTheme}>
           Open Theme
         </Button>
       </div>

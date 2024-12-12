@@ -112,15 +112,21 @@ export class MonacoManager {
 
   @action
   public disposeEditorModel(filePath: string) {
+    
     if (this.editorModelMap.has(filePath)) {
       const model = this.editorModelMap.get(filePath);
       // should I check if it is already disposed?
+      console.log('disposing')
       model?.dispose();
       this.editorModelMap.delete(filePath); // do this first??
     }
 
     if (this.editorViewState.has(filePath)) {
       this.editorViewState.delete(filePath);
+    }
+
+    if (this.editorVersionId.has(filePath)) {
+      this.editorVersionId.delete(filePath);
     }
   }
 

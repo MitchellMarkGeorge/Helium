@@ -3,10 +3,27 @@ import Text from "renderer/components/ui/Text";
 import { useWorkspace } from "renderer/hooks/useWorkspace";
 import "./StorePanel.scss";
 import { observer } from "mobx-react-lite";
+import { action } from "mobx";
 
 function StorePanel() {
   const workspace = useWorkspace();
 
+  const showConnectStoreModal = action(() => {
+    workspace.notifications.showInputModal({
+      title: "Connect Store",
+      inputFields: [
+        { key: "devUrl", label: "Shopify Dev URL", placeholder: "URL" },
+        {
+          key: "themeAccessPasword",
+          label: "Theme Access Password",
+          placeholder: "password",
+          isPassword: true,
+        },
+      ],
+      primaryButtonText: 'Connect',
+      secondaryButtonText: 'Cancel',
+    });
+  });
 
   if (workspace.isStoreConnected) {
     return (
@@ -28,10 +45,7 @@ function StorePanel() {
         <Text size="xs" className="empty-panel-text">
           No store connected.
         </Text>
-        <Button
-          variant="primary"
-          fullWidth
-        >
+        <Button variant="primary" fullWidth onClick={showConnectStoreModal}>
           Connect Store
         </Button>
       </div>

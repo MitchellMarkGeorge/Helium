@@ -10,6 +10,7 @@ import {
 import "./Modal.scss";
 import MessageModal from "./MessageModal";
 import { toJS } from "mobx";
+import InputModal from "./InputModal";
 
 const Modals = () => {
   const isMessageModal = (
@@ -37,7 +38,7 @@ const Modals = () => {
       console.log(toJS(options));
       return <MessageModal options={options} />;
     } else if (isInputModal(options)) {
-      return null;
+      return <InputModal options={options}/>;
     } else if (isPathInputModal(options)) {
       return null;
     }

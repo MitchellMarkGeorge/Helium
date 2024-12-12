@@ -72,6 +72,13 @@ function FileExplorerItem({ entry }: Props) {
       style={{
         paddingLeft: `${(entry.depth * INDENTATION_PADDING_UNIT) / 16}rem`,
       }}
+      onContextMenu={() => {
+        if (isDirectoryEntry(entry)) {
+          window.helium.app.showFolderItemContextMenu(entry.path);
+        } else if (isFileEntry(entry)) {
+          window.helium.app.showFileItemContextMenu(entry.path);
+        }
+      }}
       onClick={action(() => {
         // workspace.fileExplorer.
         workspace.fileExplorer.selectEntry(entry.path);

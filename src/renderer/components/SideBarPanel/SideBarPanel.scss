@@ -5,7 +5,7 @@
   flex-direction: column;
   gap: 1px;
 
-  .sidebar-panel-title {
+  .sidebar-panel-header {
     display: flex;
     align-items: center;
     flex-shrink: 0;
@@ -18,7 +18,7 @@
     color: var(--gray-300);
     background-color: var(--background-color);
 
-    &.file-explorer-panel-title {
+    &.file-explorer-panel-header {
       justify-content: space-between;
     }
   }

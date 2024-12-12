@@ -169,14 +169,15 @@ export class Workspace {
     // should validate if path already exists
     return this.notifications.showPathInputModal<NewFileModalOptions>({
       title: "New File",
-      inputFields: {
-        newPathInput: {
+      inputFields: [
+         {
+          key: "newPathInput",
           label: "Name",
           for: "file",
           parentPath: parentPath || null,
           placeholder: "Enter file name",
         },
-      },
+      ],
       primaryButtonText: "Create File",
       secondaryButtonText: "Cancel",
     });
@@ -187,20 +188,23 @@ export class Workspace {
     // should validate if path already exists
     return this.notifications.showInputModal<ConnectStoreModalOptions>({
       title: "Connect Store",
-      inputFields: {
-        storeNameInput: {
+      inputFields: [
+         {
+          key: "storeNameInput",
           label: "Store Name",
           placeholder: "Enter store name",
         },
-        storeUrlInput: {
+         {
+          key: "storeUrlInput",
           label: "Store URL",
           placeholder: "Enter Shopify store URL",
         },
-        themeAccessPasswordInput: {
+         {
+          key: "themeAccessPasswordInput",
           label: "Theme Access Passwaord",
           placeholder: "Enter Theme Access Password",
         },
-      },
+      ],
       primaryButtonText: "Connect",
       secondaryButtonText: "Cancel",
     });
@@ -211,14 +215,15 @@ export class Workspace {
     // should validate if path already exists
     return this.notifications.showPathInputModal<NewFolderModalOptions>({
       title: "New Folder",
-      inputFields: {
-        newFolderInput: {
+      inputFields: [
+         {
+          key: 'newFolderInput',
           label: "Name",
           for: "directory",
           parentPath: parentPath || null,
           placeholder: "Enter folder name",
         },
-      },
+      ],
       primaryButtonText: "Create Folder",
       secondaryButtonText: "Cancel",
     });

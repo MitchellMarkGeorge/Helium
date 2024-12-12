@@ -18,7 +18,7 @@ export const getAppPreloadApi = () => ({
   on: renderer.on(),
   sendWorkspaceIsShowing: renderer.emit("workspace-is-showing"),
   showNewFileContextMenu: renderer.emit("show-new-file-context-menu"),
-  showFileItemContextMenu: renderer.emit("show-file-item-context-menu"),
-  showFolderItemContextMenu: renderer.emit("show-folder-item-context-menu"),
+  showFileItemContextMenu: renderer.emit<string>("show-file-item-context-menu"),
+  showFolderItemContextMenu: renderer.emit<string>("show-folder-item-context-menu"),
   showEditorContextMenu: renderer.emit("show-editor-context-menu"),
 });
