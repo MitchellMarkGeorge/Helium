@@ -6,6 +6,11 @@
   .checkbox-label {
     user-select: none;
     color: var(--gray-300);
+
+    &[data-disabled] {
+      color: var(--gray-600);
+      pointer-events: none;
+    }
   }
 }
 
@@ -20,6 +25,13 @@
   &[data-checked] {
     background-color: var(--primary-color);
     border: 1px solid var(--primary-color);
+  }
+
+  &[data-disabled] {
+    background-color: var(--gray-600);
+    border: 1px solid var(--gray-600);
+    user-select: none;
+    pointer-events: none;
   }
 
   &:focus-visible {

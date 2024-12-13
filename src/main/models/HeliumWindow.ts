@@ -90,7 +90,7 @@ export class HeliumWindow {
     this.browserWindow.loadURL(HELIUM_WEB_ENTRY);
 
     if (isDev) {
-      this.browserWindow.webContents.openDevTools({ mode: "detach"});
+      this.browserWindow.webContents.openDevTools({ mode: "detach" });
     }
   }
 
@@ -194,7 +194,7 @@ export class HeliumWindow {
 
     const themeAccessPassword = safeStorage
       .encryptString(options.password)
-      .toString('base64');
+      .toString("base64");
 
     const store = {
       name: options.storeName,
@@ -272,7 +272,7 @@ export class HeliumWindow {
           await wait(remainingWaitTime);
         }
       }
-      console.log('getting preview state', this.shopifyCli.getPreviewState())
+      console.log("getting preview state", this.shopifyCli.getPreviewState());
       return {
         currentTheme: this.currentTheme,
         themeFiles: files,
@@ -282,7 +282,13 @@ export class HeliumWindow {
     } else {
       // wait at least 2 seconds before returning the inital data
       await wait(MIN_WAIT_TIME);
-      return constants.DEFAULT_INITAL_STATE;
+      // return constants.DEFAULT_INITAL_STATE;
+      return {
+        connectedStore: null,
+        currentTheme: null,
+        themeFiles: [],
+        previewState: this.shopifyCli.getPreviewState(),
+      };
     }
     // the loading screen should show for a minimum of 1 or 2 seconcds (500ms???) so it doesnt seem too jarring
     // if loading takes longer that is fine

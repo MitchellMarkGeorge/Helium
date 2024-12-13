@@ -3,6 +3,7 @@ import { observer } from "mobx-react-lite";
 import { Ban, BroadcastPin } from "react-bootstrap-icons";
 import "./PreviewStatus.scss";
 import { PreviewState } from "common/types";
+import Spinner from "renderer/components/ui/Spinner";
 
 interface Props {
   previewState: PreviewState;
@@ -11,8 +12,11 @@ interface Props {
 }
 
 function PreviewStatus({ previewState, isStoreConnected, onClick }: Props) {
+  const isPreviewStarting = previewState === PreviewState.STARTING;
+  const isPreviewOff = previewState === PreviewState.OFF;
   const previewStatusClasses = classNames("preview-status", {
-    "preview-avalible": isStoreConnected && [PreviewState.OFF, PreviewState.STARTING].includes(previewState), // for now
+    "preview-avalible":
+      isStoreConnected && (isPreviewOff || isPreviewStarting),
     "preview-running": previewState === PreviewState.RUNNING,
   });
 
@@ -24,7 +28,11 @@ function PreviewStatus({ previewState, isStoreConnected, onClick }: Props) {
       className={previewStatusClasses}
       disabled={isPreviewUnavailable}
     >
-      <Icon className="preview-status-icon" />
+      {isPreviewStarting ? (
+        <Spinner size={"0.75rem"} />
+      ) : (
+        <Icon className="preview-status-icon" />
+      )}
     </button>
   );
 }

@@ -4,6 +4,7 @@ import { Button as HeadlessButton } from "@headlessui/react";
 
 import "./Button.scss";
 import classNames from "classnames";
+import Spinner from "../Spinner";
 
 type ButtonVariantType = "primary" | "secondary" | "destructive";
 
@@ -13,7 +14,6 @@ const buttonVariants = cva("button", {
       primary: "button-primary",
       secondary: "button-secondary",
       destructive: "button-destructive",
-      disabled: "button-disabled",
     },
   },
 });
@@ -23,22 +23,40 @@ interface ButtonProps
     VariantProps<typeof buttonVariants> {
   fullWidth?: boolean;
   variant?: ButtonVariantType;
+  loading?: boolean;
   //   disabled?: boolean;
 }
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   (
-    { className, variant = "primary", fullWidth = false, disabled, ...props },
+    {
+      className,
+      variant = "primary",
+      fullWidth = false,
+      disabled,
+      children,
+      loading = false,
+      ...props
+    },
     ref
   ) => {
     const buttonClasses = classNames(
-      buttonVariants({ variant: disabled ? "disabled" : variant, className }),
+      buttonVariants({ variant, className }),
       "text-xs",
       {
         "full-width": fullWidth,
       }
     );
-    return <HeadlessButton className={buttonClasses} disabled={disabled} ref={ref} {...props} />;
+    return (
+      <HeadlessButton
+        className={buttonClasses}
+        disabled={disabled}
+        ref={ref}
+        {...props}
+      >
+        {loading ? <Spinner size={"1rem"} /> : children}
+      </HeadlessButton>
+    );
   }
 );
 

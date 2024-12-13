@@ -7,6 +7,7 @@ import { action } from "mobx";
 
 function StorePanel() {
   const workspace = useWorkspace();
+  const isPreviewOff = workspace.themePreview.isOff;
 
   const showConnectStoreModal = action(() => {
     workspace.connectStore();
@@ -32,7 +33,7 @@ function StorePanel() {
         <Text size="xs" className="empty-panel-text">
           No store connected.
         </Text>
-        <Button variant="primary" fullWidth onClick={showConnectStoreModal}>
+        <Button variant="primary" disabled={!isPreviewOff} fullWidth onClick={showConnectStoreModal}>
           Connect Store
         </Button>
       </div>

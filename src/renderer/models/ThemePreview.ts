@@ -9,14 +9,17 @@ export class ThemePreview extends StateModel {
   @observable private accessor previewState: PreviewState;
   @observable private accessor previewHost: string;
   @observable private accessor previewPort: string;
-
+  // getting this from the main process just to be safe
+  @observable private accessor livePreviewUrl: string | null;
   @observable public accessor useDefaultSettings: boolean;
+
   constructor(workspace: Workspace) {
     super(workspace);
     this.previewState = PreviewState.UNAVALIBLE;
     this.previewHost = window.helium.constants.DEFAULT_PREVIEW_HOST;
     this.previewPort = window.helium.constants.DEFAULT_PREVIEW_PORT;
     this.useDefaultSettings = true;
+    this.livePreviewUrl = null;
 
     this.setupPreviewStateListener();
   }
@@ -57,8 +60,13 @@ export class ThemePreview extends StateModel {
 
         if (this.isStopping && newPreviewState === PreviewState.OFF) {
           this.workspace.notifications.showNotification({
-            type: "info",
+            type: "success",
             message: "Theme Preview stopped",
+          });
+        } else if (this.isStarting && newPreviewState === PreviewState.ERROR) {
+          this.workspace.notifications.showNotification({
+            type: "error",
+            message: "Error starting the Theme Preview",
           });
         }
         // runInAction???
@@ -93,6 +101,16 @@ export class ThemePreview extends StateModel {
   }
 
   @computed
+  public get isOff() {
+    return this.previewState === PreviewState.OFF;
+  }
+
+  @computed
+  public get isError() {
+    return this.previewState === PreviewState.ERROR;
+  }
+
+  @computed
   public get isRunning() {
     return this.previewState === PreviewState.RUNNING;
   }
@@ -121,7 +139,11 @@ export class ThemePreview extends StateModel {
         }; 
 
 
-        await window.helium.shopify.startThemePreview(options);
+        const livePreviewUrl = await window.helium.shopify.startThemePreview(options);
+        console.log(livePreviewUrl);
+        if (livePreviewUrl) {
+          this.livePreviewUrl = livePreviewUrl;
+        }
       } catch (e) {
 
         console.log(e);

@@ -11,6 +11,8 @@ import { Fieldset } from "@headlessui/react";
 function PreviewPanel() {
   const workspace = useWorkspace();
   const isPreviewRunning = workspace.themePreview.isRunning;
+  const isPreviewOff = workspace.themePreview.isOff;
+  const isPreviewStarting = workspace.themePreview.isStarting;
   const useDefaultSettings = workspace.themePreview.useDefaultSettings;
   const { host, port } = workspace.themePreview.previewOptions;
 
@@ -46,7 +48,7 @@ function PreviewPanel() {
           label="Host"
           value={host}
           name="host"
-          disabled={isPreviewRunning}
+          disabled={!isPreviewOff}
           onChange={(e) =>
             workspace.themePreview.updatePreviewHost(e.target.value)
           }
@@ -56,7 +58,7 @@ function PreviewPanel() {
           value={port}
           name="port"
           type="number"
-          disabled={isPreviewRunning}
+          disabled={!isPreviewOff}
           onChange={(e) =>
             workspace.themePreview.updatePreviewPort(e.target.value)
           }
@@ -68,11 +70,14 @@ function PreviewPanel() {
       <div className="preview-panel-body">
         <Checkbox
           label="Use default settings"
+          disabled={!isPreviewOff}
           checked={useDefaultSettings}
           onChange={() => toggleUseDefaultSettings()}
         />
         {previewSettingInputMarkup}
         <Button
+          loading={isPreviewStarting}
+          disabled={isPreviewStarting}
           onClick={() => {
             if (isPreviewRunning) {
               workspace.themePreview.stop();

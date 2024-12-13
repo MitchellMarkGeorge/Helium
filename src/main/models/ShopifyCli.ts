@@ -62,7 +62,7 @@ export default class ShopifyCli {
     return cliAvailible ? PreviewState.OFF : PreviewState.UNAVALIBLE;
   }
 
-  private get localPreviewLink() {
+  private get localPreviewUrl() {
     return `http://${this.previewHost}:${this.previewPort}`;
   }
 
@@ -119,7 +119,7 @@ export default class ShopifyCli {
   public startThemePreview(options?: StartThemePreviewOptions) {
     // PREVIEW STATE CHECK AND CONNECTED STORE CHECK WILL BE DONE BY UI
     // asserting values here again for type system and general correctness
-    return new Promise<void>((resolve, reject) => {
+    return new Promise<string | null>((resolve, reject) => {
       const storeInfo = this.heliumWindow.getConnectedStore();
       const currentTheme = this.heliumWindow.getCurrentTheme();
 
@@ -177,11 +177,11 @@ export default class ShopifyCli {
 
         // let scriptOutput = "";
 
-        this.previewChildProcess.stdout?.setEncoding('utf8');
+        // this.previewChildProcess.stdout?.setEncoding('utf8');
 
-        this.previewChildProcess.stdout?.on('data', (data) => {
-          console.log(`stdout: ${data}`);
-        })
+        // this.previewChildProcess.stdout?.on('data', (data) => {
+        //   console.log(`stdout: ${data}`);
+        // })
 
         // set the preview state to starting
         this.updatePreviewState(PreviewState.STARTING);
@@ -204,7 +204,8 @@ export default class ShopifyCli {
             // once the preview url is avalible set the preview state as running
             // this.previewState = PreviewState.RUNNING;
             this.updatePreviewState(PreviewState.RUNNING);
-            return resolve();
+            // would rather get the preview url from the main process just to be careful
+            return resolve(this.localPreviewUrl);
           } catch (error) {
             // if there was an error in waiting for the preview to be avalible,
             // change the preview state to error (might time it out so its not immediate)
@@ -212,7 +213,7 @@ export default class ShopifyCli {
             this.updatePreviewState(PreviewState.ERROR);
             // stop/kill the preview process
             await this.stopThemePreview();
-            reject(); // reject after the preview process has been shut down
+            reject(null); // reject after the preview process has been shut down
           }
         });
 
@@ -279,6 +280,7 @@ export default class ShopifyCli {
             }
           }
           // should be in PreviewState.STOPPING
+          // console.log(stopping)
           await this.cleanupPreviewProcess();
           // set preview state to off
           this.updatePreviewState(PreviewState.OFF);
