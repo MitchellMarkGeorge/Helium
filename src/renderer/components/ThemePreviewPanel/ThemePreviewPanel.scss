@@ -1,4 +1,4 @@
-.code-editor-error {
+.theme-preview-error {
     height: 100%;
     width: 100%;
     display: flex;
@@ -6,7 +6,7 @@
     align-items: center;
     background-color: var(--background-color);
 
-    .code-editor-error-container {
+    .theme-preview-error-container {
         display: flex;
         justify-content: center;
         align-items: center;
@@ -14,11 +14,4 @@
         gap: 1rem;
         flex-direction: column;
     }
-}
-.code-editor {
-    height: 100%;
-    // is this needed?
-    flex: 1;
-    width: 100%;
-    background-color: var(--background-color);
 }

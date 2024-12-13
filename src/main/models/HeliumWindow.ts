@@ -65,6 +65,7 @@ export class HeliumWindow {
       // icon: path.resolve(__dirname, "../assets", "icons", "helium.png"),
       show: false,
       webPreferences: {
+        webviewTag: true,
         preload: HELIUM_PRELOAD_ENTRY,
       },
     });
@@ -85,6 +86,7 @@ export class HeliumWindow {
     this.browserWindow.webContents.once("dom-ready", () => {
       console.log("ready to show");
       this.browserWindow.show();
+      this.browserWindow.focus();
     });
 
     this.browserWindow.loadURL(HELIUM_WEB_ENTRY);

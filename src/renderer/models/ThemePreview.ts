@@ -79,12 +79,12 @@ export class ThemePreview extends StateModel {
         } else if (this.isRunning) {
           this.workspace.notifications.showNotification({
             type: "success",
-            message: "Theme Preview running"
+            message: "Theme Preview running",
           });
         } else if (this.isStopping) {
           this.workspace.notifications.showNotification({
             type: "info",
-            message: "Stopping Theme Preview..."
+            message: "Stopping Theme Preview...",
           });
         }
       })
@@ -93,6 +93,11 @@ export class ThemePreview extends StateModel {
 
   public getPreviewState() {
     return this.previewState;
+  }
+
+  @computed
+  public get shouldShowThemePreview() {
+    return this.isRunning && this.livePreviewUrl;
   }
 
   @computed
@@ -127,25 +132,33 @@ export class ThemePreview extends StateModel {
     return this.previewState === PreviewState.STOPPING;
   }
 
+  public getLivePreviewUrl() {
+    return this.livePreviewUrl;
+  }
+
   @action
   public async start() {
     if (!this.isRunning) {
       try {
         // should time out after a while (10-15 seconds)
-        
-        const options = this.useDefaultSettings ? undefined : {
-          host: this.previewHost,
-          port: this.previewPort,
-        }; 
 
+        const options = this.useDefaultSettings
+          ? undefined
+          : {
+              host: this.previewHost,
+              port: this.previewPort,
+            };
 
-        const livePreviewUrl = await window.helium.shopify.startThemePreview(options);
-        console.log(livePreviewUrl);
-        if (livePreviewUrl) {
-          this.livePreviewUrl = livePreviewUrl;
-        }
+        const livePreviewUrl = await window.helium.shopify.startThemePreview(
+          options
+        );
+        runInAction(() => {
+          console.log(livePreviewUrl);
+          if (livePreviewUrl) {
+            this.livePreviewUrl = livePreviewUrl;
+          }
+        });
       } catch (e) {
-
         console.log(e);
 
         await wait(500);
@@ -170,6 +183,7 @@ export class ThemePreview extends StateModel {
       try {
         // should time out after a while
         await window.helium.shopify.stopThemePreview();
+        this.livePreviewUrl = null;
       } catch {
         // error details???
         runInAction(() => {
@@ -184,6 +198,7 @@ export class ThemePreview extends StateModel {
 
   @action
   public reset(): void {
+    // TODO need to to this
     // depends on whether there is a connected store and if it is running
     if (this.workspace.isStoreConnected) {
       this.previewState = PreviewState.OFF;
