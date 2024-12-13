@@ -73,6 +73,13 @@ function PreviewPanel() {
         />
         {previewSettingInputMarkup}
         <Button
+          onClick={() => {
+            if (isPreviewRunning) {
+              workspace.themePreview.stop();
+            } else {
+              workspace.themePreview.start();
+            }
+          }}
           variant={isPreviewRunning ? "destructive" : "primary"}
           fullWidth
         >

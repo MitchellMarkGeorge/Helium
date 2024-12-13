@@ -194,7 +194,7 @@ export class HeliumWindow {
 
     const themeAccessPassword = safeStorage
       .encryptString(options.password)
-      .toString();
+      .toString('base64');
 
     const store = {
       name: options.storeName,

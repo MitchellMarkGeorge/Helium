@@ -2,6 +2,7 @@ import { PreviewState } from "common/types";
 import { StateModel } from "./StateModel";
 import { Workspace } from "./workspace/Workspace";
 import { action, computed, observable, runInAction } from "mobx";
+import { wait } from "common/utils";
 
 export class ThemePreview extends StateModel {
   // i could also just read only
@@ -52,14 +53,43 @@ export class ThemePreview extends StateModel {
   private setupPreviewStateListener() {
     window.helium.shopify.onPreviewStateChange(
       action((newPreviewState) => {
+        console.log(newPreviewState);
+
+        if (this.isStopping && newPreviewState === PreviewState.OFF) {
+          this.workspace.notifications.showNotification({
+            type: "info",
+            message: "Theme Preview stopped",
+          });
+        }
         // runInAction???
         this.previewState = newPreviewState;
+        if (this.isStarting) {
+          this.workspace.notifications.showNotification({
+            type: "info",
+            message: "Starting Theme Preview...",
+          });
+        } else if (this.isRunning) {
+          this.workspace.notifications.showNotification({
+            type: "success",
+            message: "Theme Preview running"
+          });
+        } else if (this.isStopping) {
+          this.workspace.notifications.showNotification({
+            type: "info",
+            message: "Stopping Theme Preview..."
+          });
+        }
       })
     );
   }
 
   public getPreviewState() {
     return this.previewState;
+  }
+
+  @computed
+  public get isStarting() {
+    return this.previewState === PreviewState.STARTING;
   }
 
   @computed
@@ -73,29 +103,30 @@ export class ThemePreview extends StateModel {
     return this.previewState === PreviewState.UNAVALIBLE;
   }
 
+  @computed
+  public get isStopping() {
+    // only unavalible when there is no connected theme
+    return this.previewState === PreviewState.STOPPING;
+  }
+
   @action
   public async start() {
     if (!this.isRunning) {
-      this.workspace.notifications.showNotification({
-        type: "info",
-        message: "Starting Theme Preview...",
-      });
       try {
         // should time out after a while (10-15 seconds)
+        
+        const options = this.useDefaultSettings ? undefined : {
+          host: this.previewHost,
+          port: this.previewPort,
+        }; 
 
-        const host = this.useDefaultSettings
-          ? window.helium.constants.DEFAULT_PREVIEW_HOST
-          : this.previewHost;
 
-        const port = this.useDefaultSettings
-          ? window.helium.constants.DEFAULT_PREVIEW_PORT
-          : this.previewPort;
+        await window.helium.shopify.startThemePreview(options);
+      } catch (e) {
 
-        await window.helium.shopify.startThemePreview({
-          host,
-          port,
-        });
-      } catch {
+        console.log(e);
+
+        await wait(500);
         // error details???
         runInAction(() => {
           this.workspace.notifications.showNotification({
@@ -110,10 +141,10 @@ export class ThemePreview extends StateModel {
   @action
   public async stop() {
     if (this.isRunning) {
-      this.workspace.notifications.showNotification({
-        type: "info",
-        message: "Shutting down Theme Preview...",
-      });
+      // this.workspace.notifications.showNotification({
+      //   type: "info",
+      //   message: "Shutting down Theme Preview...",
+      // });
       try {
         // should time out after a while
         await window.helium.shopify.stopThemePreview();

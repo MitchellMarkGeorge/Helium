@@ -12,7 +12,7 @@ interface Props {
 
 function PreviewStatus({ previewState, isStoreConnected, onClick }: Props) {
   const previewStatusClasses = classNames("preview-status", {
-    "preview-avalible": previewState === PreviewState.OFF && isStoreConnected,
+    "preview-avalible": isStoreConnected && [PreviewState.OFF, PreviewState.STARTING].includes(previewState), // for now
     "preview-running": previewState === PreviewState.RUNNING,
   });
 

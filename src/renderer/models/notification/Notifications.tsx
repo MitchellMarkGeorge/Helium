@@ -1,4 +1,3 @@
-import { enqueueSnackbar } from "notistack";
 import { StateModel } from "../StateModel";
 import { Workspace } from "../workspace/Workspace";
 import {
@@ -12,6 +11,8 @@ import {
 } from "./types";
 import { action, computed, observable } from "mobx";
 import { generateHeliumId } from "common/utils";
+import Toast from "renderer/components/ui/Toast/Toast";
+import { toast } from "sonner";
 
 type ShowMessageModalOptions = Pick<MessageModalOptions, "type" | "message"> & {
   primaryButtonText?: string;
@@ -54,11 +55,14 @@ export class Notifications extends StateModel {
   }
 
   public showNotification(options: NotificationOptions) {
-    enqueueSnackbar({
-      message: options.message,
-      key: generateHeliumId(),
-      variant: options.type,
-    });
+    // toast.success("Wooo!", {
+    //   duration: Infinity
+
+    // });
+    toast.custom(
+      (t) => <Toast options={options} close={() => toast.dismiss(t)} />,
+      // { duration: Infinity }
+    );
   }
 
   @action
@@ -88,25 +92,26 @@ export class Notifications extends StateModel {
         modalType: "message",
         type: options.type,
         message: options.message,
-        buttons: options.type === "warning" && options.primaryButtonText
-          ? [
-              {
-                text: options.primaryButtonText,
-                onClick: () =>
-                  resolve({ buttonClicked: "primary", data: null }),
-              },
-              {
+        buttons:
+          options.type === "warning" && options.primaryButtonText
+            ? [
+                {
+                  text: options.primaryButtonText,
+                  onClick: () =>
+                    resolve({ buttonClicked: "primary", data: null }),
+                },
+                {
+                  text: options.secondaryButtonText,
+                  onClick: () =>
+                    resolve({ buttonClicked: "secondary", data: null }),
+                },
+              ]
+            : {
                 text: options.secondaryButtonText,
+
                 onClick: () =>
                   resolve({ buttonClicked: "secondary", data: null }),
               },
-            ]
-          : {
-              text: options.secondaryButtonText,
-
-              onClick: () =>
-                resolve({ buttonClicked: "secondary", data: null }),
-            },
       });
     });
   }
@@ -125,8 +130,7 @@ export class Notifications extends StateModel {
         buttons: [
           {
             text: options.secondaryButtonText,
-            onClick: () =>
-              resolve({ buttonClicked: "secondary", data: null }),
+            onClick: () => resolve({ buttonClicked: "secondary", data: null }),
           },
           {
             text: options.primaryButtonText,
@@ -151,8 +155,7 @@ export class Notifications extends StateModel {
         buttons: [
           {
             text: options.secondaryButtonText,
-            onClick: () =>
-              resolve({ buttonClicked: "secondary", data: null }),
+            onClick: () => resolve({ buttonClicked: "secondary", data: null }),
           },
           {
             text: options.primaryButtonText,

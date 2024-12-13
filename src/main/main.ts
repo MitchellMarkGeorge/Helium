@@ -14,6 +14,8 @@ function start() {
   // let launchOptions: HeliumLaunchOptions | undefined = undefined;
   let launchOptions: HeliumLaunchOptions | undefined = {
     themePath: path.join(os.homedir(), "dawn-test"),
+
+
   };
 
   // this method is called when a recent document/folder it meant to be opened

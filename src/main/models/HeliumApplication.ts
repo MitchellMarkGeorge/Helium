@@ -8,6 +8,14 @@ import { initFsPreloadApi } from "main/services/fs";
 import { HeliumAppMenu } from "./menus/HeliumAppMenu";
 import { initContextMenuService } from "../services/contextmenu";
 import { HeliumWindow } from "./HeliumWindow";
+import { ConnectStoreOptions } from "common/types";
+import isDev from "electron-is-dev";
+
+const DEV_STORE: ConnectStoreOptions = {
+  storeName: process.env.DEV_STORE_NAME,
+  storeUrl: process.env.DEV_STORE_URL,
+  password: process.env.DEV_STORE_PASSWORD
+};
 
 export class HeliumApplication {
   private static instance: HeliumApplication;
@@ -96,7 +104,12 @@ export class HeliumApplication {
   public launch(options?: HeliumLaunchOptions) {
     if (!this.hasLaunched) {
       this.createNewWindow(
-        options ? { themePathOrUrl: options?.themePath } : undefined
+        options
+          ? {
+              themePathOrUrl: options?.themePath,
+              connectedStore: isDev ? DEV_STORE : undefined,
+            }
+          : undefined
       );
     } else {
       throw new Error("HeliumApplication instance has been launched");

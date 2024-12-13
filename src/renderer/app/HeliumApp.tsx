@@ -1,18 +1,21 @@
+import { shikiToMonaco } from "@shikijs/monaco";
 import { wait } from "common/utils";
-import { Workspace } from "../models/workspace/Workspace";
 import { action, flow } from "mobx";
+import monaco from "monaco-editor";
 import { createRoot } from "react-dom/client";
+import Modals from "renderer/components/ui/Modals";
+import { WorkspaceContext } from "renderer/contexts/Workspace";
+import { createHighlighter, ThemeInput } from "shiki";
+import StatusBar from "../components/StatusBar/StatusBar";
 import TitleBar from "../components/TitleBar/TitleBar";
 import HeliumWorkspace from "../components/Workspace/HeliumWorkspace";
-import StatusBar from "../components/StatusBar/StatusBar";
-import { WorkspaceContext } from "renderer/contexts/Workspace";
-import "./HeliumApp.scss";
-import Modals from "renderer/components/ui/Modals";
-import { createHighlighter, ThemeInput } from "shiki";
-import { shikiToMonaco } from "@shikijs/monaco";
-import monaco from "monaco-editor";
+import { Workspace } from "../models/workspace/Workspace";
 
 import theme from "./theme.json";
+
+// do I need this?
+import { Toaster } from "sonner";
+import "./HeliumApp.scss";
 
 export class HeliumApp {
   private workspace: Workspace;
@@ -64,6 +67,16 @@ export class HeliumApp {
           <HeliumWorkspace />
           <StatusBar />
           <Modals />
+          <Toaster
+            expand
+            offset="3.75rem"
+            style={{
+              width: "16rem",
+            }}
+            toastOptions={{
+              style: { width: "16rem" },
+            }}
+          />
         </div>
       </WorkspaceContext.Provider>
     );
@@ -107,14 +120,17 @@ export class HeliumApp {
   private setupListeners() {
     // can be moved to workspace
     window.addEventListener("beforeunload", this.onBeforeUnload);
-    window.helium.app.on('save-file', action(() => {
-      console.log('save file');
-      this.workspace.editor.saveCurrentFile();
-    }));
+    window.helium.app.on(
+      "save-file",
+      action(() => {
+        console.log("save file");
+        this.workspace.editor.saveCurrentFile();
+      })
+    );
     this.setupOnThemeInfoChange();
   }
 
-  private onBeforeUnload = async (e: BeforeUnloadEvent) =>  {
+  private onBeforeUnload = async (e: BeforeUnloadEvent) => {
     // can be moved to workspace
     console.log("before unload");
     console.log(this.workspace);

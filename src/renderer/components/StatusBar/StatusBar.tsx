@@ -17,9 +17,19 @@ function StatusBar() {
   const currentFile = workspace.editor.getCurrentFile();
   const cursorPosition = workspace.editor.getCursorPosition();
 
-  const onPrevewStatusClick = workspace.isStoreConnected
-    ? () => workspace.themePreview.start()
-    : () => workspace.connectStore();
+  const onPrevewStatusClick = () => {
+
+    if (!workspace.isStoreConnected) {
+      workspace.connectStore()
+      return;
+    }
+
+    if (workspace.themePreview.isRunning) {
+      workspace.themePreview.stop();
+    } else {
+      workspace.themePreview.start();
+    }
+  } 
 
   const cliUnavalibleMarkup =
     previewState === PreviewState.UNAVALIBLE ? (
