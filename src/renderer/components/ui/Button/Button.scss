@@ -14,9 +14,12 @@
   color: var(--gray-200);
   border: none;
   // transition: 200ms linear background-color;
-  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+  transition-property: color, background-color, border-color,
+    text-decoration-color, fill, stroke;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 150ms;
+
+  // disabled???
 
   &.full-width {
     width: 100%;
@@ -31,29 +34,34 @@
     outline-style: solid;
     box-shadow: inset 0 0 0 2px var(--border-color);
   }
-}
 
-.button-primary {
-  background-color: var(--primary-color);
+  &.button-primary {
+    background-color: var(--primary-color);
 
-  &:hover {
-    background-color: var(--primary-hover-color);
+    &:hover {
+      background-color: var(--primary-hover-color);
+    }
+  }
+
+  &.button-secondary {
+    background-color: var(--secondary-color);
+
+    &:hover {
+      background-color: var(--secondary-hover-color);
+    }
+  }
+
+  &.button-destructive {
+    background-color: var(--destructive-color);
+
+    &:hover {
+      background-color: var(--destructive-hover-color);
+    }
+  }
+
+  &[data-disabled], &:disabled {
+    background-color: var(--gray-600);
+    user-select: none;
+    pointer-events: none;
   }
 }
-
-.button-secondary {
-  background-color: var(--secondary-color);
-
-  &:hover {
-    background-color: var(--secondary-hover-color);
-  }
-}
-
-.button-destructive {
-  background-color: var(--destructive-color);
-
-  &:hover {
-    background-color: var(--destructive-hover-color);
-  }
-}
-

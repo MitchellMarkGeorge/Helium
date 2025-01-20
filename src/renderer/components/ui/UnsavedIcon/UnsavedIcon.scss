@@ -1,0 +1,15 @@
+.unsaved-icon-wrapper {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  flex-shrink: 0;
+  height: 1.25rem;
+  width: 1.25rem;
+
+  .unsaved-icon {
+    width: 0.5rem;
+    height: 0.5rem;
+    color: var(--gray-500);
+  }
+}

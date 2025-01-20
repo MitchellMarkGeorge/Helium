@@ -65,6 +65,7 @@ export class HeliumWindow {
       // icon: path.resolve(__dirname, "../assets", "icons", "helium.png"),
       show: false,
       webPreferences: {
+        webviewTag: true,
         preload: HELIUM_PRELOAD_ENTRY,
       },
     });
@@ -85,12 +86,13 @@ export class HeliumWindow {
     this.browserWindow.webContents.once("dom-ready", () => {
       console.log("ready to show");
       this.browserWindow.show();
+      this.browserWindow.focus();
     });
 
     this.browserWindow.loadURL(HELIUM_WEB_ENTRY);
 
     if (isDev) {
-      this.browserWindow.webContents.openDevTools();
+      this.browserWindow.webContents.openDevTools({ mode: "detach" });
     }
   }
 
@@ -121,7 +123,7 @@ export class HeliumWindow {
     // validate theme file structure. if not valid, throw error
     // think about this... what if they user is using a setup that includes some kind of build step??
     // also this does not take into account .git folders and the rest
-    if (!(await this.isThemeFileStructureValid(themePath, files))) {
+    if (!(this.isThemeFileStructureValid(themePath, files))) {
       throw new Error(`${themePath} is not a valid OS 2.0 theme directory`); // need a better mesage
     }
     // read theme info from settings_schema.json
@@ -154,7 +156,7 @@ export class HeliumWindow {
     return { themeInfo: openedTheme, files };
   }
 
-  private async isThemeFileStructureValid(
+  private isThemeFileStructureValid(
     themePath: string,
     files: ThemeFileSystemEntry[]
   ) {
@@ -194,7 +196,7 @@ export class HeliumWindow {
 
     const themeAccessPassword = safeStorage
       .encryptString(options.password)
-      .toString();
+      .toString("base64");
 
     const store = {
       name: options.storeName,
@@ -215,7 +217,8 @@ export class HeliumWindow {
     }
 
     this.connectedStore = null;
-    this.shopifyCli.setPreviewIsUnavalible();
+    // might have to rename this
+    // this.shopifyCli.setPreviewIsAvalible();
     this.emitEvent("on-store-change", null);
   }
 
@@ -271,6 +274,7 @@ export class HeliumWindow {
           await wait(remainingWaitTime);
         }
       }
+      console.log("getting preview state", this.shopifyCli.getPreviewState());
       return {
         currentTheme: this.currentTheme,
         themeFiles: files,
@@ -280,7 +284,13 @@ export class HeliumWindow {
     } else {
       // wait at least 2 seconds before returning the inital data
       await wait(MIN_WAIT_TIME);
-      return constants.DEFAULT_INITAL_STATE;
+      // return constants.DEFAULT_INITAL_STATE;
+      return {
+        connectedStore: null,
+        currentTheme: null,
+        themeFiles: [],
+        previewState: this.shopifyCli.getPreviewState(),
+      };
     }
     // the loading screen should show for a minimum of 1 or 2 seconcds (500ms???) so it doesnt seem too jarring
     // if loading takes longer that is fine

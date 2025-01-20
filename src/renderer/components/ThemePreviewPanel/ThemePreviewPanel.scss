@@ -1,0 +1,17 @@
+.theme-preview-error {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--background-color);
+
+    .theme-preview-error-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        gap: 1rem;
+        flex-direction: column;
+    }
+}

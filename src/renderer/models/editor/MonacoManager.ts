@@ -8,6 +8,7 @@ import {
   MonacoCodeEditor,
   MonacoTextModel,
   EditorFile,
+  MonacoViewState,
 } from "./types";
 import { isTextFile } from "common/utils";
 import { action, observable } from "mobx";
@@ -22,6 +23,8 @@ interface CreateEditorModelOptions {
 export class MonacoManager {
   // think about this
   @observable.shallow private accessor editorModelMap: Map<string, MonacoTextModel>;
+  @observable.shallow private accessor editorViewState: Map<string, MonacoViewState>;
+  @observable.shallow private accessor editorVersionId: Map<string, number>;
   // this should be a file object
   // private editorModelMap: WeakMap<ThemeFile, MonacoTextModel>;
   // does this need to be an observable???
@@ -30,12 +33,18 @@ export class MonacoManager {
   // private unsavedPaths: Set<string>;
   constructor() {
     this.editorModelMap = new Map();
+    this.editorViewState = new Map();
+    this.editorVersionId = new Map();
     this.monacoCodeEditor = null;
   }
 
   @action
   public setMonacoCodeEditor(instace: MonacoCodeEditor) {
     this.monacoCodeEditor = instace;
+  }
+
+  public getMonacoCodeEditor() {
+    return this.monacoCodeEditor;
   }
 
   // computed???
@@ -55,17 +64,30 @@ export class MonacoManager {
     return this.editorModelMap.has(path);
   }
 
+  public getViewState(filePath: string) {
+    return this.editorViewState.get(filePath) || null;
+  }
+
+  public updateViewState(filePath: string, viewState: MonacoViewState) {
+    return this.editorViewState.set(filePath, viewState);
+  }
+
   @action
   public saveEditorModel(path: string, model: MonacoTextModel) {
     this.editorModelMap.set(path, model);
+  }
+
+  @action
+  public updateEditorModelVersionId(path: string, versionId: number) {
+    this.editorVersionId.set(path, versionId);
   }
 
   public getEditorModel(path: string) {
     return this.editorModelMap.get(path) || null;
   }
 
-  public getCursorPosition() {
-    return this.monacoCodeEditor ? this.monacoCodeEditor.getPosition() : null;
+  public getVersionId(path: string) {
+    return this.editorVersionId.get(path) || null;
   }
 
   @action
@@ -83,17 +105,28 @@ export class MonacoManager {
           text: fileContent,
         });
         this.saveEditorModel(path, model);
+        this.updateEditorModelVersionId(path, model.getAlternativeVersionId());
       } 
     }
   }
 
   @action
   public disposeEditorModel(filePath: string) {
+    
     if (this.editorModelMap.has(filePath)) {
       const model = this.editorModelMap.get(filePath);
       // should I check if it is already disposed?
+      console.log('disposing')
       model?.dispose();
       this.editorModelMap.delete(filePath); // do this first??
+    }
+
+    if (this.editorViewState.has(filePath)) {
+      this.editorViewState.delete(filePath);
+    }
+
+    if (this.editorVersionId.has(filePath)) {
+      this.editorVersionId.delete(filePath);
     }
   }
 

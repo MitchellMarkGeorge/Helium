@@ -13,9 +13,9 @@ export interface NewFileModalOptions {
 }
 
 export interface ConnectStoreModalOptions {
-  storeNameInput: InputResult;
-  storeUrlInput: InputResult;
-  themeAccessPasswordInput: InputResult;
+  storeName: string;
+  storeUrl: string;
+  themeAccessPassword: string;
 }
 
 export interface NewFolderModalOptions {

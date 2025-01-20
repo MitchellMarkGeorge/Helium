@@ -1,18 +1,21 @@
+import { shikiToMonaco } from "@shikijs/monaco";
 import { wait } from "common/utils";
-import { Workspace } from "../models/workspace/Workspace";
 import { action, flow } from "mobx";
+import monaco from "monaco-editor";
 import { createRoot } from "react-dom/client";
+import Modals from "renderer/components/ui/Modals";
+import { WorkspaceContext } from "renderer/contexts/Workspace";
+import { createHighlighter, ThemeInput } from "shiki";
+import StatusBar from "../components/StatusBar/StatusBar";
 import TitleBar from "../components/TitleBar/TitleBar";
 import HeliumWorkspace from "../components/Workspace/HeliumWorkspace";
-import StatusBar from "../components/StatusBar/StatusBar";
-import { WorkspaceContext } from "renderer/contexts/Workspace";
-import "./HeliumApp.scss";
-import Modals from "renderer/components/ui/Modals";
-import { createHighlighter, ThemeInput } from "shiki";
-import { shikiToMonaco } from "@shikijs/monaco";
-import monaco from "monaco-editor";
+import { Workspace } from "../models/workspace/Workspace";
 
 import theme from "./theme.json";
+
+// do I need this?
+import { Toaster } from "sonner";
+import "./HeliumApp.scss";
 
 export class HeliumApp {
   private workspace: Workspace;
@@ -64,6 +67,16 @@ export class HeliumApp {
           <HeliumWorkspace />
           <StatusBar />
           <Modals />
+          <Toaster
+            expand
+            offset="3.75rem"
+            style={{
+              width: "16rem",
+            }}
+            toastOptions={{
+              style: { width: "16rem" },
+            }}
+          />
         </div>
       </WorkspaceContext.Provider>
     );
@@ -77,6 +90,7 @@ export class HeliumApp {
     try {
       // document.body.style.cursor = "progress";
       const initalState = yield window.helium.app.loadInitalState();
+      console.log(initalState);
       // throw new Error();
       this.workspace.initFromInitalState(initalState);
       // yield wait(1000);
@@ -95,7 +109,7 @@ export class HeliumApp {
       this.workspace.notifications.showMessageModal({
         type: "error",
         // thik of better error message
-        message: "There was an error loading the inital state.", // might use error message,
+        message: "There was an error loading the window", // might use error message,
         secondaryButtonText: "Close",
       });
     }
@@ -104,8 +118,43 @@ export class HeliumApp {
   });
 
   private setupListeners() {
+    // can be moved to workspace
+    window.addEventListener("beforeunload", this.onBeforeUnload);
+    window.helium.app.on(
+      "save-file",
+      action(() => {
+        console.log("save file");
+        this.workspace.editor.saveCurrentFile();
+      })
+    );
     this.setupOnThemeInfoChange();
   }
+
+  private onBeforeUnload = async (e: BeforeUnloadEvent) => {
+    // can be moved to workspace
+    console.log("before unload");
+    console.log(this.workspace);
+    if (this.workspace.editor.hasUnsavedFiles) {
+      e.preventDefault();
+      e.returnValue = true;
+      const response = await this.workspace.notifications.showMessageModal({
+        type: "warning",
+        message:
+          "You have some unsaved files. Are you sure you want to close this window?",
+        primaryButtonText: "Close",
+        secondaryButtonText: "Cancel",
+      });
+
+      if (response.buttonClicked === "primary") {
+        console.log("hellow");
+        // workspace clenup
+        window.removeEventListener("beforeunload", this.onBeforeUnload);
+        window.helium.app.closeWindow();
+      } else {
+        this.workspace.notifications.closeModal();
+      }
+    }
+  };
 
   // this should be moved the Theme model
   private setupOnThemeInfoChange() {

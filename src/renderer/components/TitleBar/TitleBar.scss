@@ -13,10 +13,8 @@
   // user-select: none;
   // -webkit-app-region: drag;
 
-  // think about this name
-  &.workspace-visible {
-    border-bottom: 1px solid var(--border-color);
-  }
+  background-color: var(--background-color);
+
 
   .titlebar-drag-region {
     display: block;

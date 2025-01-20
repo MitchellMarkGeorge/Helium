@@ -11,12 +11,13 @@ import { Theme } from "../Theme";
 import { getErrorMessage } from "common/utils";
 import pathe from "pathe";
 import { TreeFileExplorer } from "../fileexplorer/tree/TreeFileExplorer";
-import { FileExplorer } from "../fileexplorer/types";
+import { FileEntry, FileExplorer } from "../fileexplorer/types";
 import { Editor } from "../editor/Editor";
 import { ThemePreview } from "../ThemePreview";
 import { Store } from "../Store";
-import { action, computed, flow, observable } from "mobx";
+import { action, autorun, computed, flow, observable } from "mobx";
 import { EditorFile } from "../editor/types";
+import { ModalResponse } from "../notification/types";
 
 // NOTE
 // WHEN READING FILES, I NEED A WAY TO SHOW A PROGRESSBAR IF IT TAKES TOO LONG
@@ -66,6 +67,8 @@ export class Workspace {
     this.unsavedPaths = new Set<string>();
     // this.unsavedPaths = observable.set<string>();
     this.loadingState = DEFAULT_LOADING_STATE;
+
+    this.updateAppWindowTitle();
   }
 
   // set values using loadInitalState()
@@ -87,17 +90,25 @@ export class Workspace {
       this.fileExplorer.init(themeFiles);
     }
 
+    this.themePreview.updatePreviewState(previewState);
+
     if (connectedStore) {
       // preview state is only possible if there is a stoer
       this.connectedStore = new Store({
         storeName: connectedStore.name,
         storeUrl: connectedStore.url,
       });
-      this.themePreview.updatePreviewState(previewState);
     }
     this.isShowingWorkspace = true;
     window.helium.app.sendWorkspaceIsShowing();
     // window.helium.app.sendReadyToShowWorkspace();
+  }
+
+  private updateAppWindowTitle() {
+    autorun(() => {
+      const title = this.windowTitle;
+      window.helium.app.setWindowTitle(title);
+    });
   }
 
   // shows loading indicator in status bar and if it is already loading,
@@ -143,6 +154,10 @@ export class Workspace {
     // dependednt on current theme name
     // add an effect that whenever the windowTitle changes, set it at the electron level
     if (this.theme) {
+      const currentFile = this.editor.getCurrentFile();
+      if (this.editor.hasOpenFiles && currentFile?.basename) {
+        return `${currentFile.basename} - ${this.theme.themeName}`;
+      }
       return this.theme.themeName;
     } else {
       return window.helium.constants.DEFAULT_WINOW_TITLE;
@@ -154,14 +169,15 @@ export class Workspace {
     // should validate if path already exists
     return this.notifications.showPathInputModal<NewFileModalOptions>({
       title: "New File",
-      inputFields: {
-        newPathInput: {
+      inputFields: [
+        {
+          key: "newPathInput",
           label: "Name",
           for: "file",
           parentPath: parentPath || null,
           placeholder: "Enter file name",
         },
-      },
+      ],
       primaryButtonText: "Create File",
       secondaryButtonText: "Cancel",
     });
@@ -172,20 +188,25 @@ export class Workspace {
     // should validate if path already exists
     return this.notifications.showInputModal<ConnectStoreModalOptions>({
       title: "Connect Store",
-      inputFields: {
-        storeNameInput: {
+      inputFields: [
+        {
+          key: "storeName",
           label: "Store Name",
-          placeholder: "Enter store name",
+          placeholder: "Name",
         },
-        storeUrlInput: {
+        {
+          key: "storeUrl",
           label: "Store URL",
-          placeholder: "Enter Shopify store URL",
+          placeholder: "URL",
+          type: "url",
         },
-        themeAccessPasswordInput: {
+        {
+          key: "themeAccessPassword",
           label: "Theme Access Passwaord",
-          placeholder: "Enter Theme Access Password",
+          placeholder: "Password",
+          type: "password",
         },
-      },
+      ],
       primaryButtonText: "Connect",
       secondaryButtonText: "Cancel",
     });
@@ -196,14 +217,15 @@ export class Workspace {
     // should validate if path already exists
     return this.notifications.showPathInputModal<NewFolderModalOptions>({
       title: "New Folder",
-      inputFields: {
-        newFolderInput: {
+      inputFields: [
+        {
+          key: "newFolderInput",
           label: "Name",
           for: "directory",
           parentPath: parentPath || null,
           placeholder: "Enter folder name",
         },
-      },
+      ],
       primaryButtonText: "Create Folder",
       secondaryButtonText: "Cancel",
     });
@@ -224,10 +246,10 @@ export class Workspace {
 
   @action
   private showDisconnectStoreConfirmation() {
-    // should validate if path already exists
+    // should I show the store name?
     return this.notifications.showMessageModal({
       type: "warning",
-      message: `Are you sure you want to disconnect from the current store?`,
+      message: `Are you sure you want to disconnect this current store?`,
       primaryButtonText: "Disconnect Store",
       secondaryButtonText: "Cancel",
     });
@@ -260,6 +282,7 @@ export class Workspace {
         path: filePath,
         fileType,
         basename: fileName,
+        hasTab: true,
       });
     }
   });
@@ -383,7 +406,7 @@ export class Workspace {
       let themeInfo: ThemeInfo | null = null;
       let files: ThemeFileSystemEntry[] = [];
       try {
-        console.log("hello")
+        console.log("hello");
         const results = yield window.helium.shopify.openTheme(themePath);
         themeInfo = results.themeInfo;
         files = results.files;
@@ -403,17 +426,21 @@ export class Workspace {
         }
         this.theme = new Theme(themeInfo);
         this.fileExplorer.init(files);
-        if (this.isSidePanelOpen && this.activeSideBarOption !== SideBarItemOption.FILES) {
+        if (
+          this.isSidePanelOpen &&
+          this.activeSideBarOption !== SideBarItemOption.FILES
+        ) {
           this.selectSideBarOption(SideBarItemOption.FILES);
         }
       }
     }
   });
 
-  @action
-  public openFile(file: EditorFile) {
-    return this.editor.openFile(file);
-  }
+  // just use workspace.editor.openFile() instead
+  // @action
+  // public openFile(file: EditorFile) {
+  //   return this.editor.openFile(file);
+  // }
 
   @action
   public saveCurrentFile = flow(function* (this: Workspace) {
@@ -496,17 +523,18 @@ export class Workspace {
   @action
   public connectStore = flow(function* (this: Workspace) {
     if (!this.isStoreConnected) {
-      const modalResponse = yield this.showConnectStoreModal();
+      const modalResponse: ModalResponse<ConnectStoreModalOptions> =
+        yield this.showConnectStoreModal();
+      console.log(modalResponse);
 
-      if (modalResponse.buttonClicked === "primary" && modalResponse.result) {
-        const { storeNameInput, storeUrlInput, themeAccessPasswordInput } =
-          modalResponse.result;
+      if (modalResponse.buttonClicked === "primary" && modalResponse.data) {
+        const { storeName, storeUrl, themeAccessPassword } = modalResponse.data;
 
         try {
           yield window.helium.shopify.connectStore({
-            storeName: storeNameInput.value,
-            password: themeAccessPasswordInput.value,
-            storeUrl: storeUrlInput.value,
+            storeName: storeName,
+            password: themeAccessPassword,
+            storeUrl: storeUrl,
           });
         } catch (error) {
           // unable to connect stoer
@@ -520,8 +548,8 @@ export class Workspace {
 
         // or should I be using the event listener???
         this.connectedStore = new Store({
-          storeName: storeNameInput.value,
-          storeUrl: storeUrlInput.value,
+          storeName: storeName,
+          storeUrl: storeUrl,
         });
         // the previewState will be updated by the event
       }
@@ -530,6 +558,7 @@ export class Workspace {
 
   @action
   public disconnectStore = flow(function* (this: Workspace) {
+    // shouldnt be able to disconnect a store if preview is running
     if (this.isStoreConnected) {
       const modalResponse = yield this.showDisconnectStoreConfirmation();
       if (modalResponse.buttonClicked === "primary") {

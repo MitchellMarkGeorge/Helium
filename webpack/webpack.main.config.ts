@@ -1,8 +1,6 @@
 import webpack from "webpack";
+import 'dotenv/config'
 
-import { rules } from "./webpack.rules";
-import { plugins } from "./webpack.plugins";
-import CopyPlugin from "copy-webpack-plugin";
 import TsconfigPathsPlugin from "tsconfig-paths-webpack-plugin";
 import path from "path";
 import webpackPaths from "./webpack.paths";
@@ -68,6 +66,9 @@ const mainConfig: webpack.Configuration = {
     new webpack.DefinePlugin({
       HELIUM_WEB_ENTRY: JSON.stringify(HELIUM_WEB_ENTRY),
       HELIUM_PRELOAD_ENTRY: JSON.stringify(HELIUM_PRELOAD_ENTRY),
+      "process.env.DEV_STORE_NAME": JSON.stringify(process.env.DEV_STORE_NAME),
+      "process.env.DEV_STORE_URL": JSON.stringify(process.env.DEV_STORE_URL),
+      "process.env.DEV_STORE_PASSWORD": JSON.stringify(process.env.DEV_STORE_PASSWORD),
     }),
   //   new CopyPlugin({
   //     patterns: [{
