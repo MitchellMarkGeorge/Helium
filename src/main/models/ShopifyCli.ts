@@ -170,18 +170,17 @@ export default class ShopifyCli {
             SHOPIFY_FLAG_PATH: this.themePath,
             SHOPIFY_FLAG_HOST: this.previewHost,
             SHOPIFY_FLAG_PORT: this.previewPort,
-            SHOPIFY_FLAG_OPEN: "true", // for now
+            // SHOPIFY_FLAG_OPEN: "true", // for now
           }, // put all options here
           shell: true,
         });
 
-        // let scriptOutput = "";
 
-        // this.previewChildProcess.stdout?.setEncoding('utf8');
+        this.previewChildProcess.stdout?.setEncoding('utf8');
 
-        // this.previewChildProcess.stdout?.on('data', (data) => {
-        //   console.log(`stdout: ${data}`);
-        // })
+        this.previewChildProcess.stdout?.on('data', (data) => {
+          console.log(`stdout: ${data}`);
+        })
 
         // set the preview state to starting
         this.updatePreviewState(PreviewState.STARTING);

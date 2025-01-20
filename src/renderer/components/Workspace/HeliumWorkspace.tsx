@@ -15,7 +15,7 @@ import EditorPanel from "../EditorPanel";
 import { useEffect, useRef } from "react";
 import { action, autorun } from "mobx";
 import classNames from "classnames";
-import ThemePreview from "../ThemePreviewPanel";
+import ThemePreviewPanel from "../ThemePreviewPanel";
 
 // should this be in state
 // this makes sure that the first time it is expanded that it does not use the minSize
@@ -65,6 +65,7 @@ function HeliumWorkspace() {
           defaultSize={0}
           maxSize={50}
           order={1}
+          id="sidebar-panel"
           // onExpand={}
           onCollapse={action(() => {
             if (workspace.isSidePanelOpen) {
@@ -80,14 +81,14 @@ function HeliumWorkspace() {
           <SideBarPanel activeSideBarOption={workspace.activeSideBarOption} />
         </Panel>
         <PanelResizeHandle className="workspace-resizer" />
-        <Panel order={2} className="workspace-panel" minSize={30}>
+        <Panel order={2} className="workspace-panel" minSize={30} id="editor-panel">
           <EditorPanel />
         </Panel>
         {workspace.themePreview.shouldShowThemePreview ? (
           <>
             <PanelResizeHandle className="workspace-resizer" />
-            <Panel order={3} className="workspace-panel" minSize={30}>
-              <ThemePreview />
+            <Panel order={3} className="workspace-panel" minSize={30} id="theme-preview">
+              <ThemePreviewPanel />
             </Panel>
           </>
         ) : null}

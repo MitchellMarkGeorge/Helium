@@ -123,7 +123,7 @@ export class HeliumWindow {
     // validate theme file structure. if not valid, throw error
     // think about this... what if they user is using a setup that includes some kind of build step??
     // also this does not take into account .git folders and the rest
-    if (!(await this.isThemeFileStructureValid(themePath, files))) {
+    if (!(this.isThemeFileStructureValid(themePath, files))) {
       throw new Error(`${themePath} is not a valid OS 2.0 theme directory`); // need a better mesage
     }
     // read theme info from settings_schema.json
@@ -156,7 +156,7 @@ export class HeliumWindow {
     return { themeInfo: openedTheme, files };
   }
 
-  private async isThemeFileStructureValid(
+  private isThemeFileStructureValid(
     themePath: string,
     files: ThemeFileSystemEntry[]
   ) {
